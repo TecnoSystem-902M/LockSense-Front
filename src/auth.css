@@ -1,0 +1,1097 @@
+/* =========================================================
+   LOCKSENSE - REGISTRO Y AUTH UNIFICADO
+   ========================================================= */
+
+/* Página general */
+.auth-page {
+  min-height: calc(100vh - 75px);
+  padding: 50px 24px;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(16,185,129,.08), transparent 35%),
+    var(--mist);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor principal en 2 columnas */
+.auth-container {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(15,41,34,.12);
+  align-items: stretch;
+}
+
+/* Panel Izquierdo: Información y Beneficios */
+.auth-info {
+  padding: 55px 48px;
+  background: 
+    radial-gradient(circle at 85% 20%, rgba(16,185,129,.16), transparent 35%),
+    linear-gradient(145deg, #081712, var(--primary));
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.auth-info::after {
+  content: "";
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  right: -120px;
+  bottom: -120px;
+  border-radius: 50%;
+  border: 1px solid rgba(16,185,129,.25);
+  pointer-events: none;
+}
+
+.auth-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.auth-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-info h1 {
+  font-size: 34px;
+  line-height: 1.2;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-info h1 span {
+  color: var(--secondary);
+}
+
+.auth-info > p {
+  max-width: 430px;
+  color: rgba(255,255,255,.68);
+  font-size: 15px;
+  margin-bottom: 38px;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-benefit {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.benefit-icon {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(16,185,129,.12);
+  border: 1px solid rgba(16,185,129,.2);
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-benefit h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.auth-benefit p {
+  font-size: 13px;
+  color: rgba(255,255,255,.48);
+}
+
+/* Panel Derecho: Formulario */
+.auth-card {
+  padding: 48px 50px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.auth-title-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--secondary-soft);
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.auth-card-header h2 {
+  font-size: 24px;
+  color: var(--primary);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.auth-card-header p {
+  font-size: 13px;
+  color: #71817c;
+}
+
+/* Indicador de Pasos */
+.signup-steps {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(15,41,34,.06);
+  padding-bottom: 16px;
+}
+
+.signup-steps .step-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9aa8a3;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--mist);
+  transition: all .3s ease;
+}
+
+.signup-steps .step-dot span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all .3s ease;
+}
+
+.signup-steps .step-dot.active {
+  color: var(--primary);
+  background: var(--secondary-soft);
+}
+
+.signup-steps .step-dot.active span {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+/* Control de Visibilidad de Pasos */
+.signup-step {
+  display: none;
+  animation: fadeIn .35s cubic-bezier(.16,1,.3,1);
+}
+
+.signup-step.active {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Componentes de Formulario */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper > i {
+  position: absolute;
+  left: 16px;
+  color: #87958f;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.input-wrapper input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 44px;
+  border: 1px solid rgba(15,41,34,.12);
+  border-radius: 12px;
+  outline: none;
+  background: #fafcfb;
+  color: var(--primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  transition: border-color .3s ease, box-shadow .3s ease, background .3s ease;
+}
+
+.input-wrapper input::placeholder {
+  color: #a0aaa6;
+}
+
+.input-wrapper input:focus {
+  border-color: var(--secondary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.08);
+}
+
+/* Barra de Fuerza de Contraseña */
+.strength-bar {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.strength-bar span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(15,41,34,.1);
+  transition: background .3s ease;
+}
+
+.strength-label {
+  font-size: 12px;
+  color: #8b9994;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Inputs de PIN */
+.pin-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.pin-inputs input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid rgba(15,41,34,.15);
+  background: #fafcfb;
+  color: var(--primary);
+  transition: all .25s ease;
+}
+
+.pin-inputs input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.12);
+}
+
+/* Reconocimiento Facial */
+.face-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: #fafcfb;
+  border: 1.5px dashed rgba(16,185,129,.4);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.face-frame {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: #0c211b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.face-frame video, 
+.face-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: none;
+}
+
+.face-frame.active video { display: block; }
+.face-frame.captured img { display: block; }
+.face-frame .divi-icon svg { width: 44px; height: 44px; color: var(--secondary); }
+
+.face-scan-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--secondary);
+  opacity: 0;
+}
+
+.face-frame.scanning .face-scan-ring {
+  opacity: 1;
+  animation: pulse-ring 1.1s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.face-status {
+  font-size: 13px;
+  color: #4a5b56;
+  min-height: 18px;
+}
+
+/* Grupo Input RFID */
+.rfid-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.rfid-input-group .input-wrapper {
+  flex: 1;
+}
+
+/* Botones con estilo LockSense */
+.auth-button {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .3s ease, box-shadow .3s ease, color .3s ease;
+}
+
+.auth-button::before {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  border-radius: 50%;
+  background: var(--secondary);
+  z-index: -1;
+  transition: transform .55s cubic-bezier(.22,1,.36,1);
+}
+
+.auth-button:hover::before {
+  transform: translate(-50%,-50%) scale(30);
+}
+
+.auth-button:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(16,185,129,.25);
+}
+
+.btn-secondary-outline {
+  flex: 1;
+  background: #fff;
+  border: 1.5px solid rgba(15,41,34,.15);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 0 20px;
+  height: 48px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .25s ease, background .25s ease;
+}
+
+.btn-secondary-outline:hover {
+  border-color: var(--secondary);
+  background: rgba(174, 217, 203, 0.35);
+}
+
+.btn-outline {
+  background: #fff;
+  border: 1.5px solid var(--secondary);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 0 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .25s ease, color .25s ease;
+}
+
+.btn-outline:hover {
+  background: var(--secondary);
+}
+
+.step-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Términos y Divisores */
+.terms-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #687872;
+  cursor: pointer;
+}
+
+.terms-check input {
+  flex-shrink: 0;
+  margin-top: 3px;
+  accent-color: var(--secondary);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #9aa5a1;
+  font-size: 12px;
+  margin: 10px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: rgba(15,41,34,.09);
+}
+
+.register-link {
+  width: 100%;
+  height: 46px;
+  border: 1px solid rgba(15,41,34,.12);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .3s ease, border-color .3s ease, color .3s ease;
+  text-decoration: none;
+}
+
+.register-link:hover {
+  background: var(--secondary-soft);
+  border-color: rgba(16,185,129,.35);
+}
+
+/* Responsividad */
+@media(max-width: 900px) {
+  .auth-container { grid-template-columns: 1fr; }
+  .auth-info { padding: 40px 32px; }
+  .auth-card { padding: 36px 28px; }
+  .form-row { grid-template-columns: 1fr; }
+  .auth-benefits { grid-template-columns: repeat(3, 1fr); display: grid; }
+  .auth-benefit { flex-direction: column; text-align: center; }
+  .auth-benefit p { display: none; }
+}
+
+@media(max-width: 600px) {
+  .auth-page { padding: 20px 12px; }
+  .auth-benefits { grid-template-columns: 1fr; }
+  .auth-benefit { flex-direction: row; text-align: left; }
+  .auth-benefit p { display: block; }
+}
+
+/* =========================================================
+   FIXES PARA LOGIN (Contraseña, Ojo de Ver y Recordar Sesión)
+   ========================================================= */
+
+/* 1. Separar Label y "¿Olvidaste tu contraseña?" */
+.password-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.password-label a {
+  font-size: 12.5px;
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.password-label a:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* 2. Ajustar el botón del ojo (Mostrar/Ocultar contraseña) */
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: #87958f;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  outline: none;
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  color: var(--primary);
+}
+
+/* Darle padding derecho al input para que el texto no toque el ojo */
+.input-wrapper input[type="password"],
+.input-wrapper input[type="text"] {
+  padding-right: 42px;
+}
+
+/* 3. Alinear y dar espacio al checkbox "Recordar mi sesión" */
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #556560;
+  cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.remember input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--secondary);
+  cursor: pointer;
+}
+
+/* Estilo unificado para select dentro de .input-wrapper */
+.input-wrapper select {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 44px;
+  border: 1px solid rgba(15,41,34,.12);
+  border-radius: 12px;
+  outline: none;
+  background: #fafcfb;
+  color: #a9b9b5;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  appearance: none; /* Elimina la flecha nativa fea del navegador */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color .3s ease, box-shadow .3s ease, background .3s ease;
+}
+
+.input-wrapper select:focus {
+  border-color: var(--secondary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.08);
+}
+
+/* Flecha personalizada moderna para el select */
+.input-wrapper:has(select)::after {
+  content: "\f078"; /* Icono chevrolet-down de FontAwesome */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 16px;
+  color: #87958f;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* Fila de 3 columnas (Colonia, Ciudad, C.P.) */
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media(max-width: 900px) {
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Contenedor principal de la barra y el texto */
+.strength-bar-container {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* El riel / fondo gris donde corre la barra */
+.strength-bar-track {
+  flex: 1;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* La barra de color que se llena */
+.strength-bar {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+/* El texto que dice "Débil", "Fuerte", etc. */
+.strength-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 50px;
+}
+
+/* ================= BARRA DE FORTALEZA DE CONTRASEÑA (AUTH) ================= */
+
+/* Contenedor principal */
+.auth-strength-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Riel o fondo de la barra */
+.auth-strength-track {
+  flex: 1;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
+
+/* Relleno dinámico de la barra */
+.auth-strength-fill {
+  height: 100%;
+  display: block;
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Etiqueta de texto indicador */
+.auth-strength-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 55px;
+  text-align: right;
+}
+
+/* --- Variaciones de Estado (Prefijadas) --- */
+
+/* Débil */
+.auth-strength-weak .auth-strength-fill {
+  background-color: #e74c3c;
+}
+.auth-strength-weak .auth-strength-label {
+  color: #e74c3c;
+}
+
+/* Media */
+.auth-strength-medium .auth-strength-fill {
+  background-color: #f39c12;
+}
+.auth-strength-medium .auth-strength-label {
+  color: #f39c12;
+}
+
+/* Buena */
+.auth-strength-good .auth-strength-fill {
+  background-color: #3498db;
+}
+.auth-strength-good .auth-strength-label {
+  color: #3498db;
+}
+
+/* Fuerte */
+.auth-strength-strong .auth-strength-fill {
+  background-color: #2ecc71;
+}
+.auth-strength-strong .auth-strength-label {
+  color: #2ecc71;
+}
+
+/* Oculta el ojo nativo de contraseñas en Edge e Internet Explorer */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Evita que los navegadores basados en WebKit (Chrome/Safari) o gestores overlay tapen el botón custom */
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  right: 0 !important;
+}
+
+/* --- Modal Overlay & Container --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.modal-icon {
+  font-size: 2.5rem;
+  color: #2563eb;
+  margin-bottom: 12px;
+}
+
+/* --- OTP Input Fields --- */
+.otp-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.otp-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.otp-input:focus {
+  border-color: var(--secondary);
+}
+
+/* --- Verification Button & Dynamic States --- */
+.verify-button {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .3s ease, box-shadow .3s ease, color .3s ease, background-color .3s ease;
+}
+
+.verify-button::before {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  background: var(--secondary);
+  z-index: -1;
+  transition: transform .55s cubic-bezier(.22, 1, .36, 1);
+}
+
+.verify-button:not(:disabled):hover::before {
+  transform: translate(-50%, -50%) scale(30);
+}
+
+.verify-button:not(:disabled):hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, .25);
+}
+
+.verify-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Estado deshabilitado */
+.verify-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Estados dinámicos de respuesta */
+.verify-button.status-success {
+  background: #16a34a !important;
+}
+
+.verify-button.status-error {
+  background: #dc2626 !important;
+}
+
+/* Spinner de carga */
+.btn-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.verify-error-msg {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-bottom: 12px;
+}
+
+.fa-envelope-circle-check{
+  color: var(--secondary);
+}
+
+/* =========================================================
+   ESTILOS ÚNICOS DE VALIDACIÓN Y ERRORES - LOCKSENSE REGISTRO
+   ========================================================= */
+
+/* Contenedor base con error: borde y fondo rojo tenue */
+.ls-reg-input-wrapper.ls-reg-field-error {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Fuerza a que el input e icono no tapen el fondo rojo */
+.ls-reg-input-wrapper.ls-reg-field-error input,
+.ls-reg-input-wrapper.ls-reg-field-error select {
+  background-color: transparent !important;
+  color: #991b1b !important;
+}
+
+/* Cambia el color del icono interno a rojo */
+.ls-reg-input-wrapper.ls-reg-field-error i {
+  color: #dc2626 !important;
+}
+
+/* Estado de foco en un campo con error */
+.ls-reg-input-wrapper.ls-reg-field-error:focus-within {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+/* Mensaje de texto con la descripción del error */
+.ls-reg-error-msg {
+  color: #dc2626 !important;
+  font-size: 0.78rem !important;
+  margin-top: 4px !important;
+  display: block !important;
+  font-weight: 500 !important;
+}
+
+/* =========================================================
+   ESTILOS ÚNICOS DE VALIDACIÓN - LOCKSENSE LOGIN
+   ========================================================= */
+
+/* Borde y fondo rojo suave para los campos con error */
+.ls-login-input-wrapper.ls-login-field-error {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Transparencia para que el input no tape el fondo rojo */
+.ls-login-input-wrapper.ls-login-field-error input {
+  background-color: transparent !important;
+  color: #991b1b !important;
+}
+
+/* Icono en color rojo */
+.ls-login-input-wrapper.ls-login-field-error i {
+  color: #dc2626 !important;
+}
+
+/* Enfoque (focus) en campo con error */
+.ls-login-input-wrapper.ls-login-field-error:focus-within {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+/* Texto del mensaje de error */
+.ls-login-error-msg {
+  color: #dc2626 !important;
+  font-size: 0.78rem !important;
+  margin-top: 4px !important;
+  display: block !important;
+  font-weight: 500 !important;
+}
+
+/* Quita por completo el aspecto de botón */
+.resend-text {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit; /* Hereda la tipografía de la app */
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+/* Estado normal (subrayado como enlace) */
+.resend-status-idle {
+  color: #10b981;
+  text-decoration: underline;
+}
+
+.resend-status-idle:hover {
+  color: #0f2922;
+}
+
+/* Estado cargando */
+.resend-status-loading {
+  color: #9ca3af;
+  cursor: wait;
+  text-decoration: none;
+}
+
+/* Estado reenviado con éxito */
+.resend-status-sent {
+  color: #059669;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Estado con error */
+.resend-status-error {
+  color: #ef4444;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.resend-text:disabled {
+  cursor: not-allowed;
+}

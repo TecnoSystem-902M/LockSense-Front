@@ -1,0 +1,789 @@
+:root{
+    --primary:#0f2922;
+    --secondary:#10b981;
+    --secondary-soft: rgba(16,185,129,0.12);
+    --ink:#0f2922;
+    --paper:#ffffff;
+    --mist:#f4f7f6;
+    --line: rgba(15,41,34,0.08);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family:'Poppins', sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3,.brand{font-family:'Poppins', sans-serif;}
+
+  a{text-decoration:none;color:inherit;}
+  ul{list-style:none;}
+  img{max-width:100%;display:block;}
+
+  /* ---------- iconos estilo Divi (SVG en línea) ---------- */
+  .divi-icon{
+    display:inline-flex;
+    flex-shrink:0;
+  }
+  .divi-icon svg{
+    width:16px;height:16px;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .card-icon{
+    width:56px;height:56px;
+    border-radius:14px;
+    background:var(--primary);
+    color:var(--secondary);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+    margin:0 auto 22px auto; /* antes: margin-bottom:22px; */
+    transition: background .35s ease, color .35s ease, transform .35s ease;
+}
+  .brand-icon .divi-icon svg{ width:20px; height:20px; }
+
+  /* ---------- utility ---------- */
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+/* Estado base del enlace */
+.ripple-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background-color: transparent;
+  /* Transición suave para el fondo, el movimiento vertical, el color y la sombra */
+  transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Desactiva explícitamente pseudo-elementos circulares en todos los ripple-links */
+.ripple-link::before,
+.ripple-link::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Estado Hover: Cambia color de fondo, eleva 3px y vuelve el texto blanco */
+.ripple-link:hover,
+.ripple-link.dark-text:hover {
+
+  color: var(--secondary) !important;
+  transform: translateY(-3px);
+}
+
+/* Ajuste específico para el botón de login (sin el ::before antiguo) */
+.btn-login {
+  color: #070707;
+  font-weight: 600;
+}
+  /* ================= NAVBAR ================= */
+  header.navbar{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 32px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:700;
+    font-size:22px;
+    color:var(--primary);
+  }
+  .brand-icon{
+    width:42px;height:42px;
+    border-radius:50%;
+    background:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--secondary);
+    font-size:18px;
+    flex-shrink:0;
+    overflow:hidden;
+  }
+  .brand-icon img{
+    width:100%;height:100%;
+    object-fit:cover;
+    border-radius:50%;
+  }
+  nav.nav-links{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  nav.nav-links .ripple-link{
+    font-weight:500;
+    color:var(--primary);
+    font-size:16px;
+  }
+  .btn-login{
+    color:#070707;
+    font-weight:600;
+  }
+  .btn-login:hover{ color:var(--secondary) !important; }
+
+  .nav-toggle{ display:none; background:none; border:none; font-size:22px; color:var(--primary); cursor:pointer; }
+
+  /* ================= HERO / BANNER ================= */
+  .hero{
+    position:relative;
+    background: radial-gradient(circle at 78% 35%, rgba(16,185,129,.16), transparent 55%),
+                linear-gradient(160deg, #081712 0%, var(--primary) 45%, #0c261d 100%);
+    color:#fff;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: linear-gradient(rgba(16,185,129,.08) 1px, transparent 1px),
+                       linear-gradient(90deg, rgba(16,185,129,.08) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 75% 40%, black, transparent 65%);
+    pointer-events:none;
+  }
+  /* acentos diagonales de esquina, como en la referencia */
+  .hero-corner{
+    position:absolute;
+    width:220px; height:220px;
+    background:linear-gradient(135deg, var(--secondary), #063b2c);
+    z-index:1;
+  }
+  .hero-corner.tr{
+    top:-90px; right:-90px;
+    clip-path: polygon(30% 100%, 100% 100%, 100% 30%);
+  }
+  .hero-corner.bl{
+    bottom:-110px; left:-110px;
+    width:320px; height:320px;
+    clip-path: polygon(0 30%, 0 100%, 70% 100%);
+  }
+  .hero-inner{
+    max-width:1240px;
+    margin:0 auto;
+    padding:90px 32px 110px;
+    display:grid;
+    grid-template-columns: .95fr 1.15fr;
+    gap:40px;
+    align-items:center;
+    position:relative;
+    z-index:2;
+  }
+  .hero-logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:24px;
+    color:#fff;
+    margin-bottom:34px;
+  }
+  .hero-logo-icon{
+    width:30px;height:30px;
+    stroke:var(--secondary);
+    fill:none;
+    stroke-width:1.6;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    flex-shrink:0;
+  }
+  .hero h1{
+    font-size:clamp(34px, 4.4vw, 50px);
+    font-weight:700;
+    line-height:1.14;
+    margin-bottom:22px;
+  }
+  .hero h1 span{ color:var(--secondary); }
+  .hero p{
+    color:rgba(255,255,255,.78);
+    font-size:16px;
+    max-width:460px;
+    margin-bottom:32px;
+  }
+  .btn-primary{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:var(--secondary);
+    color:var(--primary);
+    font-weight:700;
+    font-size:15.5px;
+    padding:15px 30px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+    overflow:hidden;
+    isolation:isolate;
+    transition: transform .3s ease, box-shadow .3s ease;
+    box-shadow:0 10px 30px rgba(16,185,129,.25);
+  }
+  .btn-primary::before{
+    content:"";
+    position:absolute;
+    left:50%; top:50%;
+    width:14px;height:14px;
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(0);
+    transition:transform .55s cubic-bezier(.22,1,.36,1);
+    z-index:-1;
+  }
+  .btn-primary:hover::before{ transform:translate(-50%,-50%) scale(20); }
+  .btn-primary:hover{ color:#fff; transform:translateY(-2px); box-shadow:0 14px 34px rgba(16,185,129,.35); }
+  .btn-primary i{ transition: transform .3s ease; }
+  .btn-primary:hover i{ transform: translateX(3px); }
+
+  /* --- imagen del banner --- */
+  .locker-art{
+    display:flex;
+    justify-content:center;
+    position:relative;
+    z-index:2;
+  }
+    .banner-img{
+    width:100%;
+    max-width:560px;
+    max-height:62vh;
+    object-fit:cover;
+    border-radius:20px;
+    box-shadow:0 30px 60px rgba(0,0,0,.4);
+    border:1px solid rgba(16,185,129,.25);
+    }
+
+  /* ================= ABOUT / CARDS ================= */
+  .about{
+    padding:110px 0 100px;
+    background:var(--mist);
+  }
+  .section-head{
+    text-align:center;
+    max-width:640px;
+    margin:0 auto 56px;
+  }
+  .section-head h2{
+    font-size:clamp(28px, 3.4vw, 38px);
+    font-weight:700;
+    color:var(--primary);
+    margin-bottom:16px;
+  }
+  .section-head p{
+    color:#4a5b56;
+    font-size:16px;
+  }
+
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:26px;
+  }
+  .feature-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:36px 28px;
+    text-align:left;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
+  }
+  .feature-card:hover{
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 22px 40px rgba(16,185,129,.18);
+    border-color: rgba(16,185,129,.45);
+  }
+  .card-icon img{
+    width:26px;height:26px;
+    object-fit:contain;
+  }
+
+  /* Ícono del Banner / Hero */
+.hero-logo-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* Íconos de las tarjetas de la sección ¿Qué es LockSense? */
+.card-icon {
+  width: 56px;  /* Tamaño del contenedor */
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon .divi-icon svg {
+  width: 32px;  /* Tamaño del vector SVG interior */
+  height: 32px;
+}
+
+/* Íconos principales de la sección Funcionalidades */
+.func-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* Íconos bullet dentro de las listas de Funcionalidades */
+.func-card ul li .divi-icon svg {
+  width: 14px;  /* Ajusta si quieres hacer más grandes los puntos decorativos */
+  height: 14px;
+}
+
+/* Íconos de los pasos en la sección Cómo Funciona */
+.step-icon svg {
+  width: 28px;
+  height: 28px;
+}
+  .feature-card:hover .card-icon{
+    background:var(--secondary);
+    color:var(--primary);
+    transform: rotate(-8deg) scale(1.05);
+  }
+  .feature-card h3{
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:10px;
+    color:var(--primary);
+    text-align: center;
+  }
+  .feature-card p{
+    font-size:14.5px;
+    color:#5c6d68;
+  }
+
+  /* ================= CÓMO FUNCIONA ================= */
+  .how{
+    padding:100px 0;
+    background:var(--mist);
+  }
+  .how-card{
+    background:var(--primary);
+    border-radius:24px;
+    padding:48px clamp(24px,4vw,52px);
+    color:#fff;
+    box-shadow:0 30px 60px rgba(15,41,34,.18);
+  }
+  .how-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:24px;
+    margin-bottom:52px;
+    flex-wrap:wrap;
+  }
+  .how-head h2{
+    font-size:clamp(22px,2.6vw,28px);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .how-head p{
+    font-family:'Roboto Mono', monospace;
+    font-size:13.5px;
+    color:rgba(255,255,255,.55);
+  }
+  .how-copy-icon{ color:rgba(255,255,255,.35); }
+  .how-copy-icon svg{ width:18px;height:18px; }
+  .how-steps{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:32px 28px;
+  }
+  .how-step .step-num{
+    font-family:'Roboto Mono', monospace;
+    font-size:13px;
+    color:rgba(255,255,255,.4);
+    margin-bottom:8px;
+  }
+  .how-step .step-title{
+    font-family:'Roboto Mono', monospace;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    margin-bottom:16px;
+    color:#fff;
+  }
+  .how-step .step-icon{
+    color:var(--secondary);
+    margin-bottom:16px;
+  }
+  .how-step .step-icon svg{ width:20px;height:20px; }
+  .how-step .step-desc{
+    font-family:'Roboto Mono', monospace;
+    font-size:13px;
+    line-height:1.65;
+    color:rgba(255,255,255,.55);
+  }
+
+  /* ================= FUNCIONALIDADES ================= */
+  .functionalities{
+    padding:100px 0;
+    background:#fff;
+  }
+  .func-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:30px;
+  }
+  .func-card{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:32px 28px;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
+  }
+  .func-card:hover{
+    transform: translateY(-6px);
+    box-shadow: 0 20px 36px rgba(16,185,129,.14);
+    border-color: rgba(16,185,129,.4);
+  }
+  .func-icon{
+      width:56px;height:56px;
+      border-radius:14px;
+      background:var(--primary);
+      color:var(--secondary);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 22px auto; /* antes: margin-bottom:22px; */
+      transition: background .35s ease, color .35s ease, transform .35s ease;
+  }
+  .func-card:hover .func-icon{
+    background:var(--secondary);
+    color:var(--primary);
+    transform: rotate(-8deg) scale(1.05);
+  }
+  .func-icon svg{
+    width:32px;height:32px;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  
+  .func-card h3{
+    text-align: center;
+    font-size:18px;
+    font-weight:600;
+    color:var(--primary);
+    margin-bottom:16px;
+  }
+  .func-card ul{ display:flex; flex-direction:column; gap:11px; }
+  .func-card ul li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14.5px;
+    color:#4a5b56;
+  }
+  .func-card ul li .divi-icon{ color:var(--secondary); }
+  .func-card ul li .divi-icon svg{ width:8px; height:8px; }
+
+  /* ================= FOOTER ================= */
+  footer{
+    background:var(--primary);
+    color:rgba(255,255,255,.8);
+    padding:64px 0 0;
+  }
+  .footer-grid{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1.1fr;
+    gap:32px;
+    padding-bottom:44px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  .footer-brand{ display:flex; flex-direction:column; gap:16px; }
+.footer-brand .brand-icon-lg {
+    display: block;
+    margin: 0 auto; /* Centra horizontalmente el marco de la imagen */
+    width: 100px;    /* Asegúrate de que el contenedor tenga un tamaño definido */
+    height: 100px;
+  }
+.footer-brand .brand-icon-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+  }
+  .footer-brand .brand-icon-lg .divi-icon svg{ width:24px;height:24px; }
+  .footer-brand p{ font-size:14px; color:rgba(255,255,255,.55); max-width:240px; }
+
+  footer h4{
+    font-family:'Poppins', sans-serif;
+    font-size:15px;
+    color:#fff;
+    margin-bottom:18px;
+    font-weight:600;
+  }
+  footer ul li{ margin-bottom:12px; }
+  footer ul li a{
+    font-size:14px;
+    color:rgba(255,255,255,.65);
+  }
+  .footer-icons{ display:flex; gap:12px; }
+  .footer-icons a{
+    position:relative;
+    width:40px;height:40px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    overflow:hidden;
+    isolation:isolate;
+    transition: border-color .3s ease, color .3s ease;
+  }
+  .footer-icons a::before{
+    content:"";
+    position:absolute;
+    left:50%; top:50%;
+    width:10px;height:10px;
+    background:var(--secondary);
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(0);
+    transition: transform .5s cubic-bezier(.22,1,.36,1);
+    z-index:-1;
+  }
+  .footer-icons a:hover::before{ transform:translate(-50%,-50%) scale(6); }
+  .footer-icons a:hover{ color:var(--primary); border-color:var(--secondary); }
+
+  .contact-list li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    color:rgba(255,255,255,.65);
+  }
+  .contact-list .divi-icon{ color:var(--secondary); }
+
+  .footer-bottom{
+    text-align:center;
+    padding:22px 0;
+    font-size:13.5px;
+    color:rgba(255,255,255,.45);
+  }
+  .footer-bottom strong{ color:rgba(255,255,255,.7); }
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:900px){
+    .hero-inner{ grid-template-columns:1fr; padding-top:56px; }
+    .locker-art{ order:-1; }
+    .card-grid{ grid-template-columns:1fr; }
+    .how-steps{ grid-template-columns:repeat(2, 1fr); }
+    .func-grid{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:680px){
+    nav.nav-links{ display:none; }
+    .nav-toggle{ display:block; }
+    .how-steps{ grid-template-columns:1fr; }
+    .footer-grid{ grid-template-columns:1fr; }
+
+    nav.nav-links.mobile-open{
+      display:flex;
+      position:absolute;
+      top:100%;
+      left:0;
+      right:0;
+      flex-direction:column;
+      align-items:stretch;
+      background:var(--paper);
+      border-bottom:1px solid var(--line);
+      padding:12px 16px 18px;
+      gap:4px;
+    }
+    header.navbar{ position:relative; }
+    nav.nav-links.mobile-open .ripple-link{ width:100%; }
+  }
+
+  /* Tablets / Teléfonos Grandes */
+@media (max-width: 900px) {
+  .nav-inner {
+    padding: 12px 20px;
+  }
+  
+  nav.nav-links {
+    gap: 4px;
+  }
+
+  nav.nav-links .ripple-link {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+}
+
+/* Teléfonos y PWA Móvil */
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  nav.nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 16px;
+    gap: 8px;
+    box-shadow: 0 12px 24px rgba(15, 41, 34, 0.12);
+    z-index: 999;
+  }
+
+  nav.nav-links.mobile-open {
+    display: flex;
+    animation: slideDown 0.25s ease-out forwards;
+  }
+
+  nav.nav-links .ripple-link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  /* Ajuste visual del botón login en menú desplegable móvil */
+  .btn-login {
+    justify-content: center;
+    margin-top: 4px;
+  }
+}
+
+/* Animación de apertura menú móvil */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estado activo para el enlace de la barra de navegación (sin animaciones) */
+.ripple-link.active,
+.ripple-link.active:hover {
+  background-color: var(--secondary) !important;
+  color: #ffffff !important;
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+}
+
+/* Asegura que el icono interno del enlace activo se mantenga blanco */
+.ripple-link.active .divi-icon,
+.ripple-link.active:hover .divi-icon {
+  color: #ffffff !important;
+}
+
+/* ---------- Ajustes para iconos FontAwesome (etiquetas <i>) ---------- */
+.benefit-icon i,
+.card-icon i,
+.func-icon i,
+.auth-title-icon i,
+.input-wrapper i {
+  font-size: 20px;
+  color: var(--secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Alineación e interacción en las tarjetas de beneficios */
+.auth-benefit {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.benefit-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Filas de 2 columnas por defecto */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Fila de 3 columnas para Colonia, Ciudad y Código Postal */
+.form-row-3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Reducción de espacio en la tarjeta lateral izquierda */
+.auth-info {
+  padding: 32px 24px;
+}
+
+.auth-info h1 {
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.auth-info p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Enlaces de Términos y Políticas */
+.terms-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  margin-top: 14px;
+}
+
+.terms-link {
+  color: var(--secondary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.terms-link:hover {
+  color: #0d9668;
+}
+
+/* Responsivo para móviles */
+@media (max-width: 600px) {
+  .form-row,
+  .form-row-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
