@@ -1,16 +1,23 @@
-# React + Vite
+# Proyecto
+ LockSense
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Descripción
 
-Currently, two official plugins are available:
+LockSense es un sistema de casilleros inteligentes basado en tecnologías IoT, diseñado para proporcionar un acceso seguro y automatizado a espacios de almacenamiento, mediante el uso de tarjetas RFID/NFC y reconocimiento facial, además de sensores y cámara que permiten supervisar el estado y actividad de los casilleros
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Objetivo
 
-## React Compiler
+Desarrollar un sistema de casilleros inteligentes basado en IoT que permita controlar y supervisar el acceso de los usuarios mediante RFID/NFC y reconocimiento facial, además de incorporar sensores y una cámara para detectar situaciones inusuales y registrar los eventos del casillero
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Planificación
+Sprint 1: 21 de Septiembre - 02 de Octubre
 
-## Expanding the ESLint configuration
+Sprint 2: 5 de Octubre - 17 de Octubre
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Sprint 3: 19 de Octubre - 31 de Octubre
+
+Sprint 4: 2 de Noviembre - 9 de Noviembre
+
+## Entrega del proyecto
+20 de noviembre de 2026
+
