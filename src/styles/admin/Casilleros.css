@@ -458,23 +458,24 @@
 }
 
 .ls-casillero-cancelar {
-  border: 1px solid #dce5df;
-  background: #fff;
-  color: #526158;
+  border: 1px solid #0f2922;
+  color: #0f2922;
+  background: #ffffff;
 }
 
 .ls-casillero-cancelar:hover {
-  background: #f1f4f2;
+  border: 1px solid #10b981;
+  color: #10b981;
 }
 
 .ls-casillero-guardar {
-  border: 1px solid #147451;
-  background: #147451;
+  border: 1px solid #ffffff;
+  background: #0f2922;
   color: #fff;
 }
 
 .ls-casillero-guardar:hover {
-  background: #0c5d40;
+  background: #10b981;
 }
 
 @media (max-width: 1100px) {
@@ -554,7 +555,7 @@
 }
 
 .ls-casilleros-panel-heading h2 {
-  font-size: 29px;
+  font-size: 22px;
   color: #102e25;
 }
 

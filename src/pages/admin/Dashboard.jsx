@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import ToastNotification from '../../components/ToastNotification'
 import {
   LockKeyhole,
   Users,
@@ -246,8 +249,25 @@ const resumen = [
 
 
 export default function Dashboard() {
+  const location = useLocation()
+  const [mostrarToast, setMostrarToast] = useState(false)
+
+  useEffect(() => {
+    if (location.state?.loginExitoso) {
+      setMostrarToast(true)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
+
   return (
     <div className="ls-dashboard">
+      {/* NOTIFICACIÓN FLOTANTE DE LOGIN */}
+      {mostrarToast && (
+        <ToastNotification
+          mensaje="Inicio de sesión exitoso"
+          onClose={() => setMostrarToast(false)}
+        />
+      )}
 
       {/* =====================================================
           ENCABEZADO

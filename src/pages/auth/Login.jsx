@@ -57,7 +57,7 @@ export default function Login() {
 
       // Redirigir según rol
       const route = getRouteByRole(data.user.rol)
-      navigate(route)
+      navigate(route, { state: { loginExitoso: true } })
 
     } catch (err) {
       const status = err.response?.status

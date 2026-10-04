@@ -35,10 +35,10 @@
   min-height: 42px;
   padding: 0 16px;
   overflow: hidden;
-  border: 1px solid #147451;
+  border: 1px solid #ffffff;
   border-radius: 9px;
   color: #fff;
-  background: #147451;
+  background: #0f2922;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -54,7 +54,7 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: #0c4f38;
+  background: #10b981;
   transform: translate(-50%, -50%);
   transition: width 0.35s ease, height 0.35s ease;
 }
@@ -340,23 +340,24 @@
 }
 
 .ls-modal-cancelar {
-  border: 1px solid #cedbd4;
-  color: #52675d;
-  background: #fff;
+  border: 1px solid #0f2922;
+  color: #0f2922;
+  background: #ffffff;
 }
 
 .ls-modal-cancelar:hover {
-  background: #edf3ef;
+  border: 1px solid #10b981;
+  color: #10b981;
 }
 
 .ls-modal-guardar {
-  border: 1px solid #147451;
+  border: 1px solid #ffffff;
   color: #fff;
-  background: #147451;
+  background: #0f2922;
 }
 
 .ls-modal-guardar:hover {
-  background: #105c40;
+  background: #10b981;
 }
 
 @keyframes ls-modal-fade-in {
@@ -451,7 +452,7 @@
 .ls-usuarios-panel-heading h2 {
   margin: 0;
   color: #173b30;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 700;
 }
 
