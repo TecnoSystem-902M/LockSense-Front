@@ -1,0 +1,491 @@
+.ls-dashboard {
+  width: 100%;
+  color: #173b30;
+}
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.ls-dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 26px;
+  padding: 0;
+}
+
+.ls-dashboard-heading h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 750;
+}
+
+.ls-dashboard-heading p {
+  margin: 0;
+  color: #71817a;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   TARJETAS PRINCIPALES
+   ========================================================= */
+
+.ls-dashboard-cards {
+  display: grid;
+
+  /* Tres tarjetas en una sola fila */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.ls-stat-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+
+  padding: 20px;
+
+  border: 1px solid #e5ece8;
+  border-radius: 13px;
+
+  background: #fff;
+
+  box-shadow:
+    0 3px 12px rgb(24 59 46 / 4%);
+}
+
+.ls-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 46px;
+  height: 46px;
+
+  border-radius: 11px;
+}
+
+
+/* Verde */
+
+.ls-stat-icon.verde {
+  color: #16805a;
+  background: #e4f5ed;
+}
+
+
+/* Morado */
+
+.ls-stat-icon.morado {
+  color: #7954b2;
+  background: #f1eafd;
+}
+
+
+/* Rojo */
+
+.ls-stat-icon.rojo {
+  color: #c04444;
+  background: #ffeded;
+}
+
+
+.ls-stat-info {
+  min-width: 0;
+}
+
+.ls-stat-info p {
+  margin: 1px 0 9px;
+
+  color: #687b72;
+
+  font-size: 13px;
+}
+
+.ls-stat-info strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #173b30;
+
+  font-size: 27px;
+  line-height: 1;
+}
+
+.ls-stat-info span {
+  color: #87958e;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   GRÁFICAS
+   ========================================================= */
+
+.ls-dashboard-charts {
+  display: grid;
+
+  grid-template-columns:
+    minmax(280px, 0.85fr)
+    minmax(0, 1.5fr);
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.ls-dashboard-panel {
+  min-width: 0;
+
+  padding: 22px;
+
+  border: 1px solid #e5ece8;
+  border-radius: 13px;
+
+  background: #fff;
+
+  box-shadow:
+    0 3px 12px rgb(24 59 46 / 4%);
+}
+
+.ls-chart-panel {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   ENCABEZADO DE PANEL
+   ========================================================= */
+
+.ls-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 22px;
+}
+
+.ls-panel-heading h2 {
+  margin: 0 0 5px;
+
+  color: #173b30;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.ls-panel-heading p {
+  margin: 0;
+
+  color: #71817a;
+
+  font-size: 14px;
+}
+
+.ls-panel-heading > svg {
+  flex-shrink: 0;
+
+  color: #398366;
+}
+
+
+/* =========================================================
+   GRÁFICA DOUGHNUT
+   ========================================================= */
+
+.ls-doughnut-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px 0 18px;
+}
+
+.ls-doughnut-chart {
+  position: relative;
+
+  width: 210px;
+  height: 210px;
+}
+
+.ls-doughnut-center {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.ls-doughnut-center strong {
+  color: #173b30;
+
+  font-size: 29px;
+}
+
+.ls-doughnut-center span {
+  color: #7b8982;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   LEYENDA DOUGHNUT
+   ========================================================= */
+
+.ls-chart-legend {
+  display: flex;
+  flex-direction: column;
+
+  gap: 13px;
+
+  padding-top: 5px;
+}
+
+.ls-chart-legend > div {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  color: #64766d;
+
+  font-size: 12px;
+}
+
+.ls-chart-legend strong {
+  margin-left: auto;
+
+  color: #25483b;
+
+  font-size: 12px;
+
+  white-space: nowrap;
+}
+
+.ls-chart-dot {
+  width: 10px;
+  height: 10px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+}
+
+.ls-chart-dot.asignados {
+  background: #259568;
+}
+
+.ls-chart-dot.sin-asignar {
+  background: #e6a13e;
+}
+
+.ls-chart-dot.bloqueados {
+  background: #d65c5c;
+}
+
+
+/* =========================================================
+   GRÁFICA DE LÍNEA
+   ========================================================= */
+
+.ls-line-chart {
+  position: relative;
+
+  width: 100%;
+  height: 280px;
+}
+
+.ls-chart-note {
+  margin: 10px 0 0;
+
+  color: #91a098;
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   BOTÓN DESCARGAR REPORTE
+   ========================================================= */
+
+.ls-dashboard-reporte {
+  position: relative;
+  isolation: isolate;
+
+  overflow: hidden;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  width: 100%;
+
+  margin-top: 20px;
+
+  padding: 10px 15px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #147451;
+
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.ls-dashboard-reporte::before {
+  content: "";
+
+  position: absolute;
+
+  z-index: -1;
+
+  top: 50%;
+  left: 50%;
+
+  width: 0;
+  height: 0;
+
+  border-radius: 50%;
+
+  background: #10b981;
+
+  transform: translate(-50%, -50%);
+
+  transition:
+    width 0.35s ease,
+    height 0.35s ease;
+}
+
+.ls-dashboard-reporte:hover::before {
+  width: 500px;
+  height: 500px;
+}
+
+.ls-dashboard-reporte:hover {
+  transform: translateY(-1px);
+  background: #10b981;
+}
+
+.ls-dashboard-reporte:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+  .ls-dashboard-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ls-dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .ls-doughnut-chart {
+    width: 220px;
+    height: 220px;
+  }
+}
+
+
+@media (max-width: 760px) {
+
+  .ls-dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ls-stat-card {
+    padding: 18px;
+  }
+
+  .ls-dashboard-panel {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ls-dashboard-heading {
+    margin-bottom: 20px;
+  }
+
+  .ls-dashboard-heading h1 {
+    font-size: 23px;
+  }
+
+  .ls-dashboard-heading p {
+    font-size: 13px;
+  }
+
+  .ls-dashboard-panel {
+    padding: 14px;
+  }
+
+  .ls-panel-heading {
+    align-items: flex-start;
+  }
+
+  .ls-panel-heading p {
+    font-size: 12px;
+  }
+
+  .ls-doughnut-chart {
+    width: min(210px, 70vw);
+    height: min(210px, 70vw);
+  }
+}
+
+
+@media (max-width: 420px) {
+
+  .ls-dashboard-heading h1 {
+    font-size: 23px;
+  }
+
+  .ls-line-chart {
+    height: 240px;
+  }
+
+  .ls-chart-legend > div {
+    font-size: 11px;
+  }
+}
