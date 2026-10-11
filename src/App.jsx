@@ -11,6 +11,8 @@ import Dashboard from './pages/admin/Dashboard'
 import Usuarios from './pages/admin/Usuarios'
 import Casilleros from './pages/admin/Casilleros'
 
+import ProtectedRoute from './components/ProtectedRoute'
+
 export default function App() {
   return (
     <LockSenseProvider>
@@ -22,11 +24,13 @@ export default function App() {
         <Route path="/olvidar" element={<Olvidar />} />
         <Route path="/recuperar" element={<Recuperar />} />
 
-        {/* Panel de administración */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="usuarios" element={<Usuarios />} />
-          <Route path="casilleros" element={<Casilleros />} />
+        {/* Panel de administración (protegido: solo ADMINISTRADOR) */}
+        <Route element={<ProtectedRoute rolPermitido="ADMINISTRADOR" />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="usuarios" element={<Usuarios />} />
+            <Route path="casilleros" element={<Casilleros />} />
+          </Route>
         </Route>
       </Routes>
     </LockSenseProvider>

@@ -270,12 +270,26 @@
   flex-direction: column;
   gap: 18px;
   padding: 22px;
+  /* El cuerpo es el área desplazable: el encabezado y el footer quedan fijos
+     y el modal nunca excede la altura visible de la pantalla. */
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+/* Fila de dos columnas LOCAL al modal de usuarios. En pantallas con espacio
+   suficiente coloca dos campos lado a lado; en móvil colapsa a una columna
+   (ver media query). Cada hijo .ls-form-group conserva su propio layout. */
+.ls-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
 .ls-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .ls-form-group label {
@@ -284,7 +298,8 @@
   font-weight: 600;
 }
 
-.ls-form-group input {
+.ls-form-group input,
+.ls-form-group select {
   width: 100%;
   min-height: 43px;
   box-sizing: border-box;
@@ -299,9 +314,37 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.ls-form-group input:focus {
+/* Dropdowns del formulario de usuarios: igualan la identidad visual de los
+   inputs (igual que .ls-casillero-form-group select en Casilleros.css).
+   Se sustituye la flecha nativa por un chevron SVG propio y consistente. */
+.ls-form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2352675d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.ls-form-group input:focus,
+.ls-form-group select:focus {
   border-color: #259568;
   box-shadow: 0 0 0 3px rgb(37 149 104 / 12%);
+}
+
+/* Estado deshabilitado coherente con el resto de controles. */
+.ls-form-group select:disabled {
+  color: #87958e;
+  background-color: #f4f7f6;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Estado de error: borde rojo coherente con .ls-form-error. */
+.ls-form-group select[aria-invalid="true"] {
+  border-color: #e0a2a2;
 }
 
 .ls-form-group small {
@@ -402,6 +445,11 @@
 
   .ls-modal-footer {
     padding: 14px 18px;
+  }
+
+  /* En móvil, las filas de dos columnas colapsan a una sola. */
+  .ls-form-row {
+    grid-template-columns: 1fr;
   }
 }
 

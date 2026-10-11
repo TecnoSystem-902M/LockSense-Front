@@ -8,7 +8,7 @@ import { getRouteByRole } from '../../utils/roleRoutes'
 export default function Login() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
-  const [form, setForm] = useState({ email: '', password: '', remember: false })
+  const [form, setForm] = useState({ identidad: '', password: '', remember: false })
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -26,10 +26,16 @@ export default function Login() {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!form.email.trim()) {
-      newErrors.email = 'El correo electrónico es obligatorio.'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      newErrors.email = 'Ingresa un correo electrónico válido.'
+    // El campo de identidad acepta correo electrónico o identificador.
+    // Solo se exige que no esté vacío; si contiene "@" se valida como correo.
+    const identidad = form.identidad.trim()
+    if (!identidad) {
+      newErrors.identidad = 'Ingresa tu correo electrónico o identificador.'
+    } else if (
+      identidad.includes('@') &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identidad)
+    ) {
+      newErrors.identidad = 'Ingresa un correo electrónico válido.'
     }
 
     if (!form.password) {
@@ -49,7 +55,7 @@ export default function Login() {
     setIsSubmitting(true)
 
     try {
-      const data = await login(form.email, form.password)
+      const data = await login(form.identidad, form.password)
 
       // Guardar token y usuario
       localStorage.setItem('token', data.token)
@@ -65,9 +71,11 @@ export default function Login() {
 
       // Cuenta no verificada
       if (status === 403 && err.response?.data?.code === 'NOT_VERIFIED') {
-        setServerError('Tu cuenta no está verificada. Revisa tu correo o reenvía el código.')
-        // Opcional: navegar al registro con el modal abierto
-        // navigate('/registro', { state: { email: err.response.data.email } })
+        // Reutilizar el correo que devuelve el backend y abrir el modal OTP en
+        // /registro. Si el acceso fue por correo, se usa como respaldo.
+        const emailIngresado = form.identidad.includes('@') ? form.identidad : ''
+        const emailNoVerificado = err.response?.data?.email || emailIngresado
+        navigate('/registro', { state: { email: emailNoVerificado } })
         return
       }
 
@@ -147,22 +155,22 @@ export default function Login() {
             </div>
 
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
-              {/* CORREO */}
+              {/* CORREO O IDENTIFICADOR */}
               <div className="form-group">
-                <label htmlFor="email">Correo electrónico</label>
-                <div className={getInputClass('email')}>
+                <label htmlFor="identidad">Correo electrónico o identificador</label>
+                <div className={getInputClass('identidad')}>
                   <i className="fa-regular fa-envelope"></i>
                   <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="correo@ejemplo.com"
-                    value={form.email}
+                    type="text"
+                    id="identidad"
+                    name="identidad"
+                    placeholder="correo@ejemplo.com o tu identificador"
+                    value={form.identidad}
                     onChange={handleChange}
-                    autoComplete="email"
+                    autoComplete="username"
                   />
                 </div>
-                {renderError('email')}
+                {renderError('identidad')}
               </div>
 
               {/* CONTRASEÑA */}

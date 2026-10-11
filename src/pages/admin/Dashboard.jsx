@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import ToastNotification from '../../components/ToastNotification'
+import { getMetrics } from '../../api/dashboard'
 import {
   LockKeyhole,
   Users,
@@ -221,36 +222,41 @@ const descargarReporteTendencia = () => {
    TARJETAS PRINCIPALES
    ========================================================= */
 
-const resumen = [
-  {
-    titulo: 'Usuarios totales',
-    valor: '45',
-    detalle: 'Cuentas registradas',
-    icono: Users,
-    color: 'morado',
-  },
-
-  {
-    titulo: 'Casilleros totales',
-    valor: '120',
-    detalle: 'Registrados en el sistema',
-    icono: LockKeyhole,
-    color: 'verde',
-  },
-
-  {
-    titulo: 'Casilleros bloqueados',
-    valor: '15',
-    detalle: 'Requieren atención',
-    icono: CheckCircle2,
-    color: 'rojo',
-  },
-]
-
-
 export default function Dashboard() {
   const location = useLocation()
   const [mostrarToast, setMostrarToast] = useState(false)
+
+  const [metrics, setMetrics] = useState({
+    usuarios_totales: 0,
+    casilleros_totales: 0,
+    casilleros_bloqueados: 0,
+  })
+
+  const resumen = [
+    {
+      titulo: 'Usuarios totales',
+      valor: metrics.usuarios_totales,
+      detalle: 'Cuentas registradas',
+      icono: Users,
+      color: 'morado',
+    },
+
+    {
+      titulo: 'Casilleros totales',
+      valor: metrics.casilleros_totales,
+      detalle: 'Registrados en el sistema',
+      icono: LockKeyhole,
+      color: 'verde',
+    },
+
+    {
+      titulo: 'Casilleros bloqueados',
+      valor: metrics.casilleros_bloqueados,
+      detalle: 'Requieren atención',
+      icono: CheckCircle2,
+      color: 'rojo',
+    },
+  ]
 
   useEffect(() => {
     if (location.state?.loginExitoso) {
@@ -258,6 +264,27 @@ export default function Dashboard() {
       window.history.replaceState({}, document.title)
     }
   }, [location])
+
+  useEffect(() => {
+    let activo = true
+
+    getMetrics()
+      .then((data) => {
+        if (!activo) return
+        setMetrics({
+          usuarios_totales: data.usuarios_totales ?? 0,
+          casilleros_totales: data.casilleros_totales ?? 0,
+          casilleros_bloqueados: data.casilleros_bloqueados ?? 0,
+        })
+      })
+      .catch(() => {
+        // Si la petición falla, se mantienen los valores por defecto (0)
+      })
+
+    return () => {
+      activo = false
+    }
+  }, [])
 
   return (
     <div className="ls-dashboard">

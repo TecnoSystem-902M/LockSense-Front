@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import { register, verifyEmail, resendCode } from '../../api/auth'
 
@@ -7,6 +7,7 @@ const STEP_LABELS = ['Datos', 'Seguridad']
 
 export default function Registro() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [currentStep, setCurrentStep] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -43,6 +44,22 @@ export default function Registro() {
     confirmPassword: '',
     acceptedTerms: false,
   })
+
+  // Si llegamos desde Login con una cuenta no verificada, precargar el correo
+  // y abrir el modal OTP directamente (sin volver a ejecutar register()).
+  useEffect(() => {
+    const emailPendiente = location.state?.email
+    if (emailPendiente) {
+      setForm((prev) => ({ ...prev, email: emailPendiente }))
+      setOtp(Array(6).fill(''))
+      setVerifyStatus('idle')
+      setErrorMessage('')
+      setResendStatus('idle')
+      setShowModal(true)
+    }
+    // Solo al montar / cuando cambie el state de navegación
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
 
   const getPasswordStrength = (pass) => {
     if (!pass) return { text: '', percentage: 0, statusClass: '' }
