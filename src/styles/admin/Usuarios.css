@@ -608,3 +608,151 @@
     flex-direction: column;
   }
 }
+
+/* =========================================================
+   ESTILOS MODAL DE CONFIRMACIÓN DE BAJA (LOCKSENSE)
+   ========================================================= */
+
+.ls-modal-confirmacion {
+  max-width: 440px !important;
+  width: 90% !important;
+  padding: 32px 28px !important;
+  border-radius: 20px !important;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+/* Botón X superior derecho */
+.ls-modal-cerrar-esquina {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ls-modal-cerrar-esquina:hover {
+  background-color: #f1f5f9;
+  color: #0f2922;
+}
+
+/* Círculo verde con halo difuminado */
+.ls-modal-icono-badge {
+  width: 72px;
+  height: 72px;
+  background-color: rgba(16, 185, 129, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f2922;
+  margin-bottom: 20px;
+  box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.05);
+}
+
+/* Título centrado */
+.ls-modal-titulo-centro {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f2922;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+/* Contenido de texto centrado */
+.ls-modal-cuerpo-centro {
+  text-align: center;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ls-modal-texto-principal {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ls-modal-texto-principal strong {
+  color: #0f2922;
+}
+
+.ls-modal-texto-secundario {
+  font-size: 0.83rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Contenedor de botones inferiores divididos 50/50 o en fila */
+.ls-modal-footer-botones {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.ls-btn-secundario {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #0f2922;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ls-btn-secundario:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.ls-btn-primario {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #0f2922;
+  color: #ffffff;
+  border: 1.5px solid #0f2922;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(15, 41, 34, 0.2);
+}
+
+/* Hover: cambia al estilo secundario */
+.ls-btn-primario:hover {
+  background-color: #ffffff;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ls-btn-primario:hover {
+  background-color: #10b981;
+  box-shadow: 0 6px 16px rgba(15, 41, 34, 0.3);
+}
+
+.ls-btn-primario:disabled,
+.ls-btn-secundario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

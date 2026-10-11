@@ -29,9 +29,10 @@ export const usuariosAsignables = async (id) => {
 }
 
 // Etapa 3: asignar un casillero a un usuario.
-export const asignarCasillero = async (id, usuariosId) => {
+export const asignarCasillero = async (id, usuariosId, uidRfid = null) => {
   const { data } = await api.post(`/casilleros/${id}/asignar`, {
     usuarios_id: usuariosId,
+    uid_rfid: uidRfid,
   })
   return data
 }

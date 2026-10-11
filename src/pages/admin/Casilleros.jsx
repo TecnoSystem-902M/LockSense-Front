@@ -22,9 +22,6 @@ import '../../styles/admin/Casilleros.css'
 
 /**
  * Normaliza un casillero de la API al formato que usan las tarjetas.
- * La API devuelve ocupación, bloqueo y motivo por separado:
- * { id, numero, estado, ubicacion, organizaciones_id, ocupado, bloqueado,
- *   motivo_bloqueo, asignacion, usuario: {...} | null, uid_rfid }.
  */
 const mapCasillero = (c) => ({
   id: c.id,
@@ -36,13 +33,11 @@ const mapCasillero = (c) => ({
   uid: c.uid_rfid || '',
 })
 
-// Etiqueta de presentación derivada de ocupación + bloqueo.
 const etiquetaEstado = (c) => {
   if (c.bloqueado) return 'Bloqueado'
   return c.ocupado ? 'Asignado' : 'Sin asignar'
 }
 
-// Clase CSS de la insignia de estado (reutiliza las clases existentes).
 const claseEstado = (c) =>
   etiquetaEstado(c).toLowerCase().replaceAll(' ', '-')
 
@@ -52,9 +47,8 @@ const textoMotivo = (motivo) => {
   return ''
 }
 
-// Nombre mostrable de un usuario elegible.
 const nombreUsuario = (u) =>
-  [u.nombre, u.apellido_paterno, u.apellido_materno].filter(Boolean).join(' ')
+  [u.nombre, u.apellido_pa, u.apellido_ma].filter(Boolean).join(' ')
 
 export default function Casilleros() {
   const [casilleros, setCasilleros] = useState([])
@@ -63,17 +57,15 @@ export default function Casilleros() {
 
   const [busqueda, setBusqueda] = useState('')
 
-  // Notificación de éxito (reutiliza el ToastNotification existente, que
-  // representa visualmente una operación correcta).
   const [toast, setToast] = useState('')
 
-  // Usuarios elegibles para el dropdown del modal de asignación.
   const [usuarios, setUsuarios] = useState([])
   const [usuariosCargando, setUsuariosCargando] = useState(false)
   const [usuariosError, setUsuariosError] = useState('')
 
   const [casilleroSeleccionado, setCasilleroSeleccionado] = useState(null)
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState('')
+  const [uidRfid, setUidRfid] = useState('')
   const [errorAsignacion, setErrorAsignacion] = useState('')
   const [guardandoAsignacion, setGuardandoAsignacion] = useState(false)
 
@@ -81,14 +73,11 @@ export default function Casilleros() {
   const [usuarioInfoCargando, setUsuarioInfoCargando] = useState(false)
   const [usuarioInfoError, setUsuarioInfoError] = useState('')
 
-  // Estado del modal de bloqueo (Etapa 2).
   const [casilleroBloqueo, setCasilleroBloqueo] = useState(null)
   const [motivoBloqueo, setMotivoBloqueo] = useState('MANTENIMIENTO')
   const [errorBloqueo, setErrorBloqueo] = useState('')
   const [procesandoBloqueo, setProcesandoBloqueo] = useState(false)
 
-  // Modal de confirmación propio (liberar / desbloquear). Reemplaza window.confirm.
-  // Forma: { tipo: 'liberar' | 'desbloquear', casillero }.
   const [confirmacion, setConfirmacion] = useState(null)
   const [errorConfirmacion, setErrorConfirmacion] = useState('')
   const [procesandoConfirmacion, setProcesandoConfirmacion] = useState(false)
@@ -124,12 +113,6 @@ export default function Casilleros() {
     )
   })
 
-  // Distribución visual: la vista muestra una cuadrícula de 6 casilleros
-  // (2 filas × 3 columnas). Los casilleros REALES provienen del backend; el
-  // resto, hasta completar 6, son marcadores PURAMENTE VISUALES ("No
-  // disponible"): no tienen datos reales, no ejecutan acciones ni llaman a la
-  // API. Solo se muestran cuando no hay una búsqueda activa, para no interferir
-  // con los resultados filtrados.
   const TOTAL_VISUAL = 6
   const placeholdersVisuales =
     !busqueda.trim() && !cargando
@@ -139,9 +122,9 @@ export default function Casilleros() {
   const abrirAsignacion = casillero => {
     setCasilleroSeleccionado(casillero)
     setUsuarioSeleccionado('')
+    setUidRfid('')
     setErrorAsignacion('')
 
-    // Cargar usuarios ELEGIBLES para este casillero (rol USUARIO, su organización).
     setUsuariosCargando(true)
     setUsuariosError('')
     usuariosAsignables(casillero.id)
@@ -153,12 +136,10 @@ export default function Casilleros() {
       .finally(() => setUsuariosCargando(false))
   }
 
-  // Etapa 3: guarda la asignación contra el backend y recarga el monitoreo.
   const guardarAsignacion = async e => {
     e.preventDefault()
     setErrorAsignacion('')
 
-    // Validación de frontend: usuario requerido.
     if (!usuarioSeleccionado) {
       setErrorAsignacion('Selecciona un usuario para asignar el casillero.')
       return
@@ -166,7 +147,11 @@ export default function Casilleros() {
 
     setGuardandoAsignacion(true)
     try {
-      await asignarCasillero(casilleroSeleccionado.id, Number(usuarioSeleccionado))
+      await asignarCasillero(
+        casilleroSeleccionado.id,
+        Number(usuarioSeleccionado),
+        uidRfid.trim() || null
+      )
       const numero = casilleroSeleccionado.numero
       setCasilleroSeleccionado(null)
       await cargarCasilleros()
@@ -183,7 +168,6 @@ export default function Casilleros() {
     }
   }
 
-  // Etapa 3: consulta la asignación activa real para el modal "Ver usuario".
   const verUsuario = casillero => {
     setUsuarioInfo({ numero: casillero.numero })
     setUsuarioInfoCargando(true)
@@ -193,7 +177,7 @@ export default function Casilleros() {
         setUsuarioInfo({
           numero: data.numero,
           usuario: data.usuario ? data.usuario.nombre_completo : null,
-          correo: data.usuario ? data.usuario.correo : null,
+          correo: data.usuario ? data.usuario.email : null,
           uid: data.uid_rfid || '',
           ocupado: Boolean(data.ocupado),
           bloqueado: Boolean(data.bloqueado),
@@ -209,14 +193,12 @@ export default function Casilleros() {
       .finally(() => setUsuarioInfoCargando(false))
   }
 
-  // Etapa 2: abre el modal para elegir el motivo del bloqueo.
   const abrirBloqueo = casillero => {
     setCasilleroBloqueo(casillero)
     setErrorBloqueo('')
     setMotivoBloqueo(casillero.ocupado ? 'ADMINISTRATIVO' : 'MANTENIMIENTO')
   }
 
-  // Etapa 2: confirma el bloqueo contra el backend y recarga.
   const confirmarBloqueo = async e => {
     e.preventDefault()
     if (!casilleroBloqueo) return
@@ -240,7 +222,6 @@ export default function Casilleros() {
     }
   }
 
-  // Abre el modal de confirmación propio para liberar o desbloquear.
   const pedirConfirmacion = (tipo, casillero) => {
     setErrorConfirmacion('')
     setConfirmacion({ tipo, casillero })
@@ -252,7 +233,6 @@ export default function Casilleros() {
     setErrorConfirmacion('')
   }
 
-  // Ejecuta la acción confirmada (liberar o desbloquear) contra el backend.
   const ejecutarConfirmacion = async () => {
     if (!confirmacion) return
     const { tipo, casillero } = confirmacion
@@ -283,7 +263,6 @@ export default function Casilleros() {
     }
   }
 
-  // Textos del modal de confirmación según la acción.
   const copyConfirmacion = (() => {
     if (!confirmacion) return null
     const { tipo, casillero } = confirmacion
@@ -291,14 +270,12 @@ export default function Casilleros() {
       return {
         tipo,
         titulo: '¿Liberar casillero?',
-        // Mensaje principal: identifica el casillero por su número.
         mensaje: (
           <>
             ¿Estás seguro de que quieres liberar el casillero{' '}
             <strong>{casillero.numero}</strong>?
           </>
         ),
-        // Línea secundaria atenuada (consecuencia de la acción).
         nota: 'El usuario dejará de ser el ocupante actual. El historial y la credencial RFID se conservan.',
         confirmar: 'Sí, liberar',
         procesando: 'Liberando...',
@@ -348,7 +325,6 @@ export default function Casilleros() {
             </p>
           </div>
 
-          {/* BUSCADOR */}
           <div className="ls-casilleros-busqueda">
             <Search size={17} />
 
@@ -387,7 +363,6 @@ export default function Casilleros() {
                     key={casillero.id}
                   >
 
-                    {/* TÍTULO */}
                     <div className="ls-casillero-card-titulo">
                       <LockKeyhole
                         size={34}
@@ -397,7 +372,6 @@ export default function Casilleros() {
                       <h3>{casillero.numero}</h3>
                     </div>
 
-                    {/* ESTADO */}
                     <span
                       className={`ls-casillero-card-estado ${estadoClase}`}
                     >
@@ -407,10 +381,7 @@ export default function Casilleros() {
                         : ''}
                     </span>
 
-                    {/* ACCIONES */}
                     {casillero.bloqueado ? (
-                      // Casillero bloqueado: ver usuario (si lo hay) + desbloquear.
-                      // Si además está ocupado, se puede liberar sin quitar el bloqueo.
                       <div className="ls-casillero-card-acciones">
                         {casillero.ocupado && (
                           <button
@@ -447,7 +418,6 @@ export default function Casilleros() {
                         )}
                       </div>
                     ) : casillero.ocupado ? (
-                      // Casillero asignado (no bloqueado): ver usuario + bloquear + liberar.
                       <div className="ls-casillero-card-acciones">
                         <button
                           type="button"
@@ -480,8 +450,6 @@ export default function Casilleros() {
                         </button>
                       </div>
                     ) : (
-                      // Casillero libre (sin asignar, sin bloquear):
-                      // asignar + bloqueo por mantenimiento.
                       <>
                         <div className="ls-casillero-card-edicion">
                           <button
@@ -518,9 +486,6 @@ export default function Casilleros() {
               </div>
             ) : null}
 
-            {/* MARCADORES VISUALES (no funcionales) para completar la
-                cuadrícula de 6 casilleros (2×3). No tienen datos reales, no
-                abren modales ni llaman a la API. Se marcan como "No disponible". */}
             {placeholdersVisuales > 0 &&
               Array.from({ length: placeholdersVisuales }).map((_, i) => (
                 <article
@@ -627,15 +592,21 @@ export default function Casilleros() {
                   )}
                 </div>
 
-                {/* UID RFID: nota informativa, NO un campo editable. El UID
-                    proviene de la credencial del usuario, no se captura aquí. */}
+                {/* UID RFID: campo editable. El admin escribe el código de la
+                    tarjeta física que tiene en la mano. Opcional: si se deja
+                    vacío, el usuario queda sin tarjeta asignada. */}
                 <div className="ls-casillero-form-group">
-                  <span className="ls-casillero-form-label">
-                    UID de la tarjeta RFID
-                  </span>
+                  <label htmlFor="uid-rfid">UID de la tarjeta RFID</label>
+                  <input
+                    id="uid-rfid"
+                    type="text"
+                    value={uidRfid}
+                    onChange={e => setUidRfid(e.target.value)}
+                    placeholder="Ej. 04A2B3C4D5E680"
+                    maxLength={50}
+                  />
                   <p className="ls-casillero-form-nota">
-                    Se toma automáticamente de la credencial RFID del usuario
-                    seleccionado.
+                    Ingresa el UID que aparece impreso en la tarjeta. Si lo dejas vacío, el usuario quedará sin tarjeta RFID asignada.
                   </p>
                 </div>
 
@@ -663,7 +634,7 @@ export default function Casilleros() {
         </div>
       )}
 
-      {/* MODAL PARA BLOQUEAR CASILLERO (Etapa 2) */}
+      {/* MODAL PARA BLOQUEAR CASILLERO */}
       {casilleroBloqueo && (
         <div
           className="ls-casillero-modal-fondo"
@@ -720,7 +691,6 @@ export default function Casilleros() {
                     value={motivoBloqueo}
                     onChange={e => setMotivoBloqueo(e.target.value)}
                   >
-                    {/* El bloqueo administrativo solo aplica si hay asignación. */}
                     {casilleroBloqueo.ocupado && (
                       <option value="ADMINISTRATIVO">Administrativo</option>
                     )}
@@ -769,7 +739,6 @@ export default function Casilleros() {
             aria-labelledby="titulo-confirmacion"
           >
 
-            {/* Botón de cierre discreto en la esquina. */}
             <button
               type="button"
               className="ls-casillero-modal-cerrar ls-casillero-confirm-cerrar"
@@ -782,7 +751,6 @@ export default function Casilleros() {
 
             <div className="ls-casillero-confirm-body">
 
-              {/* Icono circular de la acción (verde LockSense). */}
               <div className="ls-casillero-confirm-icono">
                 <UnlockKeyhole size={30} strokeWidth={2.4} />
               </div>

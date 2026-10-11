@@ -4,6 +4,7 @@ import {
   Pencil,
   Trash2,
   X,
+  UserX,
 } from 'lucide-react'
 import ToastNotification from '../../components/ToastNotification'
 import {
@@ -14,17 +15,15 @@ import {
 } from '../../api/usuarios'
 import '../../styles/admin/Usuarios.css'
 
-const UUID_VALIDO =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
 const formVacio = {
   nombre: '',
-  apellido_paterno: '',
-  apellido_materno: '',
+  apellido_pa: '',
+  apellido_ma: '',
   identificador: '',
-  contrasena: '',
+  email: '',
+  password: '',
   telefono: '',
-  estado: true,
+  estado: 'A',
 }
 
 export default function Usuarios() {
@@ -69,11 +68,11 @@ export default function Usuarios() {
   const usuariosFiltrados = usuarios.filter((usuario) => {
     const termino = busqueda.trim().toLowerCase()
     if (!termino) return true
-    const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_paterno || ''} ${usuario.apellido_materno || ''}`
+    const nombreCompleto = `${usuario.nombre || ''} ${usuario.apellido_pa || ''} ${usuario.apellido_ma || ''}`
     return (
       nombreCompleto.toLowerCase().includes(termino) ||
       (usuario.identificador || '').toLowerCase().includes(termino) ||
-      (usuario.correo || '').toLowerCase().includes(termino)
+      (usuario.email || '').toLowerCase().includes(termino)
     )
   })
 
@@ -105,12 +104,13 @@ export default function Usuarios() {
     setUsuarioEditando(usuario)
     setForm({
       nombre: usuario.nombre || '',
-      apellido_paterno: usuario.apellido_paterno || '',
-      apellido_materno: usuario.apellido_materno || '',
+      apellido_pa: usuario.apellido_pa || '',
+      apellido_ma: usuario.apellido_ma || '',
       identificador: usuario.identificador || '',
-      contrasena: '',
+      email: usuario.email || '',
+      password: '',
       telefono: usuario.telefono || '',
-      estado: usuario.estado ?? true,
+      estado: usuario.estado ?? 'A',
     })
     setErrores({})
     setErrorGeneral('')
@@ -146,33 +146,36 @@ export default function Usuarios() {
       nuevos.nombre = 'Máximo 100 caracteres.'
     }
 
-    if (!form.apellido_paterno.trim()) {
-      nuevos.apellido_paterno = 'El apellido paterno es obligatorio.'
-    } else if (form.apellido_paterno.trim().length > 100) {
-      nuevos.apellido_paterno = 'Máximo 100 caracteres.'
+    if (!form.apellido_pa.trim()) {
+      nuevos.apellido_pa = 'El apellido paterno es obligatorio.'
+    } else if (form.apellido_pa.trim().length > 100) {
+      nuevos.apellido_pa = 'Máximo 100 caracteres.'
     }
 
-    if (!form.apellido_materno.trim()) {
-      nuevos.apellido_materno = 'El apellido materno es obligatorio.'
-    } else if (form.apellido_materno.trim().length > 100) {
-      nuevos.apellido_materno = 'Máximo 100 caracteres.'
+    if (!form.apellido_ma.trim()) {
+      nuevos.apellido_ma = 'El apellido materno es obligatorio.'
+    } else if (form.apellido_ma.trim().length > 100) {
+      nuevos.apellido_ma = 'Máximo 100 caracteres.'
     }
 
     if (!form.identificador.trim()) {
       nuevos.identificador = 'El identificador es obligatorio.'
-    } else if (!UUID_VALIDO.test(form.identificador.trim())) {
-      nuevos.identificador =
-        'Debe ser un UUID válido. Ejemplo: 550e8400-e29b-41d4-a716-446655440000'
+    } else if (form.identificador.trim().length > 100) {
+      nuevos.identificador = 'Máximo 100 caracteres.'
+    }
+
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      nuevos.email = 'Ingresa un correo válido.'
     }
 
     if (!usuarioEditando) {
-      if (!form.contrasena) {
-        nuevos.contrasena = 'La contraseña es obligatoria.'
-      } else if (form.contrasena.length < 8) {
-        nuevos.contrasena = 'Mínimo 8 caracteres.'
+      if (!form.password) {
+        nuevos.password = 'La contraseña es obligatoria.'
+      } else if (form.password.length < 8) {
+        nuevos.password = 'Mínimo 8 caracteres.'
       }
-    } else if (form.contrasena && form.contrasena.length < 8) {
-      nuevos.contrasena = 'Mínimo 8 caracteres.'
+    } else if (form.password && form.password.length < 8) {
+      nuevos.password = 'Mínimo 8 caracteres.'
     }
 
     if (!form.telefono.trim()) {
@@ -186,20 +189,19 @@ export default function Usuarios() {
   }
 
   const construirPayload = () => {
-    // El correo, la organización y el rol NO se envían desde aquí: el backend
-    // determina la organización desde el administrador autenticado y asigna el
-    // rol USUARIO automáticamente. El correo queda NULL para estos usuarios.
     const payload = {
       nombre: form.nombre.trim(),
-      apellido_paterno: form.apellido_paterno.trim(),
-      apellido_materno: form.apellido_materno.trim(),
+      apellido_pa: form.apellido_pa.trim(),
+      apellido_ma: form.apellido_ma.trim(),
       identificador: form.identificador.trim(),
       telefono: form.telefono.trim(),
-      estado: !!form.estado,
+      estado: form.estado,
     }
-    // La contraseña solo se envía si se escribió (obligatoria al crear).
-    if (form.contrasena) {
-      payload.contrasena = form.contrasena
+    if (form.email.trim()) {
+      payload.email = form.email.trim()
+    }
+    if (form.password) {
+      payload.password = form.password
     }
     return payload
   }
@@ -262,7 +264,7 @@ export default function Usuarios() {
   }
 
   const iniciales = (usuario) => {
-    const partes = [usuario.nombre, usuario.apellido_paterno].filter(Boolean)
+    const partes = [usuario.nombre, usuario.apellido_pa].filter(Boolean)
     return partes
       .map((p) => p[0])
       .join('')
@@ -344,7 +346,7 @@ export default function Usuarios() {
                         {iniciales(usuario)}
                       </div>
                       <strong>
-                        {[usuario.nombre, usuario.apellido_paterno, usuario.apellido_materno]
+                        {[usuario.nombre, usuario.apellido_pa, usuario.apellido_ma]
                           .filter(Boolean)
                           .join(' ')}
                       </strong>
@@ -387,8 +389,8 @@ export default function Usuarios() {
                     {cargando
                       ? 'Cargando usuarios...'
                       : busqueda
-                        ? 'No se encontraron usuarios.'
-                        : 'No hay usuarios registrados.'}
+                      ? 'No se encontraron usuarios.'
+                      : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
               )}
@@ -495,15 +497,15 @@ export default function Usuarios() {
                     <label htmlFor="u-apellido-pa">Apellido paterno</label>
                     <input
                       id="u-apellido-pa"
-                      name="apellido_paterno"
+                      name="apellido_pa"
                       type="text"
                       placeholder="Apellido paterno"
-                      value={form.apellido_paterno}
+                      value={form.apellido_pa}
                       onChange={handleCampo}
                       maxLength={100}
                     />
-                    {errores.apellido_paterno && (
-                      <small style={{ color: '#a83232' }}>{errores.apellido_paterno}</small>
+                    {errores.apellido_pa && (
+                      <small style={{ color: '#a83232' }}>{errores.apellido_pa}</small>
                     )}
                   </div>
                 </div>
@@ -514,15 +516,15 @@ export default function Usuarios() {
                     <label htmlFor="u-apellido-ma">Apellido materno</label>
                     <input
                       id="u-apellido-ma"
-                      name="apellido_materno"
+                      name="apellido_ma"
                       type="text"
                       placeholder="Apellido materno"
-                      value={form.apellido_materno}
+                      value={form.apellido_ma}
                       onChange={handleCampo}
                       maxLength={100}
                     />
-                    {errores.apellido_materno && (
-                      <small style={{ color: '#a83232' }}>{errores.apellido_materno}</small>
+                    {errores.apellido_ma && (
+                      <small style={{ color: '#a83232' }}>{errores.apellido_ma}</small>
                     )}
                   </div>
 
@@ -546,12 +548,12 @@ export default function Usuarios() {
                 {/* Fila 3: Identificador | Contraseña */}
                 <div className="ls-form-row">
                   <div className="ls-form-group">
-                    <label htmlFor="u-identificador">Identificador único (UUID)</label>
+                    <label htmlFor="u-identificador">Identificador único</label>
                     <input
                       id="u-identificador"
                       name="identificador"
                       type="text"
-                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      placeholder="Ej: A2023-0456, EMP-001, matrícula..."
                       value={form.identificador}
                       onChange={handleCampo}
                       maxLength={100}
@@ -562,20 +564,20 @@ export default function Usuarios() {
                   </div>
 
                   <div className="ls-form-group">
-                    <label htmlFor="u-contrasena">
+                    <label htmlFor="u-password">
                       {usuarioEditando ? 'Contraseña' : 'Contraseña'}
                     </label>
                     <input
-                      id="u-contrasena"
-                      name="contrasena"
+                      id="u-password"
+                      name="password"
                       type="password"
                       placeholder={usuarioEditando ? 'Dejar en blanco para conservar' : '••••••••'}
-                      value={form.contrasena}
+                      value={form.password}
                       onChange={handleCampo}
                       autoComplete="new-password"
                     />
-                    {errores.contrasena && (
-                      <small style={{ color: '#a83232' }}>{errores.contrasena}</small>
+                    {errores.password && (
+                      <small style={{ color: '#a83232' }}>{errores.password}</small>
                     )}
                   </div>
                 </div>
@@ -604,7 +606,7 @@ export default function Usuarios() {
         </div>
       )}
 
-      {/* MODAL CONFIRMAR BAJA */}
+      {/* MODAL CONFIRMAR BAJA (ESTILO NUEVO ACORDE A LA IMAGEN) */}
       {confirmarBaja && (
         <div
           className="ls-modal-fondo"
@@ -613,44 +615,52 @@ export default function Usuarios() {
           }}
         >
           <section
-            className="ls-modal"
+            className="ls-modal ls-modal-confirmacion"
             role="dialog"
             aria-modal="true"
             aria-labelledby="ls-baja-titulo"
-            style={{ maxWidth: 440 }}
           >
-            <div className="ls-modal-header">
-              <div>
-                <h2 id="ls-baja-titulo">Dar de baja usuario</h2>
-                <p>Esta acción marcará al usuario como inactivo.</p>
-              </div>
+            {/* Botón X de cierre en la esquina superior derecha */}
+            <button
+              type="button"
+              className="ls-modal-cerrar-esquina"
+              onClick={() => !eliminando && setConfirmarBaja(null)}
+              aria-label="Cerrar modal"
+            >
+              <X size={16} />
+            </button>
 
-              <button
-                type="button"
-                className="ls-modal-cerrar"
-                onClick={() => !eliminando && setConfirmarBaja(null)}
-                aria-label="Cerrar modal"
-              >
-                <X size={20} />
-              </button>
+            {/* Círculo superior con icono */}
+            <div className="ls-modal-icono-badge">
+              <UserX size={26} />
             </div>
 
-            <div className="ls-modal-body">
-              <p style={{ color: '#52675d', fontSize: 14 }}>
-                ¿Deseas dar de baja a{' '}
+            {/* Título */}
+            <h2 id="ls-baja-titulo" className="ls-modal-titulo-centro">
+              ¿Dar de baja usuario?
+            </h2>
+
+            {/* Descripción central */}
+            <div className="ls-modal-cuerpo-centro">
+              <p className="ls-modal-texto-principal">
+                ¿Estás seguro de que quieres dar de baja a{' '}
                 <strong>
-                  {[confirmarBaja.nombre, confirmarBaja.apellido_paterno]
+                  {[confirmarBaja.nombre, confirmarBaja.apellido_pa]
                     .filter(Boolean)
                     .join(' ')}
                 </strong>
-                ? El usuario dejará de aparecer en el listado de usuarios activos.
+                ?
+              </p>
+              <p className="ls-modal-texto-secundario">
+                El usuario dejará de aparecer en el listado de usuarios activos. El historial de accesos se conservará.
               </p>
             </div>
 
-            <div className="ls-modal-footer">
+            {/* Botones inferiores */}
+            <div className="ls-modal-footer-botones">
               <button
                 type="button"
-                className="ls-modal-cancelar"
+                className="ls-btn-secundario"
                 onClick={() => setConfirmarBaja(null)}
                 disabled={eliminando}
               >
@@ -659,11 +669,11 @@ export default function Usuarios() {
 
               <button
                 type="button"
-                className="ls-modal-guardar"
+                className="ls-btn-primario"
                 onClick={confirmarEliminar}
                 disabled={eliminando}
               >
-                {eliminando ? 'Dando de baja...' : 'Dar de baja'}
+                {eliminando ? 'Dando de baja...' : 'Sí, dar de baja'}
               </button>
             </div>
           </section>
