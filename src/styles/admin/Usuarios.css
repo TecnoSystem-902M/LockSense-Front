@@ -270,12 +270,26 @@
   flex-direction: column;
   gap: 18px;
   padding: 22px;
+  /* El cuerpo es el área desplazable: el encabezado y el footer quedan fijos
+     y el modal nunca excede la altura visible de la pantalla. */
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+/* Fila de dos columnas LOCAL al modal de usuarios. En pantallas con espacio
+   suficiente coloca dos campos lado a lado; en móvil colapsa a una columna
+   (ver media query). Cada hijo .ls-form-group conserva su propio layout. */
+.ls-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
 .ls-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .ls-form-group label {
@@ -284,7 +298,8 @@
   font-weight: 600;
 }
 
-.ls-form-group input {
+.ls-form-group input,
+.ls-form-group select {
   width: 100%;
   min-height: 43px;
   box-sizing: border-box;
@@ -299,9 +314,37 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.ls-form-group input:focus {
+/* Dropdowns del formulario de usuarios: igualan la identidad visual de los
+   inputs (igual que .ls-casillero-form-group select en Casilleros.css).
+   Se sustituye la flecha nativa por un chevron SVG propio y consistente. */
+.ls-form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2352675d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.ls-form-group input:focus,
+.ls-form-group select:focus {
   border-color: #259568;
   box-shadow: 0 0 0 3px rgb(37 149 104 / 12%);
+}
+
+/* Estado deshabilitado coherente con el resto de controles. */
+.ls-form-group select:disabled {
+  color: #87958e;
+  background-color: #f4f7f6;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Estado de error: borde rojo coherente con .ls-form-error. */
+.ls-form-group select[aria-invalid="true"] {
+  border-color: #e0a2a2;
 }
 
 .ls-form-group small {
@@ -402,6 +445,11 @@
 
   .ls-modal-footer {
     padding: 14px 18px;
+  }
+
+  /* En móvil, las filas de dos columnas colapsan a una sola. */
+  .ls-form-row {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -559,4 +607,152 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* =========================================================
+   ESTILOS MODAL DE CONFIRMACIÓN DE BAJA (LOCKSENSE)
+   ========================================================= */
+
+.ls-modal-confirmacion {
+  max-width: 440px !important;
+  width: 90% !important;
+  padding: 32px 28px !important;
+  border-radius: 20px !important;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+/* Botón X superior derecho */
+.ls-modal-cerrar-esquina {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ls-modal-cerrar-esquina:hover {
+  background-color: #f1f5f9;
+  color: #0f2922;
+}
+
+/* Círculo verde con halo difuminado */
+.ls-modal-icono-badge {
+  width: 72px;
+  height: 72px;
+  background-color: rgba(16, 185, 129, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f2922;
+  margin-bottom: 20px;
+  box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.05);
+}
+
+/* Título centrado */
+.ls-modal-titulo-centro {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f2922;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+/* Contenido de texto centrado */
+.ls-modal-cuerpo-centro {
+  text-align: center;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ls-modal-texto-principal {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ls-modal-texto-principal strong {
+  color: #0f2922;
+}
+
+.ls-modal-texto-secundario {
+  font-size: 0.83rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Contenedor de botones inferiores divididos 50/50 o en fila */
+.ls-modal-footer-botones {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.ls-btn-secundario {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #0f2922;
+  border: 1.5px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ls-btn-secundario:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.ls-btn-primario {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #0f2922;
+  color: #ffffff;
+  border: 1.5px solid #0f2922;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(15, 41, 34, 0.2);
+}
+
+/* Hover: cambia al estilo secundario */
+.ls-btn-primario:hover {
+  background-color: #ffffff;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ls-btn-primario:hover {
+  background-color: #10b981;
+  box-shadow: 0 6px 16px rgba(15, 41, 34, 0.3);
+}
+
+.ls-btn-primario:disabled,
+.ls-btn-secundario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

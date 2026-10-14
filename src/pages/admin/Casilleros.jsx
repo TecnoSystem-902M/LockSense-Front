@@ -1,208 +1,307 @@
-import { useLockSense } from '../../context/LockSenseContext'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   LockKeyhole,
   UserRound,
   Ban,
-  UnlockKeyhole,
-  Trash2,
+  ShieldCheck,
+  LogOut,
   Search,
+  UnlockKeyhole,
 } from 'lucide-react'
+import ToastNotification from '../../components/ToastNotification'
+import {
+  listarCasilleros,
+  bloquearCasillero,
+  desbloquearCasillero,
+  usuariosAsignables,
+  asignarCasillero,
+  consultarAsignacion,
+  liberarCasillero,
+} from '../../api/casilleros'
 import '../../styles/admin/Casilleros.css'
 
-const casillerosIniciales = [
-  {
-    id: 1,
-    numero: 'Casillero #1',
-    estado: 'Asignado',
-    usuarioId: null,
-    usuario: 'Carlos Hernández',
-    uid: 'RFID-001',
-  },
-  {
-    id: 2,
-    numero: 'Casillero #2',
-    estado: 'Sin asignar',
-    usuarioId: null,
-    usuario: null,
-    uid: '',
-  },
-  {
-    id: 3,
-    numero: 'Casillero #3',
-    estado: 'Bloqueado',
-    usuarioId: null,
-    usuario: 'María González',
-    uid: 'RFID-003',
-  },
-  {
-    id: 4,
-    numero: 'Casillero #4',
-    estado: 'Asignado',
-    usuarioId: null,
-    usuario: 'Luis Martínez',
-    uid: 'RFID-004',
-  },
-  {
-    id: 5,
-    numero: 'Casillero #5',
-    estado: 'Bloqueado',
-    usuarioId: null,
-    usuario: 'Ana López',
-    uid: 'RFID-005',
-  },
-  {
-    id: 6,
-    numero: 'Casillero #6',
-    estado: 'Sin asignar',
-    usuarioId: null,
-    usuario: null,
-    uid: '',
-  },
-]
+/**
+ * Normaliza un casillero de la API al formato que usan las tarjetas.
+ */
+const mapCasillero = (c) => ({
+  id: c.id,
+  numero: c.numero,
+  ocupado: Boolean(c.ocupado),
+  bloqueado: Boolean(c.bloqueado),
+  motivoBloqueo: c.motivo_bloqueo || null,
+  usuario: c.usuario ? c.usuario.nombre_completo : null,
+  uid: c.uid_rfid || '',
+})
+
+const etiquetaEstado = (c) => {
+  if (c.bloqueado) return 'Bloqueado'
+  return c.ocupado ? 'Asignado' : 'Sin asignar'
+}
+
+const claseEstado = (c) =>
+  etiquetaEstado(c).toLowerCase().replaceAll(' ', '-')
+
+const textoMotivo = (motivo) => {
+  if (motivo === 'ADMINISTRATIVO') return 'Administrativo'
+  if (motivo === 'MANTENIMIENTO') return 'Mantenimiento'
+  return ''
+}
+
+const nombreUsuario = (u) =>
+  [u.nombre, u.apellido_pa, u.apellido_ma].filter(Boolean).join(' ')
 
 export default function Casilleros() {
-  const [casilleros, setCasilleros] = useState(casillerosIniciales)
+  const [casilleros, setCasilleros] = useState([])
+  const [cargando, setCargando] = useState(false)
+  const [cargaError, setCargaError] = useState('')
 
   const [busqueda, setBusqueda] = useState('')
 
-  const { usuarios } = useLockSense()
+  const [toast, setToast] = useState('')
+
+  const [usuarios, setUsuarios] = useState([])
+  const [usuariosCargando, setUsuariosCargando] = useState(false)
+  const [usuariosError, setUsuariosError] = useState('')
 
   const [casilleroSeleccionado, setCasilleroSeleccionado] = useState(null)
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState('')
   const [uidRfid, setUidRfid] = useState('')
   const [errorAsignacion, setErrorAsignacion] = useState('')
+  const [guardandoAsignacion, setGuardandoAsignacion] = useState(false)
 
   const [usuarioInfo, setUsuarioInfo] = useState(null)
+  const [usuarioInfoCargando, setUsuarioInfoCargando] = useState(false)
+  const [usuarioInfoError, setUsuarioInfoError] = useState('')
 
-  const asignados = casilleros.filter(
-    c => c.estado === 'Asignado'
-  ).length
+  const [casilleroBloqueo, setCasilleroBloqueo] = useState(null)
+  const [motivoBloqueo, setMotivoBloqueo] = useState('MANTENIMIENTO')
+  const [errorBloqueo, setErrorBloqueo] = useState('')
+  const [procesandoBloqueo, setProcesandoBloqueo] = useState(false)
 
-  const bloqueados = casilleros.filter(
-    c => c.estado === 'Bloqueado'
-  ).length
+  const [confirmacion, setConfirmacion] = useState(null)
+  const [errorConfirmacion, setErrorConfirmacion] = useState('')
+  const [procesandoConfirmacion, setProcesandoConfirmacion] = useState(false)
+
+  const cargarCasilleros = useCallback(async () => {
+    setCargando(true)
+    setCargaError('')
+    try {
+      const data = await listarCasilleros()
+      setCasilleros(Array.isArray(data) ? data.map(mapCasillero) : [])
+    } catch {
+      setCasilleros([])
+      setCargaError('No se pudieron cargar los casilleros.')
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    cargarCasilleros()
+  }, [cargarCasilleros])
+
+  const asignados = casilleros.filter(c => c.ocupado && !c.bloqueado).length
+  const bloqueados = casilleros.filter(c => c.bloqueado).length
 
   const casillerosFiltrados = casilleros.filter(casillero => {
     const texto = busqueda.toLowerCase().trim()
-
     if (!texto) return true
-
     return (
-      casillero.numero.toLowerCase().includes(texto) ||
-      (casillero.usuario &&
-        casillero.usuario.toLowerCase().includes(texto)) ||
-      (casillero.uid &&
-        casillero.uid.toLowerCase().includes(texto))
+      (casillero.numero && casillero.numero.toLowerCase().includes(texto)) ||
+      (casillero.usuario && casillero.usuario.toLowerCase().includes(texto)) ||
+      (casillero.uid && casillero.uid.toLowerCase().includes(texto))
     )
   })
 
-  const cambiarEstado = (id, nuevoEstado) => {
-    setCasilleros(actuales =>
-      actuales.map(c =>
-        c.id === id
-          ? {
-              ...c,
-              estado: nuevoEstado,
-              usuarioId:
-                nuevoEstado === 'Sin asignar'
-                  ? null
-                  : c.usuarioId,
-              usuario:
-                nuevoEstado === 'Sin asignar'
-                  ? null
-                  : c.usuario,
-              uid:
-                nuevoEstado === 'Sin asignar'
-                  ? ''
-                  : c.uid,
-            }
-          : c
-      )
-    )
-  }
+  const TOTAL_VISUAL = 6
+  const placeholdersVisuales =
+    !busqueda.trim() && !cargando
+      ? Math.max(0, TOTAL_VISUAL - casillerosFiltrados.length)
+      : 0
 
   const abrirAsignacion = casillero => {
     setCasilleroSeleccionado(casillero)
     setUsuarioSeleccionado('')
     setUidRfid('')
     setErrorAsignacion('')
+
+    setUsuariosCargando(true)
+    setUsuariosError('')
+    usuariosAsignables(casillero.id)
+      .then(data => setUsuarios(Array.isArray(data) ? data : []))
+      .catch(() => {
+        setUsuarios([])
+        setUsuariosError('No se pudieron cargar los usuarios.')
+      })
+      .finally(() => setUsuariosCargando(false))
   }
 
-  const asignarCasillero = e => {
+  const guardarAsignacion = async e => {
     e.preventDefault()
-
-    const uid = uidRfid.trim()
-
-    if (!usuarioSeleccionado || !uid) {
-      setErrorAsignacion(
-        'Selecciona un usuario y escribe el UID RFID.'
-      )
-      return
-    }
-
-    const uidExiste = casilleros.some(
-      c =>
-        c.id !== casilleroSeleccionado.id &&
-        c.uid.toLowerCase() === uid.toLowerCase()
-    )
-
-    if (uidExiste) {
-      setErrorAsignacion(
-        'Ese UID RFID ya está registrado en otro casillero.'
-      )
-      return
-    }
-
-    const usuario = usuarios.find(
-      u => String(u.id) === String(usuarioSeleccionado)
-    )
-
-    if (!usuario) {
-      setErrorAsignacion(
-        'El usuario seleccionado no existe.'
-      )
-      return
-    }
-
-    setCasilleros(actuales =>
-      actuales.map(c =>
-        c.id === casilleroSeleccionado.id
-          ? {
-              ...c,
-              estado: 'Asignado',
-              usuarioId: usuario.id,
-              usuario: usuario.nombre,
-              uid,
-            }
-          : c
-      )
-    )
-
-    setCasilleroSeleccionado(null)
-    setUsuarioSeleccionado('')
-    setUidRfid('')
     setErrorAsignacion('')
-  }
 
-  const eliminarCasillero = id => {
-    if (!window.confirm('¿Deseas eliminar este casillero?')) {
+    if (!usuarioSeleccionado) {
+      setErrorAsignacion('Selecciona un usuario para asignar el casillero.')
       return
     }
 
-    setCasilleros(actuales =>
-      actuales.filter(c => c.id !== id)
-    )
+    setGuardandoAsignacion(true)
+    try {
+      await asignarCasillero(
+        casilleroSeleccionado.id,
+        Number(usuarioSeleccionado),
+        uidRfid.trim() || null
+      )
+      const numero = casilleroSeleccionado.numero
+      setCasilleroSeleccionado(null)
+      await cargarCasilleros()
+      setToast(`Casillero ${numero} asignado correctamente`)
+    } catch (err) {
+      const data = err?.response?.data
+      const msg =
+        data?.message ||
+        (data?.errors && Object.values(data.errors)[0]?.[0]) ||
+        'No se pudo asignar el casillero.'
+      setErrorAsignacion(msg)
+    } finally {
+      setGuardandoAsignacion(false)
+    }
   }
 
   const verUsuario = casillero => {
-    if (!casillero.usuario) return
-
-    setUsuarioInfo(casillero)
+    setUsuarioInfo({ numero: casillero.numero })
+    setUsuarioInfoCargando(true)
+    setUsuarioInfoError('')
+    consultarAsignacion(casillero.id)
+      .then(data => {
+        setUsuarioInfo({
+          numero: data.numero,
+          usuario: data.usuario ? data.usuario.nombre_completo : null,
+          correo: data.usuario ? data.usuario.email : null,
+          uid: data.uid_rfid || '',
+          ocupado: Boolean(data.ocupado),
+          bloqueado: Boolean(data.bloqueado),
+          motivoBloqueo: data.motivo_bloqueo || null,
+        })
+      })
+      .catch(err => {
+        const msg =
+          err?.response?.data?.message ||
+          'No se pudo obtener la información del usuario.'
+        setUsuarioInfoError(msg)
+      })
+      .finally(() => setUsuarioInfoCargando(false))
   }
+
+  const abrirBloqueo = casillero => {
+    setCasilleroBloqueo(casillero)
+    setErrorBloqueo('')
+    setMotivoBloqueo(casillero.ocupado ? 'ADMINISTRATIVO' : 'MANTENIMIENTO')
+  }
+
+  const confirmarBloqueo = async e => {
+    e.preventDefault()
+    if (!casilleroBloqueo) return
+    setProcesandoBloqueo(true)
+    setErrorBloqueo('')
+    try {
+      await bloquearCasillero(casilleroBloqueo.id, motivoBloqueo)
+      const numero = casilleroBloqueo.numero
+      setCasilleroBloqueo(null)
+      await cargarCasilleros()
+      setToast(`Casillero ${numero} bloqueado correctamente`)
+    } catch (err) {
+      const data = err?.response?.data
+      const msg =
+        data?.message ||
+        (data?.errors && Object.values(data.errors)[0]?.[0]) ||
+        'No se pudo bloquear el casillero.'
+      setErrorBloqueo(msg)
+    } finally {
+      setProcesandoBloqueo(false)
+    }
+  }
+
+  const pedirConfirmacion = (tipo, casillero) => {
+    setErrorConfirmacion('')
+    setConfirmacion({ tipo, casillero })
+  }
+
+  const cerrarConfirmacion = () => {
+    if (procesandoConfirmacion) return
+    setConfirmacion(null)
+    setErrorConfirmacion('')
+  }
+
+  const ejecutarConfirmacion = async () => {
+    if (!confirmacion) return
+    const { tipo, casillero } = confirmacion
+    setProcesandoConfirmacion(true)
+    setErrorConfirmacion('')
+    try {
+      if (tipo === 'liberar') {
+        await liberarCasillero(casillero.id)
+      } else {
+        await desbloquearCasillero(casillero.id)
+      }
+      setConfirmacion(null)
+      await cargarCasilleros()
+      setToast(
+        tipo === 'liberar'
+          ? `Casillero ${casillero.numero} liberado correctamente`
+          : `Casillero ${casillero.numero} desbloqueado correctamente`
+      )
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        (tipo === 'liberar'
+          ? 'No se pudo liberar el casillero.'
+          : 'No se pudo desbloquear el casillero.')
+      setErrorConfirmacion(msg)
+    } finally {
+      setProcesandoConfirmacion(false)
+    }
+  }
+
+  const copyConfirmacion = (() => {
+    if (!confirmacion) return null
+    const { tipo, casillero } = confirmacion
+    if (tipo === 'liberar') {
+      return {
+        tipo,
+        titulo: '¿Liberar casillero?',
+        mensaje: (
+          <>
+            ¿Estás seguro de que quieres liberar el casillero{' '}
+            <strong>{casillero.numero}</strong>?
+          </>
+        ),
+        nota: 'El usuario dejará de ser el ocupante actual. El historial y la credencial RFID se conservan.',
+        confirmar: 'Sí, liberar',
+        procesando: 'Liberando...',
+      }
+    }
+    return {
+      tipo,
+      titulo: '¿Desbloquear casillero?',
+      mensaje: (
+        <>
+          ¿Estás seguro de que quieres desbloquear el casillero{' '}
+          <strong>{casillero.numero}</strong>?
+        </>
+      ),
+      nota: 'El casillero volverá a quedar operativo según su asignación actual.',
+      confirmar: 'Sí, desbloquear',
+      procesando: 'Desbloqueando...',
+    }
+  })()
 
   return (
     <div className="ls-casilleros">
+
+      {toast && (
+        <ToastNotification mensaje={toast} onClose={() => setToast('')} />
+      )}
 
       {/* ENCABEZADO PRINCIPAL */}
       <div className="ls-casilleros-heading">
@@ -226,7 +325,6 @@ export default function Casilleros() {
             </p>
           </div>
 
-          {/* BUSCADOR */}
           <div className="ls-casilleros-busqueda">
             <Search size={17} />
 
@@ -240,141 +338,175 @@ export default function Casilleros() {
           </div>
         </div>
 
+        {cargaError && (
+          <div className="ls-casillero-error" role="alert" style={{ margin: '0 0 16px' }}>
+            {cargaError}
+          </div>
+        )}
+
         {/* TARJETAS */}
         <div className="ls-casilleros-grid-scroll">
           <div className="ls-casilleros-grid">
 
-            {casillerosFiltrados.length > 0 ? (
-              casillerosFiltrados.map(casillero => (
-                <article
-                  className={`ls-casillero-card ${casillero.estado
-                    .toLowerCase()
-                    .replaceAll(' ', '-')}`}
-                  key={casillero.id}
-                >
-
-                  {/* TÍTULO */}
-                  <div className="ls-casillero-card-titulo">
-                    <LockKeyhole
-                      size={34}
-                      strokeWidth={3}
-                    />
-
-                    <h3>{casillero.numero}</h3>
-                  </div>
-
-                  {/* ESTADO */}
-                  <span
-                    className={`ls-casillero-card-estado ${casillero.estado
-                      .toLowerCase()
-                      .replaceAll(' ', '-')}`}
+            {cargando ? (
+              <div className="ls-casilleros-sin-resultados">
+                <Search size={30} />
+                <p>Cargando casilleros...</p>
+              </div>
+            ) : casillerosFiltrados.length > 0 ? (
+              casillerosFiltrados.map(casillero => {
+                const estado = etiquetaEstado(casillero)
+                const estadoClase = claseEstado(casillero)
+                return (
+                  <article
+                    className={`ls-casillero-card ${estadoClase}`}
+                    key={casillero.id}
                   >
-                    {casillero.estado}
-                  </span>
 
-                  {/* ACCIONES */}
-                  {casillero.estado === 'Sin asignar' ? (
-                    <button
-                      type="button"
-                      className="ls-casillero-asignar"
-                      onClick={() =>
-                        abrirAsignacion(casillero)
-                      }
-                    >
-                      Asignar Casillero
-                    </button>
-                  ) : (
-                    <div className="ls-casillero-card-acciones">
+                    <div className="ls-casillero-card-titulo">
+                      <LockKeyhole
+                        size={34}
+                        strokeWidth={3}
+                      />
 
-                      {/* VER USUARIO */}
-                      <button
-                        type="button"
-                        className="ls-casillero-boton usuario"
-                        title="Ver usuario asignado"
-                        aria-label="Ver usuario asignado"
-                        onClick={() =>
-                          verUsuario(casillero)
-                        }
-                      >
-                        <UserRound
-                          size={28}
-                          fill="currentColor"
-                        />
-                      </button>
-
-                      {/* BLOQUEAR / DESBLOQUEAR */}
-                      <button
-                        type="button"
-                        className="ls-casillero-boton bloqueo"
-                        title={
-                          casillero.estado === 'Bloqueado'
-                            ? 'Desbloquear'
-                            : 'Bloquear'
-                        }
-                        aria-label={
-                          casillero.estado === 'Bloqueado'
-                            ? 'Desbloquear casillero'
-                            : 'Bloquear casillero'
-                        }
-                        onClick={() =>
-                          cambiarEstado(
-                            casillero.id,
-                            casillero.estado ===
-                              'Bloqueado'
-                              ? 'Asignado'
-                              : 'Bloqueado'
-                          )
-                        }
-                      >
-                        <Ban size={27} />
-                      </button>
-
-                      {/* LIBERAR */}
-                      <button
-                        type="button"
-                        className="ls-casillero-boton liberar"
-                        title="Liberar casillero"
-                        aria-label="Liberar casillero"
-                        onClick={() =>
-                          cambiarEstado(
-                            casillero.id,
-                            'Sin asignar'
-                          )
-                        }
-                      >
-                        <UnlockKeyhole
-                          size={27}
-                          fill="currentColor"
-                        />
-                      </button>
-
+                      <h3>{casillero.numero}</h3>
                     </div>
-                  )}
 
-                  {/* ELIMINAR */}
-                  <div className="ls-casillero-card-edicion">
-                    <button
-                      type="button"
-                      title="Eliminar casillero"
-                      aria-label="Eliminar casillero"
-                      onClick={() =>
-                        eliminarCasillero(casillero.id)
-                      }
+                    <span
+                      className={`ls-casillero-card-estado ${estadoClase}`}
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                      {estado}
+                      {casillero.bloqueado && casillero.motivoBloqueo
+                        ? ` · ${textoMotivo(casillero.motivoBloqueo)}`
+                        : ''}
+                    </span>
 
-                </article>
-              ))
-            ) : (
+                    {casillero.bloqueado ? (
+                      <div className="ls-casillero-card-acciones">
+                        {casillero.ocupado && (
+                          <button
+                            type="button"
+                            className="ls-casillero-boton usuario"
+                            title="Ver usuario asignado"
+                            aria-label="Ver usuario asignado"
+                            onClick={() => verUsuario(casillero)}
+                          >
+                            <UserRound size={28} fill="currentColor" />
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          className="ls-casillero-boton bloqueo"
+                          title="Desbloquear casillero"
+                          aria-label="Desbloquear casillero"
+                          onClick={() => pedirConfirmacion('desbloquear', casillero)}
+                        >
+                          <ShieldCheck size={27} />
+                        </button>
+
+                        {casillero.ocupado && (
+                          <button
+                            type="button"
+                            className="ls-casillero-boton liberar"
+                            title="Liberar casillero"
+                            aria-label="Liberar casillero"
+                            onClick={() => pedirConfirmacion('liberar', casillero)}
+                          >
+                            <LogOut size={27} />
+                          </button>
+                        )}
+                      </div>
+                    ) : casillero.ocupado ? (
+                      <div className="ls-casillero-card-acciones">
+                        <button
+                          type="button"
+                          className="ls-casillero-boton usuario"
+                          title="Ver usuario asignado"
+                          aria-label="Ver usuario asignado"
+                          onClick={() => verUsuario(casillero)}
+                        >
+                          <UserRound size={28} fill="currentColor" />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="ls-casillero-boton bloqueo"
+                          title="Bloquear casillero"
+                          aria-label="Bloquear casillero"
+                          onClick={() => abrirBloqueo(casillero)}
+                        >
+                          <Ban size={27} />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="ls-casillero-boton liberar"
+                          title="Liberar casillero"
+                          aria-label="Liberar casillero"
+                          onClick={() => pedirConfirmacion('liberar', casillero)}
+                        >
+                          <LogOut size={27} />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="ls-casillero-card-edicion">
+                          <button
+                            type="button"
+                            title="Bloquear por mantenimiento"
+                            aria-label="Bloquear casillero"
+                            onClick={() => abrirBloqueo(casillero)}
+                          >
+                            <Ban size={16} />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="ls-casillero-asignar"
+                          onClick={() => abrirAsignacion(casillero)}
+                        >
+                          Asignar Casillero
+                        </button>
+                      </>
+                    )}
+
+                  </article>
+                )
+              })
+            ) : placeholdersVisuales === 0 ? (
               <div className="ls-casilleros-sin-resultados">
                 <Search size={30} />
                 <p>
-                  No se encontraron casilleros.
+                  {busqueda
+                    ? 'No se encontraron casilleros.'
+                    : 'No hay casilleros registrados.'}
                 </p>
               </div>
-            )}
+            ) : null}
+
+            {placeholdersVisuales > 0 &&
+              Array.from({ length: placeholdersVisuales }).map((_, i) => (
+                <article
+                  className="ls-casillero-card ls-casillero-card-placeholder"
+                  key={`placeholder-${i}`}
+                  aria-hidden="true"
+                >
+                  <div className="ls-casillero-card-titulo">
+                    <LockKeyhole size={34} strokeWidth={3} />
+                    <h3>—</h3>
+                  </div>
+
+                  <span className="ls-casillero-card-estado ls-casillero-placeholder-badge">
+                    No disponible
+                  </span>
+
+                  <p className="ls-casillero-placeholder-nota">
+                    Espacio visual
+                  </p>
+                </article>
+              ))}
 
           </div>
         </div>
@@ -411,16 +543,14 @@ export default function Casilleros() {
               <button
                 type="button"
                 className="ls-casillero-modal-cerrar"
-                onClick={() =>
-                  setCasilleroSeleccionado(null)
-                }
+                onClick={() => setCasilleroSeleccionado(null)}
                 aria-label="Cerrar"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={asignarCasillero}>
+            <form onSubmit={guardarAsignacion}>
               <div className="ls-casillero-modal-body">
 
                 {errorAsignacion && (
@@ -437,42 +567,47 @@ export default function Casilleros() {
                   <select
                     id="usuario-casillero"
                     value={usuarioSeleccionado}
-                    onChange={e =>
-                      setUsuarioSeleccionado(
-                        e.target.value
-                      )
-                    }
-                    required
+                    onChange={e => setUsuarioSeleccionado(e.target.value)}
+                    disabled={usuariosCargando}
                   >
                     <option value="">
-                      Selecciona un usuario
+                      {usuariosCargando
+                        ? 'Cargando usuarios...'
+                        : usuarios.length === 0
+                          ? 'No hay usuarios disponibles'
+                          : 'Selecciona un usuario'}
                     </option>
 
                     {usuarios.map(usuario => (
-                      <option
-                        key={usuario.id}
-                        value={usuario.id}
-                      >
-                        {usuario.nombre}
+                      <option key={usuario.id} value={usuario.id}>
+                        {nombreUsuario(usuario)}
                       </option>
                     ))}
                   </select>
+
+                  {usuariosError && (
+                    <div className="ls-casillero-error" style={{ marginTop: 8 }}>
+                      {usuariosError}
+                    </div>
+                  )}
                 </div>
 
+                {/* UID RFID: campo editable. El admin escribe el código de la
+                    tarjeta física que tiene en la mano. Opcional: si se deja
+                    vacío, el usuario queda sin tarjeta asignada. */}
                 <div className="ls-casillero-form-group">
-                  <label htmlFor="uid-rfid">
-                    UID de la tarjeta RFID
-                  </label>
-
+                  <label htmlFor="uid-rfid">UID de la tarjeta RFID</label>
                   <input
                     id="uid-rfid"
+                    type="text"
                     value={uidRfid}
-                    onChange={e =>
-                      setUidRfid(e.target.value)
-                    }
-                    placeholder="Ej. RFID-006"
-                    required
+                    onChange={e => setUidRfid(e.target.value)}
+                    placeholder="Ej. 04A2B3C4D5E680"
+                    maxLength={50}
                   />
+                  <p className="ls-casillero-form-nota">
+                    Ingresa el UID que aparece impreso en la tarjeta. Si lo dejas vacío, el usuario quedará sin tarjeta RFID asignada.
+                  </p>
                 </div>
 
               </div>
@@ -481,9 +616,7 @@ export default function Casilleros() {
                 <button
                   type="button"
                   className="ls-casillero-cancelar"
-                  onClick={() =>
-                    setCasilleroSeleccionado(null)
-                  }
+                  onClick={() => setCasilleroSeleccionado(null)}
                 >
                   Cancelar
                 </button>
@@ -491,11 +624,179 @@ export default function Casilleros() {
                 <button
                   type="submit"
                   className="ls-casillero-guardar"
+                  disabled={guardandoAsignacion || usuarios.length === 0}
                 >
-                  Guardar asignación
+                  {guardandoAsignacion ? 'Guardando...' : 'Guardar asignación'}
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {/* MODAL PARA BLOQUEAR CASILLERO */}
+      {casilleroBloqueo && (
+        <div
+          className="ls-casillero-modal-fondo"
+          onMouseDown={e => {
+            if (e.target === e.currentTarget) {
+              setCasilleroBloqueo(null)
+            }
+          }}
+        >
+          <section
+            className="ls-casillero-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-bloqueo"
+          >
+
+            <div className="ls-casillero-modal-header">
+              <div>
+                <h2 id="titulo-bloqueo">
+                  Bloquear casillero
+                </h2>
+
+                <p>
+                  {casilleroBloqueo.numero}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="ls-casillero-modal-cerrar"
+                onClick={() => setCasilleroBloqueo(null)}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={confirmarBloqueo}>
+              <div className="ls-casillero-modal-body">
+
+                {errorBloqueo && (
+                  <div className="ls-casillero-error">
+                    {errorBloqueo}
+                  </div>
+                )}
+
+                <div className="ls-casillero-form-group">
+                  <label htmlFor="motivo-bloqueo">
+                    Motivo del bloqueo
+                  </label>
+
+                  <select
+                    id="motivo-bloqueo"
+                    value={motivoBloqueo}
+                    onChange={e => setMotivoBloqueo(e.target.value)}
+                  >
+                    {casilleroBloqueo.ocupado && (
+                      <option value="ADMINISTRATIVO">Administrativo</option>
+                    )}
+                    <option value="MANTENIMIENTO">Mantenimiento</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <div className="ls-casillero-modal-footer">
+                <button
+                  type="button"
+                  className="ls-casillero-cancelar"
+                  onClick={() => setCasilleroBloqueo(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="ls-casillero-guardar"
+                  disabled={procesandoBloqueo}
+                >
+                  {procesandoBloqueo ? 'Bloqueando...' : 'Confirmar bloqueo'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN (LIBERAR / DESBLOQUEAR) */}
+      {confirmacion && copyConfirmacion && (
+        <div
+          className="ls-casillero-modal-fondo"
+          onMouseDown={e => {
+            if (e.target === e.currentTarget) {
+              cerrarConfirmacion()
+            }
+          }}
+        >
+          <section
+            className="ls-casillero-modal ls-casillero-confirm-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="titulo-confirmacion"
+          >
+
+            <button
+              type="button"
+              className="ls-casillero-modal-cerrar ls-casillero-confirm-cerrar"
+              onClick={cerrarConfirmacion}
+              aria-label="Cerrar"
+              disabled={procesandoConfirmacion}
+            >
+              ×
+            </button>
+
+            <div className="ls-casillero-confirm-body">
+
+              <div className="ls-casillero-confirm-icono">
+                <UnlockKeyhole size={30} strokeWidth={2.4} />
+              </div>
+
+              <h2 id="titulo-confirmacion" className="ls-casillero-confirm-titulo">
+                {copyConfirmacion.titulo}
+              </h2>
+
+              <p className="ls-casillero-confirm-mensaje">
+                {copyConfirmacion.mensaje}
+              </p>
+
+              {copyConfirmacion.nota && (
+                <p className="ls-casillero-confirm-nota">
+                  {copyConfirmacion.nota}
+                </p>
+              )}
+
+              {errorConfirmacion && (
+                <div className="ls-casillero-error ls-casillero-confirm-error">
+                  {errorConfirmacion}
+                </div>
+              )}
+            </div>
+
+            <div className="ls-casillero-confirm-acciones">
+              <button
+                type="button"
+                className="ls-casillero-cancelar ls-casillero-confirm-btn"
+                onClick={cerrarConfirmacion}
+                disabled={procesandoConfirmacion}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="ls-casillero-guardar ls-casillero-confirm-btn"
+                onClick={ejecutarConfirmacion}
+                disabled={procesandoConfirmacion}
+              >
+                {procesandoConfirmacion
+                  ? copyConfirmacion.procesando
+                  : copyConfirmacion.confirmar}
+              </button>
+            </div>
           </section>
         </div>
       )}
@@ -540,37 +841,69 @@ export default function Casilleros() {
 
             <div className="ls-casillero-modal-body">
 
-              <div className="ls-casillero-info-usuario">
-
-                <div className="ls-casillero-info-icon">
-                  <UserRound
-                    size={30}
-                    fill="currentColor"
-                  />
+              {usuarioInfoCargando ? (
+                <div className="ls-casillero-info-dato">
+                  <span>Cargando...</span>
                 </div>
-
-                <div>
-                  <span>Usuario</span>
-                  <strong>
-                    {usuarioInfo.usuario}
-                  </strong>
+              ) : usuarioInfoError ? (
+                <div className="ls-casillero-error">
+                  {usuarioInfoError}
                 </div>
+              ) : (
+                <>
+                  <div className="ls-casillero-info-usuario">
 
-              </div>
+                    <div className="ls-casillero-info-icon">
+                      <UserRound
+                        size={30}
+                        fill="currentColor"
+                      />
+                    </div>
 
-              <div className="ls-casillero-info-dato">
-                <span>Casillero</span>
-                <strong>
-                  {usuarioInfo.numero}
-                </strong>
-              </div>
+                    <div>
+                      <span>Usuario</span>
+                      <strong>
+                        {usuarioInfo.usuario || 'Sin usuario'}
+                      </strong>
+                    </div>
 
-              <div className="ls-casillero-info-dato">
-                <span>UID de tarjeta RFID</span>
-                <strong>
-                  {usuarioInfo.uid || 'Sin UID'}
-                </strong>
-              </div>
+                  </div>
+
+                  {usuarioInfo.correo && (
+                    <div className="ls-casillero-info-dato">
+                      <span>Correo</span>
+                      <strong>
+                        {usuarioInfo.correo}
+                      </strong>
+                    </div>
+                  )}
+
+                  <div className="ls-casillero-info-dato">
+                    <span>Casillero</span>
+                    <strong>
+                      {usuarioInfo.numero}
+                    </strong>
+                  </div>
+
+                  <div className="ls-casillero-info-dato">
+                    <span>UID de tarjeta RFID</span>
+                    <strong>
+                      {usuarioInfo.uid || 'Sin tarjeta RFID asociada'}
+                    </strong>
+                  </div>
+
+                  <div className="ls-casillero-info-dato">
+                    <span>Estado</span>
+                    <strong>
+                      {usuarioInfo.bloqueado
+                        ? `Bloqueado${usuarioInfo.motivoBloqueo ? ` · ${textoMotivo(usuarioInfo.motivoBloqueo)}` : ''}`
+                        : usuarioInfo.ocupado
+                          ? 'Asignado'
+                          : 'Sin asignar'}
+                    </strong>
+                  </div>
+                </>
+              )}
 
             </div>
 
