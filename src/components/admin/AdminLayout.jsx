@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'
 import { logout } from '../../api/auth'
+import { cerrarSesionLocal } from '../../utils/session'
 import '../../styles/admin/AdminLayout.css'
 
 export default function AdminLayout() {
@@ -27,9 +28,8 @@ export default function AdminLayout() {
     } catch {
       // Si falla (sin red, token ya vencido), igual cerramos localmente
     } finally {
-      // Borra la sesión local y manda al login
-      localStorage.removeItem('token')
-      localStorage.removeItem('usuario')
+      // Borra la sesión local (localStorage y sessionStorage) y manda al login
+      cerrarSesionLocal()
       navigate('/login', { replace: true })
     }
   }
