@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
-import AuthFooter from '../../components/AuthFooter'
+import Footer from '../../components/Footer'
 import { login } from '../../api/auth'
 import { getRouteByRole } from '../../utils/roleRoutes'
+import { guardarSesion } from '../../utils/session'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -26,9 +27,11 @@ export default function Login() {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!form.email.trim()) {
-      newErrors.email = 'El correo electrónico es obligatorio.'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    // Acepta correo electrónico o identificador (matrícula, número de empleado, etc.)
+    const acceso = form.email.trim()
+    if (!acceso) {
+      newErrors.email = 'Ingresa tu correo electrónico o tu identificador.'
+    } else if (acceso.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(acceso)) {
       newErrors.email = 'Ingresa un correo electrónico válido.'
     }
 
@@ -49,11 +52,11 @@ export default function Login() {
     setIsSubmitting(true)
 
     try {
-      const data = await login(form.email, form.password)
+      const data = await login(form.email, form.password, form.remember)
 
-      // Guardar token y usuario
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      // Guardar token y usuario.
+      // "Recordar mi sesión" marcado -> persiste al cerrar el navegador.
+      guardarSesion(data.token, data.user, form.remember)
 
       // Redirigir según rol
       const route = getRouteByRole(data.user.rol)
@@ -147,19 +150,21 @@ export default function Login() {
             </div>
 
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
-              {/* CORREO */}
+              {/* CORREO O IDENTIFICADOR */}
               <div className="form-group">
-                <label htmlFor="email">Correo electrónico</label>
+                <label htmlFor="email">Correo electrónico o identificador</label>
                 <div className={getInputClass('email')}>
-                  <i className="fa-regular fa-envelope"></i>
+                  <i className="fa-regular fa-user"></i>
                   <input
-                    type="email"
+                    type="text"
                     id="email"
                     name="email"
-                    placeholder="correo@ejemplo.com"
+                    placeholder="correo@ejemplo.com o tu identificador"
                     value={form.email}
                     onChange={handleChange}
-                    autoComplete="email"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
                   />
                 </div>
                 {renderError('email')}
@@ -230,7 +235,7 @@ export default function Login() {
         </div>
       </main>
 
-      <AuthFooter />
+      <Footer />
     </>
   )
 }

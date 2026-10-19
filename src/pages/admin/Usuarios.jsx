@@ -41,7 +41,8 @@ export default function Usuarios() {
   const [confirmarBaja, setConfirmarBaja] = useState(null)
   const [eliminando, setEliminando] = useState(false)
 
-  const [mostrarToast, setMostrarToast] = useState(false)
+  const [toast, setToast] = useState('')
+  const [errorAccion, setErrorAccion] = useState('')
 
   const [busqueda, setBusqueda] = useState('')
   const registrosPorPagina = 5
@@ -106,7 +107,8 @@ export default function Usuarios() {
       nombre: usuario.nombre || '',
       apellido_pa: usuario.apellido_pa || '',
       apellido_ma: usuario.apellido_ma || '',
-      identificador: usuario.identificador || '',
+      // El backend devuelve la matrícula sin el prefijo de la organización
+      identificador: usuario.matricula ?? usuario.identificador ?? '',
       email: usuario.email || '',
       password: '',
       telefono: usuario.telefono || '',
@@ -159,9 +161,11 @@ export default function Usuarios() {
     }
 
     if (!form.identificador.trim()) {
-      nuevos.identificador = 'El identificador es obligatorio.'
-    } else if (form.identificador.trim().length > 100) {
-      nuevos.identificador = 'Máximo 100 caracteres.'
+      nuevos.identificador = 'La matrícula es obligatoria.'
+    } else if (form.identificador.trim().length > 90) {
+      nuevos.identificador = 'Máximo 90 caracteres.'
+    } else if (!/^[A-Za-z0-9_.\- ]+$/.test(form.identificador.trim())) {
+      nuevos.identificador = 'Usa solo letras, números, guiones, puntos o guion bajo.'
     }
 
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
@@ -227,14 +231,28 @@ export default function Usuarios() {
 
     setGuardando(true)
     try {
-      if (usuarioEditando) {
-        await actualizarUsuario(usuarioEditando.id, construirPayload())
-      } else {
-        await crearUsuario(construirPayload())
-      }
+      const nombre = [form.nombre.trim(), form.apellido_pa.trim()]
+        .filter(Boolean)
+        .join(' ')
+
+      const respuesta = usuarioEditando
+        ? await actualizarUsuario(usuarioEditando.id, construirPayload())
+        : await crearUsuario(construirPayload())
+      const fueEdicion = Boolean(usuarioEditando)
+
+      // Identificador con prefijo con el que el usuario inicia sesión (ej. UTN-A001)
+      const acceso = respuesta?.identificador || respuesta?.data?.identificador
+
       await cargarUsuarios()
       setModalAbierto(false)
       setUsuarioEditando(null)
+      setToast(
+        fueEdicion
+          ? `Usuario ${nombre} actualizado correctamente`
+          : acceso
+            ? `Usuario ${nombre} registrado. Inicia sesión como ${acceso}`
+            : `Usuario ${nombre} registrado correctamente`
+      )
     } catch (err) {
       if (!mapearErrores422(err)) {
         setErrorGeneral(
@@ -250,13 +268,19 @@ export default function Usuarios() {
   const confirmarEliminar = async () => {
     if (!confirmarBaja) return
     setEliminando(true)
+    setErrorAccion('')
+    const nombre = [confirmarBaja.nombre, confirmarBaja.apellido_pa]
+      .filter(Boolean)
+      .join(' ')
     try {
       await eliminarUsuarioApi(confirmarBaja.id)
       setConfirmarBaja(null)
       await cargarUsuarios()
-      setMostrarToast(true)
-    } catch {
-      setErrorGeneral('No se pudo dar de baja al usuario.')
+      setToast(`Usuario ${nombre} dado de baja correctamente`)
+    } catch (err) {
+      setErrorAccion(
+        err?.response?.data?.message || 'No se pudo dar de baja al usuario.'
+      )
       setConfirmarBaja(null)
     } finally {
       setEliminando(false)
@@ -273,11 +297,8 @@ export default function Usuarios() {
 
   return (
     <div className="ls-usuarios">
-      {mostrarToast && (
-        <ToastNotification
-          mensaje="Usuario eliminado correctamente"
-          onClose={() => setMostrarToast(false)}
-        />
+      {toast && (
+        <ToastNotification mensaje={toast} onClose={() => setToast('')} />
       )}
 
       <div className="ls-usuarios-heading">
@@ -302,9 +323,9 @@ export default function Usuarios() {
           <h2>Listado de usuarios</h2>
         </div>
 
-        {cargaError && (
+        {(cargaError || errorAccion) && (
           <div className="ls-form-error" role="alert" style={{ marginBottom: 16 }}>
-            {cargaError}
+            {cargaError || errorAccion}
           </div>
         )}
 
@@ -317,7 +338,7 @@ export default function Usuarios() {
             <span>Buscar:</span>
             <input
               type="search"
-              placeholder="Buscar por nombre, identificador o correo..."
+              placeholder="Buscar por nombre, matrícula o correo..."
               value={busqueda}
               onChange={(e) => cambiarBusqueda(e.target.value)}
             />
@@ -330,7 +351,7 @@ export default function Usuarios() {
               <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Identificador</th>
+                <th>Usuario de acceso</th>
                 <th className="ls-col-acciones">Acciones</th>
               </tr>
             </thead>
@@ -548,16 +569,19 @@ export default function Usuarios() {
                 {/* Fila 3: Identificador | Contraseña */}
                 <div className="ls-form-row">
                   <div className="ls-form-group">
-                    <label htmlFor="u-identificador">Identificador único</label>
+                    <label htmlFor="u-identificador">Matrícula</label>
                     <input
                       id="u-identificador"
                       name="identificador"
                       type="text"
-                      placeholder="Ej: A2023-0456, EMP-001, matrícula..."
+                      placeholder="Ej: A2023-0456, EMP-001..."
                       value={form.identificador}
                       onChange={handleCampo}
-                      maxLength={100}
+                      maxLength={90}
                     />
+                    <small style={{ color: '#7b8982' }}>
+                      El sistema le agrega el código de tu organización para iniciar sesión.
+                    </small>
                     {errores.identificador && (
                       <small style={{ color: '#a83232' }}>{errores.identificador}</small>
                     )}

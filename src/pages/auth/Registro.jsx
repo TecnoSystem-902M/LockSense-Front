@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
 import { register, verifyEmail, resendCode } from '../../api/auth'
 
 const STEP_LABELS = ['Datos', 'Seguridad']
@@ -294,10 +295,14 @@ export default function Registro() {
       }, 1500)
     } catch (err) {
       setVerifyStatus('error')
-      setErrorMessage(
-        err.response?.data?.message ||
-        'El código ingresado es incorrecto. Inténtalo de nuevo.'
-      )
+      if (err.response?.data?.code === 'REGISTRO_EXPIRADO') {
+        setErrorMessage('Tu registro expiró. Cierra esta ventana y presiona "Finalizar Registro" de nuevo.')
+      } else {
+        setErrorMessage(
+          err.response?.data?.message ||
+          'El código ingresado es incorrecto. Inténtalo de nuevo.'
+        )
+      }
     }
   }
 
@@ -780,6 +785,8 @@ export default function Registro() {
           </div>
         </div>
       )}
+
+      <Footer />
     </>
   )
 }
