@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
 import Registro from './pages/auth/Registro'
+import FaceRegister from './pages/auth/FaceAuth/FaceRegister'
 import Olvidar from './pages/auth/ForgotPassword'
 import Recuperar from './pages/auth/ResetPassword'
 
@@ -25,9 +26,10 @@ export default function App() {
           <Route path="/registro" element={<Registro />} />
         </Route>
 
-        {/* Recuperación de contraseña: accesibles siempre */}
+        {/* Recuperación de contraseña y Registro facial: accesibles según flujo */}
         <Route path="/olvidar" element={<Olvidar />} />
         <Route path="/recuperar" element={<Recuperar />} />
+        <Route path="/registro-rostro" element={<FaceRegister />} /> {/* <--- NUEVA RUTA */}
 
         {/* Panel de administración (solo ADMINISTRADOR) */}
         <Route element={<ProtectedRoute rolPermitido="ADMINISTRADOR" />}>
