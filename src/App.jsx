@@ -5,6 +5,7 @@ import Login from './pages/auth/Login'
 import Registro from './pages/auth/Registro'
 import Olvidar from './pages/auth/ForgotPassword'
 import Recuperar from './pages/auth/ResetPassword'
+import CapturaFacial from './components/usuario/CapturaFacial';
 
 import AdminLayout from './components/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'

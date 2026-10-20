@@ -1,0 +1,111 @@
+/* Reseteo completo para ocupar toda la pantalla sin navbar ni footer */
+.facial-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0f172a; /* Fondo oscuro elegante */
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+  z-index: 9999; /* Asegura que cubra toda la interfaz tras el inicio de sesión */
+}
+
+.facial-header {
+  text-align: center;
+  max-width: 400px;
+}
+
+.facial-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.facial-header p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* ÁREA DE LA CÁMARA Y GUÍA CIRCULAR */
+.camera-wrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+  background-color: #1e293b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.webcam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Efecto espejo */
+}
+
+/* Círculo guía visual */
+.facial-guide-circle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px dashed #3b82f6;
+  box-sizing: border-box;
+  pointer-events: none;
+  animation: pulse-border 2s infinite ease-in-out;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: #3b82f6; }
+  50% { border-color: #60a5fa; }
+}
+
+/* Mensajes de estado */
+.status-text {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+/* Botones de acción */
+.facial-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn {
+  padding: 0.85rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #059669;
+}
