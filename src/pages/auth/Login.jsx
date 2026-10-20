@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
 import Footer from '../../components/Footer'
 import { login } from '../../api/auth'
+import { getRouteByRole } from '../../utils/roleRoutes'
 import { guardarSesion } from '../../utils/session'
 
 export default function Login() {
@@ -26,6 +27,7 @@ export default function Login() {
   const validateForm = () => {
     const newErrors = {}
 
+    // Acepta correo electrónico o identificador (matrícula, número de empleado, etc.)
     const acceso = form.email.trim()
     if (!acceso) {
       newErrors.email = 'Ingresa tu correo electrónico o tu identificador.'
@@ -53,20 +55,31 @@ export default function Login() {
       const data = await login(form.email, form.password, form.remember)
 
       // Guardar token y usuario.
+      // "Recordar mi sesión" marcado -> persiste al cerrar el navegador.
       guardarSesion(data.token, data.user, form.remember)
 
-      // --- CAMBIO: Redirigir al registro facial tras el login exitoso ---
-      navigate('/registro-rostro', { state: { loginExitoso: true, rol: data.user.rol } })
+      // Redirigir según rol.
+      // USUARIO sin rostro registrado -> pantalla de registro de rostro.
+      // (Mientras el backend no mande `tiene_rostro`, siempre se le muestra.)
+      const esUsuario = (data.user.rol || '').toString().trim().toUpperCase() === 'USUARIO'
+      const route = esUsuario && !data.user.tiene_rostro
+        ? '/usuario/registrar-rostro'
+        : getRouteByRole(data.user.rol)
+      navigate(route, { state: { loginExitoso: true } })
 
     } catch (err) {
       const status = err.response?.status
       const message = err.response?.data?.message
 
+      // Cuenta no verificada
       if (status === 403 && err.response?.data?.code === 'NOT_VERIFIED') {
         setServerError('Tu cuenta no está verificada. Revisa tu correo o reenvía el código.')
+        // Opcional: navegar al registro con el modal abierto
+        // navigate('/registro', { state: { email: err.response.data.email } })
         return
       }
 
+      // Credenciales incorrectas u otros
       setServerError(message || 'Error al iniciar sesión. Intenta de nuevo.')
     } finally {
       setIsSubmitting(false)

@@ -1,29 +1,120 @@
-/* Contenedor del visor de la cámara */
+/* =========================================================
+   HU10 - Registro de rostro
+   Reutiliza auth-page / auth-card del login. Aquí solo va lo propio.
+   Las variables tienen valor de respaldo por si no están en el CSS global.
+   ========================================================= */
+
+.fr-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Encabezado (usuario con sesión) ---------- */
+.fr-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--primary, #0f2922);
+  color: #fff;
+}
+
+.fr-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.fr-brand i {
+  color: var(--secondary, #10b981);
+}
+
+.fr-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.fr-user-name {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.fr-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.fr-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.fr-main {
+  flex: 1;
+}
+
+.fr-step {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--secondary, #10b981);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Visor de cámara ---------- */
 .face-capture-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100%;
 }
 
 .camera-viewport {
   position: relative;
   width: 100%;
   height: 300px;
-  background-color: #081712;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--line);
-  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: #081712;
+  border: 1px solid var(--line, rgba(16, 185, 129, 0.25));
+  transition: border-color 0.3s;
+}
+
+.camera-viewport.is-error {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.camera-viewport.is-exito {
+  border-color: var(--secondary, #10b981);
 }
 
 .camera-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1); /* Efecto espejo natural para la cámara frontal */
+  transform: scaleX(-1); /* efecto espejo */
 }
 
 .camera-video.hidden {
@@ -31,83 +122,237 @@
 }
 
 .camera-placeholder {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 28px;
+  text-align: center;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .camera-placeholder i {
-  font-size: 28px;
-  color: var(--secondary);
+  font-size: 2rem;
+  color: var(--secondary, #10b981);
 }
 
-/* Óvalo guía para el encuadre del rostro */
+.camera-placeholder.is-error i {
+  color: #f87171;
+}
+
+.camera-placeholder.is-success i {
+  font-size: 3rem;
+  animation: fr-pop 0.4s ease-out;
+}
+
+.camera-placeholder.is-success span {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Óvalo guía */
 .scanner-oval {
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 150px;
   height: 200px;
-  border: 3px dashed var(--secondary);
+  transform: translate(-50%, -50%);
+  border: 2px dashed var(--secondary, #10b981);
   border-radius: 50%;
-  pointer-events: none;
-  animation: pulse-border 2s infinite ease-in-out;
+  box-shadow: 0 0 0 9999px rgba(8, 23, 18, 0.45); /* oscurece lo de fuera */
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+  pointer-events: none;
+  animation: fr-pulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse-border {
-  0% { border-color: var(--secondary); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { border-color: #0d9668; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { border-color: var(--secondary); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+.is-enviando .scanner-oval {
+  border-style: solid;
 }
 
-/* Línea de escaneo láser en movimiento */
 .scan-line {
   position: absolute;
-  top: 10%;
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: var(--secondary);
-  box-shadow: 0 0 10px var(--secondary);
-  animation: scan 2.5s infinite linear;
+  background: var(--secondary, #10b981);
+  box-shadow: 0 0 12px var(--secondary, #10b981);
+  animation: fr-scan 1.6s ease-in-out infinite;
 }
 
-@keyframes scan {
-  0% { top: 10%; opacity: 0.2; }
-  50% { opacity: 0.9; }
-  100% { top: 90%; opacity: 0.2; }
-}
-
-/* Insignia flotante de estado en la esquina superior */
+/* Etiqueta de estado */
 .camera-badge {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: rgba(15, 41, 34, 0.75);
-  backdrop-filter: blur(4px);
-  color: #fff;
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .badge-dot {
   width: 8px;
   height: 8px;
-  background-color: var(--secondary);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--secondary);
-  animation: blink 1.5s infinite;
+  background: #9ca3af; /* gris: apagada / iniciando */
 }
 
-@keyframes blink {
+.is-lista .badge-dot,
+.is-exito .badge-dot {
+  background: var(--secondary, #10b981);
+  animation: fr-blink 1.4s ease-in-out infinite;
+}
+
+.is-enviando .badge-dot {
+  background: #fbbf24;
+  animation: fr-blink 0.7s ease-in-out infinite;
+}
+
+.is-error .badge-dot {
+  background: #ef4444;
+}
+
+.is-exito .badge-dot {
+  animation: none;
+}
+
+/* ---------- Controles ---------- */
+.fr-error {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.fr-consent {
+  margin-top: 18px;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.fr-consent input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.fr-button {
+  margin-top: 16px;
+}
+
+.fr-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  text-align: center;
+}
+
+.fr-privacy i {
+  color: var(--secondary, #10b981);
+}
+
+.fr-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line, rgba(16, 185, 129, 0.2));
+}
+
+.fr-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--secondary, #10b981);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fr-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.fr-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fr-link-muted {
+  color: inherit;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes fr-pulse {
+  0%, 100% { border-color: var(--secondary, #10b981); }
+  50% { border-color: rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes fr-scan {
+  0% { top: 0; }
+  50% { top: calc(100% - 2px); }
+  100% { top: 0; }
+}
+
+@keyframes fr-blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes fr-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanner-oval,
+  .scan-line,
+  .badge-dot,
+  .camera-placeholder.is-success i {
+    animation: none !important;
+  }
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 575.98px) {
+  .fr-topbar {
+    padding: 12px 16px;
+  }
+
+  .fr-user-name {
+    display: none;
+  }
+
+  .fr-logout span {
+    display: none; /* solo el ícono */
+  }
+
+  .camera-viewport {
+    height: 340px; /* más alto: el celular es vertical */
+  }
+
+  .fr-actions {
+    flex-direction: column;
+    align-items: center;
+  }
 }

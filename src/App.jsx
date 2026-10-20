@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
 import Registro from './pages/auth/Registro'
-import FaceRegister from './pages/auth/FaceAuth/FaceRegister'
 import Olvidar from './pages/auth/ForgotPassword'
 import Recuperar from './pages/auth/ResetPassword'
 
@@ -11,6 +10,8 @@ import AdminLayout from './components/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import Usuarios from './pages/admin/Usuarios'
 import Casilleros from './pages/admin/Casilleros'
+
+import FaceRegister from './pages/auth/FaceAuth/FaceRegister'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
@@ -26,10 +27,9 @@ export default function App() {
           <Route path="/registro" element={<Registro />} />
         </Route>
 
-        {/* Recuperación de contraseña y Registro facial: accesibles según flujo */}
+        {/* Recuperación de contraseña: accesibles siempre */}
         <Route path="/olvidar" element={<Olvidar />} />
         <Route path="/recuperar" element={<Recuperar />} />
-        <Route path="/registro-rostro" element={<FaceRegister />} /> {/* <--- NUEVA RUTA */}
 
         {/* Panel de administración (solo ADMINISTRADOR) */}
         <Route element={<ProtectedRoute rolPermitido="ADMINISTRADOR" />}>
@@ -38,6 +38,11 @@ export default function App() {
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="casilleros" element={<Casilleros />} />
           </Route>
+        </Route>
+
+        {/* Usuario (solo USUARIO): registro de rostro después del login */}
+        <Route element={<ProtectedRoute rolPermitido="USUARIO" />}>
+          <Route path="/usuario/registrar-rostro" element={<FaceRegister />} />
         </Route>
 
       </Routes>
