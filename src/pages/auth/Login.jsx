@@ -58,8 +58,13 @@ export default function Login() {
       // "Recordar mi sesión" marcado -> persiste al cerrar el navegador.
       guardarSesion(data.token, data.user, form.remember)
 
-      // Redirigir según rol
-      const route = getRouteByRole(data.user.rol)
+      // Redirigir según rol.
+      // USUARIO sin rostro registrado -> pantalla de registro de rostro.
+      // (Mientras el backend no mande `tiene_rostro`, siempre se le muestra.)
+      const esUsuario = (data.user.rol || '').toString().trim().toUpperCase() === 'USUARIO'
+      const route = esUsuario && !data.user.tiene_rostro
+        ? '/usuario/registrar-rostro'
+        : getRouteByRole(data.user.rol)
       navigate(route, { state: { loginExitoso: true } })
 
     } catch (err) {

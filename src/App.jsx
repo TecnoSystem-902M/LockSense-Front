@@ -5,11 +5,14 @@ import Login from './pages/auth/Login'
 import Registro from './pages/auth/Registro'
 import Olvidar from './pages/auth/ForgotPassword'
 import Recuperar from './pages/auth/ResetPassword'
+import CapturaFacial from './components/usuario/CapturaFacial';
 
 import AdminLayout from './components/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import Usuarios from './pages/admin/Usuarios'
 import Casilleros from './pages/admin/Casilleros'
+
+import FaceRegister from './pages/auth/FaceAuth/FaceRegister'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
@@ -36,6 +39,11 @@ export default function App() {
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="casilleros" element={<Casilleros />} />
           </Route>
+        </Route>
+
+        {/* Usuario (solo USUARIO): registro de rostro después del login */}
+        <Route element={<ProtectedRoute rolPermitido="USUARIO" />}>
+          <Route path="/usuario/registrar-rostro" element={<FaceRegister />} />
         </Route>
 
       </Routes>

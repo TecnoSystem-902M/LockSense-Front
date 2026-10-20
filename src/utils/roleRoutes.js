@@ -9,7 +9,12 @@ const normalizarRol = (rolNombre) =>
  * Devuelve la ruta del panel según el rol del usuario.
  * Acepta el rol en mayúsculas, minúsculas o capitalizado.
  */
-export const getRouteByRole = (rolNombre) => {
+export const getRouteByRole = (rolNombre, requiereRostro = false) => {
+  // Si el usuario aún no registra su rostro, lo mandamos al flujo de captura facial
+  if (requiereRostro) {
+    return '/registro-rostro';
+  }
+
   const routes = {
     SUPERADMIN:    '/superadmin',
     ADMINISTRADOR: '/admin',
