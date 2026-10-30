@@ -10,15 +10,15 @@ import './FaceRegister.css'
  * Si llega un código desconocido, se usa un mensaje genérico.
  */
 const MENSAJES_ERROR = {
-  imagen_invalida:        'La imagen no es válida. Vuelve a intentarlo.',
-  no_se_detecto_rostro:   'No detectamos tu rostro. Céntrate en el óvalo y repite.',
-  mas_de_un_rostro:       'Debe aparecer solo una persona en la cámara.',
-  calidad_insuficiente:   'La imagen no tiene calidad suficiente. Mejora la iluminación.',
-  procesamiento_fallido:  'No se pudo procesar la imagen. Intenta de nuevo.',
-  respuesta_invalida:     'No se pudo procesar la imagen. Intenta de nuevo.',
-  servicio_no_configurado:'El servicio de reconocimiento facial no está disponible ahora.',
+  imagen_invalida: 'La imagen no es válida. Vuelve a intentarlo.',
+  no_se_detecto_rostro: 'No detectamos tu rostro. Céntrate en el óvalo y repite.',
+  mas_de_un_rostro: 'Debe aparecer solo una persona en la cámara.',
+  calidad_insuficiente: 'La imagen no tiene calidad suficiente. Mejora la iluminación.',
+  procesamiento_fallido: 'No se pudo procesar la imagen. Intenta de nuevo.',
+  respuesta_invalida: 'No se pudo procesar la imagen. Intenta de nuevo.',
+  servicio_no_configurado: 'El servicio de reconocimiento facial no está disponible ahora.',
   servicio_no_disponible: 'El servicio de reconocimiento facial no responde. Intenta más tarde.',
-  error_guardado:         'No se pudo guardar tu rostro. Intenta de nuevo.',
+  error_guardado: 'No se pudo guardar tu rostro. Intenta de nuevo.',
 }
 
 /**
@@ -51,6 +51,7 @@ export default function FaceRegister() {
   const [estado, setEstado] = useState('iniciando')
   const [errorMsg, setErrorMsg] = useState('')
   const [consentimiento, setConsentimiento] = useState(false)
+  const [errorConsentimiento, setErrorConsentimiento] = useState(false)
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -181,7 +182,11 @@ export default function FaceRegister() {
   }, [capturarBlob])
 
   const handleRegistrar = async () => {
-    if (!consentimiento || estado !== 'lista') return
+    if (!consentimiento) {
+      setErrorConsentimiento(true)   // marca la casilla en rojo
+      return
+    }
+    if (estado !== 'lista') return
 
     setEstado('enviando')
     setErrorMsg('')
@@ -371,23 +376,33 @@ export default function FaceRegister() {
                 </button>
               ) : (
                 <>
-                  <label className="remember fr-consent">
-                    <input
-                      type="checkbox"
-                      checked={consentimiento}
-                      onChange={(e) => setConsentimiento(e.target.checked)}
-                      disabled={estado === 'enviando'}
-                    />
-                    <span>
-                      Acepto que LockSense procese mi rostro para el acceso a mi casillero.
-                    </span>
-                  </label>
+<label className={`remember fr-consent ${errorConsentimiento ? 'fr-consent-error' : ''}`}>
+  <input
+    type="checkbox"
+    checked={consentimiento}
+    onChange={(e) => {
+      setConsentimiento(e.target.checked)
+      if (e.target.checked) setErrorConsentimiento(false)   // quita el rojo al marcarla
+    }}
+    disabled={estado === 'enviando'}
+    aria-invalid={errorConsentimiento}
+  />
+  <span>
+    Acepto que LockSense procese mi rostro para el acceso a mi casillero.
+  </span>
+</label>
+
+{errorConsentimiento && (
+  <p className="ls-login-error-msg fr-consent-msg" role="alert">
+    Debes aceptar la autorización para registrar tu rostro.
+  </p>
+)}
 
                   <button
                     type="button"
                     className="auth-button fr-button"
                     onClick={handleRegistrar}
-                    disabled={!consentimiento || estado !== 'lista'}
+                    disabled={estado === 'enviando' || (consentimiento && estado !== 'lista')}
                   >
                     {estado === 'enviando' ? (
                       <>
