@@ -63,6 +63,15 @@ export default function FaceRegister() {
   }, [])
 
   const startCamera = useCallback(async () => {
+    // Autorización obligatoria: sin consentimiento NO se enciende la cámara
+    // ni se inicia la captura. Es el primer control del flujo.
+    if (!consentimiento) {
+      stopCamera()
+      setErrorMsg('')
+      setEstado('iniciando')
+      return
+    }
+
     // Cerrar cualquier cámara abierta antes de abrir otra
     stopCamera()
     setErrorMsg('')
@@ -95,12 +104,20 @@ export default function FaceRegister() {
       )
       setEstado('error')
     }
-  }, [stopCamera])
+  }, [stopCamera, consentimiento])
 
+  // La cámara se enciende solo cuando hay consentimiento, y se apaga si el
+  // usuario lo retira. startCamera ya corta el encendido si falta autorización.
   useEffect(() => {
-    startCamera()
+    if (consentimiento) {
+      startCamera()
+    } else {
+      stopCamera()
+      setErrorMsg('')
+      setEstado('iniciando')
+    }
     return () => stopCamera() // apaga la cámara al salir de la página
-  }, [startCamera, stopCamera])
+  }, [consentimiento, startCamera, stopCamera])
 
   /**
    * Captura el fotograma actual del <video> en un canvas y lo convierte en
@@ -206,7 +223,7 @@ export default function FaceRegister() {
   const camaraEncendida = estado === 'lista' || estado === 'enviando'
 
   const textoBadge = {
-    iniciando: 'Iniciando cámara',
+    iniciando: consentimiento ? 'Iniciando cámara' : 'Esperando autorización',
     lista: 'Cámara activa',
     enviando: 'Procesando',
     error: 'Cámara apagada',
@@ -300,7 +317,14 @@ export default function FaceRegister() {
                 {/* Canvas oculto: se usa solo para capturar el fotograma. */}
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-                {estado === 'iniciando' && (
+                {estado === 'iniciando' && !consentimiento && (
+                  <div className="camera-placeholder">
+                    <i className="fa-solid fa-shield-halved"></i>
+                    <span>Marca la casilla de autorización para activar la cámara.</span>
+                  </div>
+                )}
+
+                {estado === 'iniciando' && consentimiento && (
                   <div className="camera-placeholder">
                     <i className="fa-solid fa-spinner fa-spin"></i>
                     <span>Iniciando cámara...</span>
