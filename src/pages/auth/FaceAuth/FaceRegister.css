@@ -333,6 +333,26 @@
   }
 }
 
+/* ---------- Tablet / móvil: una sola columna ----------
+   El contenedor global (.auth-container) pasa a 1 columna en <=900px.
+   En la página de registro facial queremos la CÁMARA primero y las
+   instrucciones debajo, así que invertimos el orden visual de las dos
+   secciones. El diseño de escritorio (2 columnas) no se altera. */
+@media (max-width: 900px) {
+  .fr-main .auth-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fr-main .auth-card {
+    order: 1; /* cámara arriba */
+  }
+
+  .fr-main .auth-info {
+    order: 2; /* instrucciones debajo */
+  }
+}
+
 /* ---------- Celular ---------- */
 @media (max-width: 575.98px) {
   .fr-topbar {
