@@ -13,6 +13,7 @@ import Usuarios from './pages/admin/Usuarios'
 import Casilleros from './pages/admin/Casilleros'
 
 import FaceRegister from './pages/auth/FaceAuth/FaceRegister'
+import PanelUsuario from './pages/usuario/PanelUsuario'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
@@ -41,8 +42,9 @@ export default function App() {
           </Route>
         </Route>
 
-        {/* Usuario (solo USUARIO): registro de rostro después del login */}
+        {/* Usuario (solo USUARIO): registro de rostro y panel */}
         <Route element={<ProtectedRoute rolPermitido="USUARIO" />}>
+          <Route path="/usuario" element={<PanelUsuario />} />
           <Route path="/usuario/registrar-rostro" element={<FaceRegister />} />
         </Route>
 

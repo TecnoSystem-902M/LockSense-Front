@@ -1,8 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../api/auth'
+import { registrarRostro } from '../../../api/rostros'
 import { cerrarSesionLocal, obtenerUsuario } from '../../../utils/session'
 import './FaceRegister.css'
+
+/**
+ * Mensajes para los códigos de error que devuelve el backend (campo `code`).
+ * Si llega un código desconocido, se usa un mensaje genérico.
+ */
+const MENSAJES_ERROR = {
+  imagen_invalida: 'La imagen no es válida. Vuelve a intentarlo.',
+  no_se_detecto_rostro: 'No detectamos tu rostro. Céntrate en el óvalo y repite.',
+  mas_de_un_rostro: 'Debe aparecer solo una persona en la cámara.',
+  calidad_insuficiente: 'La imagen no tiene calidad suficiente. Mejora la iluminación.',
+  procesamiento_fallido: 'No se pudo procesar la imagen. Intenta de nuevo.',
+  respuesta_invalida: 'No se pudo procesar la imagen. Intenta de nuevo.',
+  servicio_no_configurado: 'El servicio de reconocimiento facial no está disponible ahora.',
+  servicio_no_disponible: 'El servicio de reconocimiento facial no responde. Intenta más tarde.',
+  error_guardado: 'No se pudo guardar tu rostro. Intenta de nuevo.',
+}
 
 /**
  * HU10 - Registro de rostro (solo rol USUARIO).
@@ -25,6 +42,8 @@ export default function FaceRegister() {
   const usuario = obtenerUsuario()
 
   const videoRef = useRef(null)
+  // Canvas oculto para capturar el fotograma actual del vídeo.
+  const canvasRef = useRef(null)
   // El stream va en un ref (no en useState) para que la limpieza al salir
   // de la página siempre vea el stream actual y apague la cámara.
   const streamRef = useRef(null)
@@ -32,6 +51,7 @@ export default function FaceRegister() {
   const [estado, setEstado] = useState('iniciando')
   const [errorMsg, setErrorMsg] = useState('')
   const [consentimiento, setConsentimiento] = useState(false)
+  const [errorConsentimiento, setErrorConsentimiento] = useState(false)
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -44,6 +64,15 @@ export default function FaceRegister() {
   }, [])
 
   const startCamera = useCallback(async () => {
+    // Autorización obligatoria: sin consentimiento NO se enciende la cámara
+    // ni se inicia la captura. Es el primer control del flujo.
+    if (!consentimiento) {
+      stopCamera()
+      setErrorMsg('')
+      setEstado('iniciando')
+      return
+    }
+
     // Cerrar cualquier cámara abierta antes de abrir otra
     stopCamera()
     setErrorMsg('')
@@ -76,27 +105,88 @@ export default function FaceRegister() {
       )
       setEstado('error')
     }
-  }, [stopCamera])
+  }, [stopCamera, consentimiento])
 
+  // La cámara se enciende solo cuando hay consentimiento, y se apaga si el
+  // usuario lo retira. startCamera ya corta el encendido si falta autorización.
   useEffect(() => {
-    startCamera()
+    if (consentimiento) {
+      startCamera()
+    } else {
+      stopCamera()
+      setErrorMsg('')
+      setEstado('iniciando')
+    }
     return () => stopCamera() // apaga la cámara al salir de la página
-  }, [startCamera, stopCamera])
+  }, [consentimiento, startCamera, stopCamera])
 
   /**
-   * TODO (lógica - compañero):
-   *   1. Tomar la foto del <video> (canvas -> Blob JPG).
-   *   2. Enviarla a Laravel: POST /api/rostro (con token Sanctum).
-   *   3. Si responde error ('no_se_detecto_rostro', 'mas_de_un_rostro'),
-   *      lanzar un Error con el mensaje para mostrarlo en pantalla.
-   * Por ahora solo simula el proceso para poder ver el diseño.
+   * Captura el fotograma actual del <video> en un canvas y lo convierte en
+   * un Blob JPG. Devuelve el Blob o null si no se pudo capturar.
    */
-  const enviarRostro = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2200))
-  }
+  const capturarBlob = useCallback(() => {
+    return new Promise((resolve) => {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+        resolve(null)
+        return
+      }
+
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(null)
+        return
+      }
+      // Dibuja el fotograma tal cual (sin espejar: el espejo es solo visual).
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92)
+    })
+  }, [])
+
+  /**
+   * Toma la foto y la envía al backend (POST /api/rostro, campo `imagen`).
+   * Solo se considera éxito si el backend responde 201 con ok === true.
+   * Traduce los códigos de error conocidos a mensajes legibles.
+   */
+  const enviarRostro = useCallback(async () => {
+    const blob = await capturarBlob()
+    if (!blob) {
+      throw new Error('No se pudo capturar la imagen de la cámara. Intenta de nuevo.')
+    }
+
+    try {
+      const data = await registrarRostro(blob)
+      if (!data || data.ok !== true) {
+        // El backend no confirmó el guardado.
+        const code = data?.code
+        throw new Error(MENSAJES_ERROR[code] || 'No se pudo registrar tu rostro. Intenta de nuevo.')
+      }
+      return data
+    } catch (err) {
+      // Si es un Error que ya lanzamos arriba, se propaga su mensaje.
+      if (!err?.response) {
+        throw err
+      }
+      // Error HTTP del backend: usar el `code` del cuerpo para el mensaje.
+      const code = err.response?.data?.code
+      const mensaje = MENSAJES_ERROR[code]
+        || err.response?.data?.message
+        || 'No se pudo registrar tu rostro. Intenta de nuevo.'
+      const nuevoError = new Error(mensaje)
+      nuevoError.code = code
+      throw nuevoError
+    }
+  }, [capturarBlob])
 
   const handleRegistrar = async () => {
-    if (!consentimiento || estado !== 'lista') return
+    if (!consentimiento) {
+      setErrorConsentimiento(true)   // marca la casilla en rojo
+      return
+    }
+    if (estado !== 'lista') return
 
     setEstado('enviando')
     setErrorMsg('')
@@ -106,6 +196,13 @@ export default function FaceRegister() {
       stopCamera()
       setEstado('exito')
     } catch (err) {
+      // Si el usuario ya tenía un rostro activo, el registro no es necesario:
+      // se le lleva a su panel en lugar de mostrar un error.
+      if (err?.code === 'rostro_ya_registrado') {
+        stopCamera()
+        navigate(RUTA_PANEL_USUARIO, { replace: true })
+        return
+      }
       setErrorMsg(err?.message || 'No se pudo registrar tu rostro. Intenta de nuevo.')
       setEstado('lista')
     }
@@ -131,7 +228,7 @@ export default function FaceRegister() {
   const camaraEncendida = estado === 'lista' || estado === 'enviando'
 
   const textoBadge = {
-    iniciando: 'Iniciando cámara',
+    iniciando: consentimiento ? 'Iniciando cámara' : 'Esperando autorización',
     lista: 'Cámara activa',
     enviando: 'Procesando',
     error: 'Cámara apagada',
@@ -222,7 +319,17 @@ export default function FaceRegister() {
                   className={`camera-video ${camaraEncendida ? '' : 'hidden'}`}
                 />
 
-                {estado === 'iniciando' && (
+                {/* Canvas oculto: se usa solo para capturar el fotograma. */}
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+                {estado === 'iniciando' && !consentimiento && (
+                  <div className="camera-placeholder">
+                    <i className="fa-solid fa-shield-halved"></i>
+                    <span>Marca la casilla de autorización para activar la cámara.</span>
+                  </div>
+                )}
+
+                {estado === 'iniciando' && consentimiento && (
                   <div className="camera-placeholder">
                     <i className="fa-solid fa-spinner fa-spin"></i>
                     <span>Iniciando cámara...</span>
@@ -269,23 +376,33 @@ export default function FaceRegister() {
                 </button>
               ) : (
                 <>
-                  <label className="remember fr-consent">
-                    <input
-                      type="checkbox"
-                      checked={consentimiento}
-                      onChange={(e) => setConsentimiento(e.target.checked)}
-                      disabled={estado === 'enviando'}
-                    />
-                    <span>
-                      Acepto que LockSense procese mi rostro para el acceso a mi casillero.
-                    </span>
-                  </label>
+<label className={`remember fr-consent ${errorConsentimiento ? 'fr-consent-error' : ''}`}>
+  <input
+    type="checkbox"
+    checked={consentimiento}
+    onChange={(e) => {
+      setConsentimiento(e.target.checked)
+      if (e.target.checked) setErrorConsentimiento(false)   // quita el rojo al marcarla
+    }}
+    disabled={estado === 'enviando'}
+    aria-invalid={errorConsentimiento}
+  />
+  <span>
+    Acepto que LockSense procese mi rostro para el acceso a mi casillero.
+  </span>
+</label>
+
+{errorConsentimiento && (
+  <p className="ls-login-error-msg fr-consent-msg" role="alert">
+    Debes aceptar la autorización para registrar tu rostro.
+  </p>
+)}
 
                   <button
                     type="button"
                     className="auth-button fr-button"
                     onClick={handleRegistrar}
-                    disabled={!consentimiento || estado !== 'lista'}
+                    disabled={estado === 'enviando' || (consentimiento && estado !== 'lista')}
                   >
                     {estado === 'enviando' ? (
                       <>
