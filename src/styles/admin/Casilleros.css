@@ -775,10 +775,11 @@
   color: #c63e45;
 }
 
-/* El menú abierto deja 3 columnas; al ampliar el espacio se usan 4 */
+/* Distribución fija de 3 columnas en pantallas amplias para presentar la
+   cuadrícula de 6 casilleros como 2 filas × 3 columnas. */
 @media (min-width: 1450px) {
   .ls-casilleros-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -1032,5 +1033,254 @@
   .ls-casillero-modal-footer {
     flex-wrap: wrap;
     padding: 14px 18px;
+  }
+}
+
+
+/* =========================================================
+   FASE 2 UI/UX — soporte de modales de casilleros
+   (confirmación propia, nota informativa de UID, scroll)
+   ========================================================= */
+
+/* El modal se organiza en columna y limita su alto al viewport; el cuerpo
+   es el área desplazable, dejando encabezado y footer siempre visibles. */
+.ls-casillero-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+
+.ls-casillero-modal-header,
+.ls-casillero-modal-footer {
+  flex-shrink: 0;
+}
+
+.ls-casillero-modal-body {
+  overflow-y: auto;
+}
+
+/* Etiqueta de un dato informativo (no es un campo editable). Mantiene el
+   mismo peso visual que los <label> del formulario. */
+.ls-casillero-form-label {
+  color: #34463b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Texto informativo del UID RFID: aclara que el valor proviene de la
+   credencial del usuario, sin aparentar un input vacío. */
+.ls-casillero-form-nota {
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px dashed #d4ded8;
+  border-radius: 10px;
+  background: #f6f9f7;
+  color: #68776f;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* Mensaje del modal de confirmación (liberar / desbloquear). */
+.ls-casillero-confirmacion-texto {
+  margin: 0;
+  color: #4a5a51;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ls-casillero-confirmacion-texto strong {
+  color: #253b30;
+  font-weight: 700;
+}
+
+/* En pantallas pequeñas el footer puede envolver sus botones. */
+@media (max-width: 420px) {
+  .ls-casillero-modal-footer {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* =========================================================
+   MARCADORES VISUALES (placeholders) — no funcionales
+   Completan la cuadrícula de 6 casilleros (2×3). Se distinguen
+   claramente de los casilleros reales: atenuados, con borde
+   discontinuo y sin interacción.
+   ========================================================= */
+
+.ls-casillero-card-placeholder {
+  background: #f3f6f5;
+  border: 1.5px dashed #c3d2cb;
+  box-shadow: none;
+  opacity: 0.75;
+  cursor: default;
+  pointer-events: none; /* no interactúa: sin clics, sin acciones */
+  user-select: none;
+}
+
+.ls-casillero-card-placeholder .ls-casillero-card-titulo {
+  color: #9fb3aa;
+}
+
+.ls-casillero-card-placeholder .ls-casillero-card-titulo h3 {
+  color: #9fb3aa;
+}
+
+.ls-casillero-placeholder-badge {
+  color: #0f2922;
+  background: #d7e3dd;
+}
+
+.ls-casillero-placeholder-nota {
+  margin: auto 0 4px;
+  color: #8a9a92;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+
+/* =========================================================
+   MODAL DE CONFIRMACIÓN CENTRADO (liberar / desbloquear)
+   Layout inspirado en el diálogo de confirmación: icono
+   circular arriba, título, mensaje con el casillero en
+   negrita, nota secundaria y dos botones de igual ancho.
+   Identidad LockSense (#0f2922 / #10b981).
+   ========================================================= */
+
+.ls-casillero-confirm-modal {
+  position: relative;
+  max-width: 430px;
+  padding: 30px 28px 26px;
+  text-align: center;
+}
+
+/* Cierre discreto en la esquina superior derecha. */
+.ls-casillero-confirm-cerrar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.ls-casillero-confirm-cerrar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ls-casillero-confirm-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Icono circular (verde LockSense). */
+.ls-casillero-confirm-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  color: #0f2922;
+  background: #d8f3e7;
+  box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.12);
+}
+
+.ls-casillero-confirm-titulo {
+  margin: 0;
+  color: #0f2922;
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.ls-casillero-confirm-mensaje {
+  margin: 0;
+  max-width: 34ch;
+  color: #4a5a51;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.ls-casillero-confirm-mensaje strong {
+  color: #0f2922;
+  font-weight: 700;
+}
+
+/* Línea secundaria atenuada (consecuencia de la acción). */
+.ls-casillero-confirm-nota {
+  margin: 0;
+  max-width: 36ch;
+  color: #8a9a92;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.ls-casillero-confirm-error {
+  width: 100%;
+  margin-top: 4px;
+  text-align: left;
+}
+
+/* Botones: mismo ancho, acciones claramente diferenciadas. */
+.ls-casillero-confirm-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ls-casillero-confirm-btn {
+  flex: 1 1 0;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Cancelar: contorno (secundaria). */
+.ls-casillero-confirm-acciones .ls-casillero-cancelar {
+  border: 1.5px solid #0f2922;
+  color: #0f2922;
+  background: #ffffff;
+}
+
+.ls-casillero-confirm-acciones .ls-casillero-cancelar:hover:not(:disabled) {
+  border-color: #10b981;
+  color: #10b981;
+  transform: translateY(-1px);
+}
+
+/* Confirmar liberación: relleno (acción principal). */
+.ls-casillero-confirm-acciones .ls-casillero-guardar {
+  border: 1.5px solid #0f2922;
+  color: #ffffff;
+  background: #0f2922;
+}
+
+.ls-casillero-confirm-acciones .ls-casillero-guardar:hover:not(:disabled) {
+  background: #10b981;
+  border-color: #10b981;
+  transform: translateY(-1px);
+}
+
+.ls-casillero-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Adaptación a pantallas pequeñas: botones apilados y menos padding. */
+@media (max-width: 420px) {
+  .ls-casillero-confirm-modal {
+    padding: 26px 20px 22px;
+  }
+
+  .ls-casillero-confirm-acciones {
+    flex-direction: column-reverse;
   }
 }
