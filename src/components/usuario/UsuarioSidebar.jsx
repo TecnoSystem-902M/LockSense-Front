@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { BarChart3, History, LogOut } from 'lucide-react'
 import logoLockSense from '../../assets/logo.jpeg'
 import { cerrarSesion } from '../../api/auth'
-import '../../styles/admin/Sidebar.css' // O puedes crear un archivo específico si lo prefieres
 
 /* 
   ÍCONO DE CASILLERO PERSONALIZADO (Estilo Locker Room Vector)

@@ -212,8 +212,8 @@
 
 .ls-dashboard-usuario {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   color: #26352f;
 }
 
@@ -390,8 +390,9 @@
 
 .ls-mi-casillero {
   width: 100%;
-  max-width: 1150px;
-  margin: auto;
+  max-width: none;
+  margin: 0;
+  color: #26352f;
 }
 
 .ls-casillero-resumen {
@@ -583,8 +584,9 @@
 
 .ls-mi-actividad {
   width: 100%;
-  max-width: 1200px;
-  margin: auto;
+  max-width: none;
+  margin: 0;
+  color: #26352f;
 }
 
 .ls-actividad-panel {
@@ -1093,5 +1095,26 @@
   .ls-actividad-panel-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+/* =========================================
+   DESPLAZAMIENTO DEL CONTENIDO SEGÚN SIDEBAR
+========================================= */
+
+/* El main ocupa todo por defecto (sidebar cerrado) */
+.ls-usuario-main {
+  min-height: 100vh;
+  min-width: 0;
+  width: 100%;
+  margin-left: 0;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* En escritorio, si el sidebar está abierto, el main se recorre */
+@media (min-width: 768px) {
+  .ls-usuario-layout.ls-usuario-menu-abierto .ls-usuario-main {
+    margin-left: 260px; /* = --ls-usuario-sidebar-width */
+    width: calc(100% - 260px);
   }
 }
