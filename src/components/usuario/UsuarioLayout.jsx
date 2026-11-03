@@ -1,13 +1,6 @@
-
 import { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { Menu, UserRound, LogOut } from 'lucide-react'
-import { logout } from '../../api/auth'
-import {
-  cerrarSesionLocal,
-  obtenerUsuario,
-} from '../../utils/session'
-
+import { Outlet } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 import UsuarioSidebar from './UsuarioSidebar'
 import '../../styles/Usuarios/UsuarioLayout.css'
 
@@ -16,36 +9,18 @@ export default function UsuarioLayout() {
     () => window.innerWidth > 767.98
   )
 
-  const navigate = useNavigate()
-  const usuario = obtenerUsuario()
-
   const alternarMenu = () => {
-    setMenuAbierto(actual => !actual)
+    setMenuAbierto((actual) => !actual)
   }
 
   const cerrarMenu = () => {
-    if (window.innerWidth <= 767.98) {
-      setMenuAbierto(false)
-    }
-  }
-
-  const handleCerrarSesion = async () => {
-    try {
-      await logout()
-    } catch {
-      // La sesión local también debe cerrarse si falla la petición.
-    } finally {
-      cerrarSesionLocal()
-      navigate('/login', { replace: true })
-    }
+    setMenuAbierto(false)
   }
 
   return (
     <div
       className={`ls-usuario-layout ${
-        menuAbierto
-          ? 'ls-usuario-menu-abierto'
-          : 'ls-usuario-menu-cerrado'
+        menuAbierto ? 'ls-usuario-menu-abierto' : 'ls-usuario-menu-cerrado'
       }`}
     >
       <UsuarioSidebar
@@ -62,54 +37,32 @@ export default function UsuarioLayout() {
         />
       )}
 
-      <div className="ls-usuario-contenido">
+      <main className="ls-usuario-main">
         <header className="ls-usuario-header">
-          <div className="ls-usuario-header-titulo">
-            <button
-              type="button"
-              className="ls-usuario-menu-btn"
-              onClick={alternarMenu}
-              aria-label={
-                menuAbierto
-                  ? 'Ocultar navegación'
-                  : 'Mostrar navegación'
-              }
-              aria-expanded={menuAbierto}
-            >
-              <Menu size={23} />
-            </button>
+          <button
+            type="button"
+            className="ls-usuario-menu-btn"
+            onClick={alternarMenu}
+            aria-label={menuAbierto ? 'Ocultar menú' : 'Mostrar menú'}
+            aria-expanded={menuAbierto}
+          >
+            {menuAbierto ? <X size={23} /> : <Menu size={23} />}
+          </button>
 
-            <div>
-              <h1>Panel de Usuario</h1>
-              <p>Monitoreo del casillero y actividad</p>
-            </div>
-          </div>
+          <span className="ls-usuario-header-title">
+            Panel de usuario
+          </span>
 
-          <div className="ls-usuario-header-derecha">
-            <div className="ls-usuario-identidad">
-              <UserRound size={19} />
-              <span>Usuario</span>
-            </div>
-
-            <span className="ls-usuario-nombre">
-              {usuario?.nombre || 'Mi cuenta'}
-            </span>
-
-            <button
-              type="button"
-              className="ls-usuario-logout"
-              onClick={handleCerrarSesion}
-              title="Cerrar sesión"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
+          <span className="ls-usuario-status">
+            <span className="ls-usuario-status-dot"></span>
+            Usuario
+          </span>
         </header>
 
-        <main className="ls-usuario-main">
+        <section className="ls-usuario-content">
           <Outlet />
-        </main>
-      </div>
+        </section>
+      </main>
     </div>
   )
 }
