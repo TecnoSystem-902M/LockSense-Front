@@ -1,21 +1,17 @@
-import { NavLink } from 'react-router-dom'
-import {
-  BarChart3, // 1. Líneas verticales de estadísticas con grosor estilizado
-  History,   // 3. Formato de bitácora o reporte temporal enmarcado
-} from 'lucide-react'
-
-// Mantén tu logo importado normalmente
+import { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { BarChart3, History, LogOut } from 'lucide-react'
 import logoLockSense from '../../assets/logo.jpeg'
+import { cerrarSesion } from '../../api/auth'
+import '../../styles/admin/Sidebar.css' // O puedes crear un archivo específico si lo prefieres
 
 /* 
-  2. ICONO DE CASILLERO PERSONALIZADO (Estilo Locker Room Vector isolated EPS10)
-  Rediseñado con esquinas exteriores suaves, rejillas horizontales simétricas 
-  y manijas circulares limpias.
+  ÍCONO DE CASILLERO PERSONALIZADO (Estilo Locker Room Vector)
 */
 function IconoCasilleroCustom({ size = 20, strokeWidth = 2, ...props }) {
   return (
     <svg
-      xmlns="http://w3.org"
+      xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -45,60 +41,97 @@ function IconoCasilleroCustom({ size = 20, strokeWidth = 2, ...props }) {
   )
 }
 
-export default function UsuarioSidebar({ abierto, onCerrar }) {
-  const opciones = [
-    {
-      nombre: 'Dashboard',
-      ruta: '/usuario',
-      icono: BarChart3,
-      exacta: true,
-    },
-    {
-      nombre: 'Casillero',
-      ruta: '/usuario/casillero',
-      icono: IconoCasilleroCustom, // Renderiza el diseño vectorial limpio
-    },
-    {
-      nombre: 'Actividad',
-      ruta: '/usuario/actividad',
-      icono: History,
-    },
-  ]
+const opcionesUsuario = [
+  {
+    nombre: 'Dashboard',
+    ruta: '/usuario',
+    Icono: BarChart3,
+    exacta: true,
+  },
+  {
+    nombre: 'Casillero',
+    ruta: '/usuario/casillero',
+    Icono: IconoCasilleroCustom,
+  },
+  {
+    nombre: 'Actividad',
+    ruta: '/usuario/actividad',
+    Icono: History,
+  },
+]
+
+export default function UsuarioSidebar({ abierto, onCerrar, onCerrarSesion }) {
+  const navigate = useNavigate()
+  const [saliendo, setSaliendo] = useState(false)
+
+  const manejarCerrarSesion = async () => {
+    if (saliendo) return // evita doble clic
+    setSaliendo(true)
+
+    await cerrarSesion()  // borra el token en el back y en el navegador
+    onCerrarSesion?.()    // por si el componente padre necesita hacer algo más
+    onCerrar?.()          // cierra el menú en celular
+
+    // replace: el botón "Atrás" ya no regresa al dashboard
+    navigate('/login', { replace: true })
+  }
 
   return (
-    <aside className={`ls-usuario-sidebar ${abierto ? 'ls-usuario-sidebar-abierto' : ''}`}>
-      <div className="ls-usuario-brand">
-        <div className="ls-usuario-logo">
-          <img src={logoLockSense} alt="Logo de LockSense" />
-        </div>
-        <span>LockSense</span>
-      </div>
+    <>
+      {abierto && (
+        <div
+          className="ls-usuario-sidebar-overlay"
+          onClick={onCerrar}
+          aria-hidden="true"
+        />
+      )}
 
-      <nav className="ls-usuario-nav" aria-label="Menú de usuario">
-        {opciones.map(({ nombre, ruta, icono: Icono, exacta }) => (
-          <NavLink
-            key={ruta}
-            to={ruta}
-            end={exacta}
-            onClick={onCerrar}
-            className={({ isActive }) =>
-              `ls-usuario-nav-link${isActive ? ' activo' : ''}`
-            }
+      <aside className={`ls-usuario-sidebar-container ${abierto ? 'ls-usuario-sidebar-abierto' : ''}`}>
+        {/* Header con Logo circular, Título y Badge de Usuario */}
+        <div className="ls-usuario-sidebar-header">
+          <div className="ls-usuario-sidebar-logo-icon">
+            <img src={logoLockSense} alt="LockSense" className="ls-usuario-sidebar-logo-image" />
+          </div>
+          <h2 className="ls-usuario-sidebar-titulo">LockSense</h2>
+          <span className="ls-usuario-sidebar-rol">Usuario</span>
+        </div>
+
+        {/* Zona con scroll para navegación y botón salir */}
+        <div className="ls-usuario-sidebar-scroll">
+          <nav className="ls-usuario-sidebar-nav" aria-label="Menú de usuario">
+            {opcionesUsuario.map(({ nombre, ruta, Icono, exacta }) => (
+              <NavLink
+                key={ruta}
+                to={ruta}
+                end={exacta}
+                onClick={onCerrar}
+                className={({ isActive }) =>
+                  `ls-usuario-sidebar-link ${isActive ? 'activo' : ''}`
+                }
+              >
+                <Icono size={20} strokeWidth={1.6} />
+                <span>{nombre}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            className="ls-usuario-sidebar-logout"
+            onClick={manejarCerrarSesion}
+            disabled={saliendo}
           >
-            {/* Los tres iconos adoptan de forma unificada el grosor de trazo de tu primer diseño */}
-            <Icono size={20} strokeWidth={2} />
-            <span>{nombre}</span>
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="ls-usuario-sidebar-footer">
-        <div className="ls-usuario-avatar">U</div>
-        <div className="ls-usuario-footer-text">
-          <strong>Usuario</strong>
-          <span>LockSense</span>
+            <LogOut size={20} strokeWidth={1.6} />
+            <span>{saliendo ? 'Cerrando…' : 'Cerrar sesión'}</span>
+          </button>
         </div>
-      </div>
-    </aside>
+
+        {/* Footer con Copyright */}
+        <div className="ls-usuario-sidebar-footer">
+          <p>© 2026 LockSense.</p>
+          <p>Todos los derechos reservados.</p>
+        </div>
+      </aside>
+    </>
   )
 }
