@@ -15,9 +15,22 @@ export const resendCode = async (email) => {
   return data
 }
 
-// NUEVOS
-export const login = async (email, password) => {
-  const { data } = await api.post('/login', { email, password })
+// Login flexible: acepta un identificador de acceso que puede ser un correo
+// electrónico o el identificador (UUID) del usuario. Se envía al backend el
+// parámetro que corresponda según el contrato de la API (`email` o
+// `identificador`); el backend ya soporta ambos métodos.
+// `recordar` define cuánto dura el token en el servidor.
+const ES_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export const login = async (identidad, password, recordar = false) => {
+  const valor = (identidad ?? '').trim()
+  const payload = ES_CORREO.test(valor)
+    ? { email: valor, password }
+    : { identificador: valor, password }
+
+  payload.recordar = Boolean(recordar)
+
+  const { data } = await api.post('/login', payload)
   return data
 }
 
