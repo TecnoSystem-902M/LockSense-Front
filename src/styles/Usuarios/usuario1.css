@@ -407,38 +407,49 @@
 }
 
 .ls-casillero-ilustracion {
-  min-height: 245px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  gap: 12px;
+  align-items: center;   
+  gap: 16px;
 }
 
 .ls-casillero-ilustracion-contenedor {
-  width: 150px;
-  height: 190px;
-  border-radius: 12px;
-  position: relative;
-  box-shadow: 7px 7px 0 #dce7e1;
+  width: 260px;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  position: relative;
 }
 
 .ls-casillero-imagen-render {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 12px 18px rgba(20, 50, 38, 0.15));
+  transform: translateX(-30px);
 }
 
 .ls-casillero-estado {
-  padding: 7px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  align-self: center;
+  margin: 0 auto;
+  padding: 8px 26px;
   border-radius: 9px;
   background: #ffe0e0;
   color: #c43f3f;
   font-size: 13px;
   font-weight: 700;
+  text-align: center;
 }
 
 .ls-casillero-informacion {
@@ -495,7 +506,6 @@
   background: #102e25;
 }
 
-
 /* HISTORIAL DE ACCESOS */
 .ls-casillero-historial {
   background: white;
@@ -534,14 +544,12 @@
   overflow-x: auto;
 }
 
-.ls-casillero-tabla-scroll::-webkit-scrollbar,
-.ls-actividad-tabla-scroll::-webkit-scrollbar {
+.ls-casillero-tabla-scroll::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 
-.ls-casillero-tabla-scroll::-webkit-scrollbar-thumb,
-.ls-actividad-tabla-scroll::-webkit-scrollbar-thumb {
+.ls-casillero-tabla-scroll::-webkit-scrollbar-thumb {
   background: #a9c7b8;
   border-radius: 10px;
 }
@@ -573,8 +581,25 @@
   color: #536159;
 }
 
+.ls-usuario-tabla-accesos tbody tr {
+  transition: background 0.2s ease;
+}
+
+.ls-usuario-tabla-accesos tbody tr:hover {
+  background: #f0f8f4;
+}
+
 .ls-metodo-acceso {
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.ls-metodo-acceso svg {
+  color: #168d69;
+  flex-shrink: 0;
 }
 
 
@@ -596,15 +621,20 @@
   box-shadow: 0 6px 25px rgba(20, 50, 38, 0.06);
 }
 
+/* Cabecera del panel */
 .ls-actividad-panel-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   gap: 15px;
-  margin-bottom: 17px;
+  margin-bottom: 20px;
 }
 
-.ls-actividad-panel-header h3 {
+.ls-actividad-header-top {
+  display: flex;
+  align-items: center;
+}
+
+.ls-actividad-header-top h3 {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -614,60 +644,123 @@
   font-weight: 800;
 }
 
-.ls-actividad-panel-header h3 svg {
+.ls-actividad-header-top h3 svg {
   color: #18a879;
 }
 
-.ls-actividad-panel-header p {
-  margin: 5px 0 0;
-  color: #89958e;
-  font-size: 12px;
+/* Fila de Registros (Izquierda) y Controles (Derecha) */
+.ls-actividad-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.ls-actividad-total {
-  background: #e4f5ed;
-  color: #16875e;
-  padding: 7px 12px;
-  border-radius: 15px;
-  font-size: 12px;
+.ls-actividad-registros {
+  color: #526158;
+  font-size: 14px;
+}
+
+.ls-actividad-registros strong {
+  color: #168d69;
   font-weight: 700;
 }
 
-/* BUSCADOR */
+/* Contenedor de Filtro + Buscador a la derecha */
+.ls-actividad-controles {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Filtro y Buscador con sus etiquetas */
+.ls-actividad-filtro,
 .ls-actividad-busqueda {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 400px;
-  height: 42px;
-  padding: 0 13px;
-  margin-bottom: 17px;
-  background: #f1f5f3;
-  border: 1px solid #e2eae5;
-  border-radius: 9px;
-  color: #718078;
 }
 
-.ls-actividad-busqueda:focus-within {
+.ls-actividad-filtro label,
+.ls-actividad-busqueda label {
+  color: #526158;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Input de búsqueda */
+.ls-busqueda-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 260px;
+  height: 42px;
+  padding: 0 14px;
+  background: #ffffff;
+  border: 1px solid #dce5df;
+  border-radius: 8px;
+  color: #718078;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ls-busqueda-input-wrapper:focus-within {
   border-color: #259568;
   box-shadow: 0 0 0 3px rgba(37, 149, 104, 0.1);
 }
 
-.ls-actividad-busqueda input {
+.ls-busqueda-input-wrapper input {
   width: 100%;
   min-width: 0;
   border: none;
   outline: none;
   background: transparent;
   color: #26352f;
-  font-size: 13px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.ls-busqueda-input-wrapper input::placeholder {
+  color: #a0aba5;
+}
+
+/* Selector de Riesgo (Caja) */
+.ls-actividad-filtro select {
+  height: 42px;
+  padding: 0 36px 0 14px;
+  background: #ffffff;
+  border: 1px solid #dce5df;
+  border-radius: 8px;
+  color: #526158;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23526158%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 10px;
+}
+
+.ls-actividad-filtro select:focus {
+  border-color: #259568;
+  box-shadow: 0 0 0 3px rgba(37, 149, 104, 0.1);
 }
 
 /* TABLA DE ACTIVIDAD */
 .ls-actividad-tabla-scroll {
   width: 100%;
-  max-height: 450px;
-  overflow: auto;
+  border: 1px solid #dce5df;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ls-actividad-tabla-scroll.sin-scroll {
+  max-height: none;
 }
 
 .ls-actividad-tabla {
@@ -675,6 +768,7 @@
   min-width: 720px;
   border-collapse: collapse;
   text-align: center;
+  border: none;
 }
 
 .ls-actividad-tabla th {
@@ -686,6 +780,7 @@
   color: white;
   font-size: 12px;
   font-weight: 700;
+  border: 1px solid #102e25;
 }
 
 .ls-actividad-tabla td {
@@ -734,142 +829,6 @@
 .ls-actividad-vacio {
   padding: 30px !important;
   color: #89958e !important;
-}
-
-
-/* =========================================
-   TARJETAS DE ÚLTIMOS ACCESOS Y ACTIVIDAD
-========================================= */
-
-.ls-accesos-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 13px;
-  padding: 18px;
-  max-height: 440px;
-  overflow-y: auto;
-}
-
-.ls-acceso-card {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 16px;
-  min-width: 0;
-  background: #f7faf8;
-  border: 1px solid #e5eee9;
-  border-radius: 17px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.ls-acceso-card:hover,
-.ls-actividad-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 7px 18px rgba(20, 50, 38, 0.09);
-}
-
-.ls-acceso-card-icon {
-  width: 45px;
-  height: 45px;
-  min-width: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #168d69;
-  background: #d9f4e9;
-  border-radius: 13px;
-}
-
-.ls-acceso-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.ls-acceso-card-info strong {
-  color: #17392c;
-  font-size: 14px;
-}
-
-.ls-acceso-card-info span {
-  color: #82918a;
-  font-size: 12px;
-}
-
-.ls-acceso-confirmado {
-  margin-left: auto;
-  padding: 6px 9px;
-  background: #d9f5e9;
-  color: #16875e;
-  border-radius: 9px;
-  font-size: 10px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.ls-actividad-tarjetas {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 530px;
-  overflow-y: auto;
-  padding: 5px 8px 12px 3px;
-}
-
-.ls-actividad-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 17px;
-  background: #f8faf9;
-  border: 1px solid #e5eee9;
-  border-radius: 16px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.ls-actividad-card-id {
-  width: 43px;
-  height: 43px;
-  min-width: 43px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #102e25;
-  color: white;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.ls-actividad-card-contenido {
-  width: 100%;
-  min-width: 0;
-}
-
-.ls-actividad-card-titulo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.ls-actividad-card-titulo > strong {
-  color: #26352f;
-  font-size: 14px;
-}
-
-.ls-actividad-card-detalles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px 20px;
-  color: #82918a;
-  font-size: 12px;
-}
-
-.ls-actividad-card .ls-riesgo {
-  flex-shrink: 0;
 }
 
 
@@ -977,6 +936,60 @@
 
 
 /* =========================================
+   PAGINACIÓN
+========================================= */
+
+.ls-actividad-paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e2eae5;
+}
+
+.ls-paginacion-texto {
+  color: #526158;
+  font-size: 13px;
+}
+
+.ls-paginacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.ls-paginacion-btn {
+  padding: 8px 16px;
+  border: 1px solid #e2eae5;
+  border-radius: 8px;
+  background: transparent;
+  color: #526158;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ls-paginacion-btn:hover:not(:disabled) {
+  border-color: #168d69;
+  color: #168d69;
+  background: #f4faf7;
+}
+
+.ls-paginacion-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ls-paginacion-paginas {
+  color: #17392c;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+/* =========================================
    RESPONSIVE GLOBAL
 ========================================= */
 
@@ -1008,7 +1021,11 @@
     gap: 15px;
   }
   .ls-casillero-ilustracion {
-    min-height: 215px;
+    min-height: 260px;
+  }
+  .ls-casillero-ilustracion-contenedor {
+    width: 210px;
+    height: 260px;
   }
   .ls-casillero-informacion {
     grid-template-columns: 1fr;
@@ -1025,7 +1042,7 @@
   .ls-actividad-panel {
     padding: 14px;
   }
-  .ls-actividad-panel-header h3 {
+  .ls-actividad-header-izquierda h3 {
     font-size: 17px;
   }
   .ls-usuario-pagina-titulo h2 {
@@ -1036,25 +1053,6 @@
   }
   .ls-usuario-seccion-header h3 {
     font-size: 14px;
-  }
-  .ls-accesos-grid {
-    grid-template-columns: 1fr;
-    padding: 13px;
-  }
-  .ls-acceso-confirmado {
-    max-width: 100px;
-  }
-  .ls-actividad-card {
-    padding: 13px;
-    gap: 10px;
-  }
-  .ls-actividad-card-titulo {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .ls-actividad-card-detalles {
-    flex-direction: column;
-    gap: 5px;
   }
 }
 
@@ -1085,16 +1083,32 @@
   }
 }
 
-@media (max-width: 380px) {
-  .ls-acceso-card {
-    flex-wrap: wrap;
-  }
-  .ls-acceso-confirmado {
-    margin-left: 58px;
-  }
+@media (max-width: 500px) {
   .ls-actividad-panel-header {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
+  }
+  .ls-actividad-header-izquierda {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .ls-actividad-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .ls-actividad-busqueda {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ls-busqueda-input-wrapper {
+    width: 100%;
+  }
+  .ls-actividad-filtro,
+  .ls-actividad-filtro select {
+    width: 100%;
   }
 }
 
@@ -1102,7 +1116,6 @@
    DESPLAZAMIENTO DEL CONTENIDO SEGÚN SIDEBAR
 ========================================= */
 
-/* El main ocupa todo por defecto (sidebar cerrado) */
 .ls-usuario-main {
   min-height: 100vh;
   min-width: 0;
@@ -1111,10 +1124,9 @@
   transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
-/* En escritorio, si el sidebar está abierto, el main se recorre */
 @media (min-width: 768px) {
   .ls-usuario-layout.ls-usuario-menu-abierto .ls-usuario-main {
-    margin-left: 260px; /* = --ls-usuario-sidebar-width */
+    margin-left: 260px;
     width: calc(100% - 260px);
   }
 }

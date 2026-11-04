@@ -60,17 +60,15 @@ export default function MiCasillero() {
 
       <section className="ls-casillero-resumen">
         <div className="ls-casillero-ilustracion">
-  {/* Capa contenedora indispensable para aplicar el tamaño exacto y la máscara de recorte */}
-  <div className="ls-casillero-ilustracion-contenedor">
-    <img 
-      src={casilleroPersonalImg} 
-      alt="Casillero Personal" 
-      className="ls-casillero-imagen-render"
-    />
-  </div>
-  <span className="ls-casillero-estado">Cerrado</span>
-</div>
-
+          <div className="ls-casillero-ilustracion-contenedor">
+            <img
+              src={casilleroPersonalImg}
+              alt="Casillero Personal"
+              className="ls-casillero-imagen-render"
+            />
+          </div>
+          <span className="ls-casillero-estado">Cerrado</span>
+        </div>
 
         <div className="ls-casillero-informacion">
           <article className="ls-casillero-info-card">
@@ -108,9 +106,8 @@ export default function MiCasillero() {
             <div className="ls-info-lista">
               {estados.map((estado, index) => (
                 <div className="ls-info-registro" key={index}>
-                  <div className={`ls-info-icono ${
-                    estado === 'Abierto' ? 'estado-abierto' : 'estado-cerrado'
-                  }`}>
+                  <div className={`ls-info-icono ${estado === 'Abierto' ? 'estado-abierto' : 'estado-cerrado'
+                    }`}>
                     <LockKeyhole size={18} />
                   </div>
 
@@ -119,9 +116,8 @@ export default function MiCasillero() {
                     <span>Registro #{index + 1}</span>
                   </div>
 
-                  <span className={`ls-info-indicador ${
-                    estado === 'Abierto' ? 'abierto' : 'cerrado'
-                  }`} />
+                  <span className={`ls-info-indicador ${estado === 'Abierto' ? 'abierto' : 'cerrado'
+                    }`} />
                 </div>
               ))}
             </div>
@@ -135,23 +131,32 @@ export default function MiCasillero() {
           <span>10 registros</span>
         </div>
 
-        <div className="ls-accesos-grid">
-          {accesos.map((acceso, index) => (
-            <article className="ls-acceso-card" key={index}>
-              <div className="ls-acceso-card-icon">
-                {acceso.metodo === 'Rostro'
-                  ? <ScanFace size={23} />
-                  : <CreditCard size={23} />}
-              </div>
-
-              <div className="ls-acceso-card-info">
-                <strong>{acceso.metodo}</strong>
-                <span>{acceso.dia} · {acceso.hora}</span>
-              </div>
-
-              <span className="ls-acceso-confirmado">Acceso registrado</span>
-            </article>
-          ))}
+        <div className="ls-casillero-tabla-scroll">
+          <table className="ls-usuario-tabla-accesos">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Método</th>
+              </tr>
+            </thead>
+            <tbody>
+              {accesos.map((acceso, index) => (
+                <tr key={index}>
+                  <td>{acceso.dia}</td>
+                  <td>{acceso.hora}</td>
+                  <td>
+                    <span className="ls-metodo-acceso">
+                      {acceso.metodo === 'Rostro'
+                        ? <ScanFace size={18} />
+                        : <CreditCard size={18} />}
+                      {acceso.metodo}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
