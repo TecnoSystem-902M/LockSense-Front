@@ -19,6 +19,9 @@ import PanelUsuario from './pages/usuario/PanelUsuario'
 import MiCasillero from './pages/usuario/MiCasillero'
 import MiActividad from './pages/usuario/MiActividad'
 
+import SuperAdminLayout from './components/superadmin/SuperAdminLayout'
+import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard'
+
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
 
@@ -37,6 +40,14 @@ export default function App() {
         {/* Recuperación de contraseña */}
         <Route path="/olvidar" element={<Olvidar />} />
         <Route path="/recuperar" element={<Recuperar />} />
+
+        {/* Panel de Super administración */}
+        <Route element={<ProtectedRoute rolPermitido="SUPERADMIN" />}>
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+          <Route index element={<SuperAdminDashboard />} />
+
+          </Route>
+        </Route>
 
         {/* Panel de administración */}
         <Route element={<ProtectedRoute rolPermitido="ADMINISTRADOR" />}>
