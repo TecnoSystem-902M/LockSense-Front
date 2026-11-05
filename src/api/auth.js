@@ -1,4 +1,5 @@
 import api from './client'
+import { cerrarSesionLocal } from '../utils/session'
 
 export const register = async (payload) => {
   const { data } = await api.post('/register', payload)
@@ -57,4 +58,14 @@ export const resetPassword = async ({ email, token, password, password_confirmat
     password_confirmation,
   })
   return data
+}
+
+export const cerrarSesion = async () => {
+  try {
+    await logout()        // avisa al back que borre el token
+  } catch {
+    // si falla, no importa
+  } finally {
+    cerrarSesionLocal()   // borra la sesión del navegador
+  }
 }
