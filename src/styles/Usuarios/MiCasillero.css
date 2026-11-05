@@ -1,0 +1,482 @@
+/* =========================================
+   MI CASILLERO
+========================================= */
+
+.ls-mi-casillero {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  color: #26352f;
+}
+
+.ls-casillero-resumen {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 25px;
+  padding: 25px;
+  background: white;
+  border-radius: 25px;
+  box-shadow: 0 6px 25px rgba(20, 50, 38, 0.06);
+  margin-bottom: 25px;
+}
+
+.ls-casillero-ilustracion {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;   
+  gap: 16px;
+}
+
+.ls-casillero-ilustracion-contenedor {
+  width: 260px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  position: relative;
+}
+
+.ls-casillero-imagen-render {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 12px 18px rgba(20, 50, 38, 0.15));
+  transform: translateX(-30px);
+}
+
+.ls-casillero-estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  align-self: center;
+  margin: 0 auto;
+  padding: 8px 26px;
+  border-radius: 9px;
+  background: #ffe0e0;
+  color: #c43f3f;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ls-casillero-informacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  min-width: 0;
+}
+
+.ls-casillero-info-card {
+  min-width: 0;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e6eee9;
+  border-radius: 20px;
+  box-shadow: 0 5px 18px rgba(20, 50, 38, 0.05);
+}
+
+.ls-casillero-info-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 35px;
+  font-size: 14px;
+  margin: 0 0 12px;
+  color: #17392c;
+  font-weight: 800;
+}
+
+.ls-casillero-info-card h3 svg {
+  color: #18a879;
+}
+
+.ls-casillero-info-card p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  color: #56665d;
+  font-size: 13px;
+}
+
+.ls-punto-estado {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.ls-punto-estado.abierto {
+  background: #19b982;
+}
+
+.ls-punto-estado.cerrado {
+  background: #102e25;
+}
+
+/* HISTORIAL DE ACCESOS (TABLA) */
+.ls-casillero-historial {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 25px rgba(20, 50, 38, 0.06);
+}
+
+.ls-usuario-seccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background: #102e25;
+  color: white;
+}
+
+.ls-usuario-seccion-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ls-usuario-seccion-header span {
+  font-size: 12px;
+  color: #b8d9ca;
+}
+
+.ls-casillero-tabla-scroll {
+  max-height: 350px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.ls-casillero-tabla-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.ls-casillero-tabla-scroll::-webkit-scrollbar-thumb {
+  background: #a9c7b8;
+  border-radius: 10px;
+}
+
+.ls-usuario-tabla-accesos {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  min-width: 450px;
+}
+
+.ls-usuario-tabla-accesos th,
+.ls-usuario-tabla-accesos td {
+  padding: 13px;
+  border: 1px solid #dce5df;
+  font-size: 14px;
+}
+
+.ls-usuario-tabla-accesos th {
+  background: #edf5f0;
+  color: #17392c;
+  font-weight: 800;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ls-usuario-tabla-accesos td {
+  color: #536159;
+}
+
+.ls-usuario-tabla-accesos tbody tr {
+  transition: background 0.2s ease;
+}
+
+.ls-usuario-tabla-accesos tbody tr:hover {
+  background: #f0f8f4;
+}
+
+.ls-metodo-acceso {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.ls-metodo-acceso svg {
+  color: #168d69;
+  flex-shrink: 0;
+}
+
+/* LISTAS DE ÚLTIMOS MÉTODOS Y ESTADOS */
+.ls-info-contador {
+  margin-left: auto;
+  padding: 4px 8px;
+  background: #e0f5eb;
+  color: #16875e;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.ls-info-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 3px 6px 3px 0;
+}
+
+.ls-info-lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ls-info-lista::-webkit-scrollbar-thumb {
+  background: #a9c7b8;
+  border-radius: 10px;
+}
+
+.ls-info-registro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f7faf8;
+  border: 1px solid #e9f0ec;
+  border-radius: 12px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.ls-info-registro:hover {
+  background: #edf7f1;
+  transform: translateX(3px);
+}
+
+.ls-info-icono {
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #d9f4e9;
+  color: #168d69;
+}
+
+.ls-info-icono.estado-abierto {
+  background: #d9f4e9;
+  color: #168d69;
+}
+
+.ls-info-icono.estado-cerrado {
+  background: #e8eeea;
+  color: #52645b;
+}
+
+.ls-info-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ls-info-detalle strong {
+  color: #26352f;
+  font-size: 12px;
+}
+
+.ls-info-detalle span {
+  color: #89958e;
+  font-size: 10px;
+}
+
+.ls-info-indicador {
+  width: 9px;
+  height: 9px;
+  min-width: 9px;
+  margin-left: auto;
+  border-radius: 50%;
+}
+
+.ls-info-indicador.abierto {
+  background: #18b982;
+}
+
+.ls-info-indicador.cerrado {
+  background: #7d8982;
+}
+
+/* =========================================
+   RESPONSIVE CASILLERO
+========================================= */
+
+/* TABLET: imagen en columna angosta, listas lado a lado */
+@media (max-width: 1000px) {
+  .ls-casillero-resumen {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .ls-casillero-ilustracion { min-height: 0; }
+
+  .ls-casillero-ilustracion-contenedor {
+    width: 180px;
+    height: 230px;
+  }
+
+  .ls-casillero-imagen-render { transform: translateX(-20px); }
+}
+
+/* CELULAR: franja horizontal con el casillero y listas en 2 columnas */
+@media (max-width: 700px) {
+  .ls-casillero-resumen {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+
+  /* Imagen a la izquierda, estado a la derecha */
+  .ls-casillero-ilustracion {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0 12px;
+    border-bottom: 1px solid #edf2ef;
+  }
+
+  .ls-casillero-ilustracion-contenedor {
+    width: 105px;
+    height: 135px;
+    flex-shrink: 0;
+  }
+
+  .ls-casillero-imagen-render { transform: translateX(-12px); }
+
+  .ls-casillero-estado {
+    margin: 0;
+    padding: 10px 22px;
+    font-size: 14px;
+  }
+
+  /* Últimos métodos y últimos estados, lado a lado */
+  .ls-casillero-informacion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ls-casillero-info-card {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .ls-casillero-info-card h3 {
+    min-height: 0;
+    gap: 5px;
+    margin-bottom: 9px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .ls-casillero-info-card h3 svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .ls-info-contador {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .ls-info-lista {
+    max-height: 230px;
+    gap: 6px;
+    padding-right: 3px;
+  }
+
+  .ls-info-registro {
+    gap: 7px;
+    padding: 7px;
+    border-radius: 10px;
+  }
+
+  .ls-info-registro:hover { transform: none; }
+
+  .ls-info-icono {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 8px;
+  }
+
+  .ls-info-icono svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .ls-info-detalle strong { font-size: 11px; }
+
+  .ls-info-detalle span {
+    font-size: 9.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ls-info-indicador {
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+  }
+
+  /* Tabla compacta: cabe sin scroll horizontal */
+  .ls-casillero-historial { border-radius: 16px; }
+
+  .ls-usuario-seccion-header { padding: 12px 14px; }
+
+  .ls-usuario-seccion-header h3 {
+    gap: 7px;
+    font-size: 14px;
+  }
+
+  .ls-usuario-seccion-header h3 svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .ls-usuario-seccion-header span { font-size: 11px; }
+
+  .ls-usuario-tabla-accesos { min-width: 0; }
+
+  .ls-usuario-tabla-accesos th,
+  .ls-usuario-tabla-accesos td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .ls-metodo-acceso { gap: 5px; }
+
+  .ls-metodo-acceso svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* CELULARES MUY ANGOSTOS: las listas sí se apilan para que se puedan leer */
+@media (max-width: 350px) {
+  .ls-casillero-informacion { grid-template-columns: 1fr; }
+  .ls-info-lista { max-height: 200px; }
+}

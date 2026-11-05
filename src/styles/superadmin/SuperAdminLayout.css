@@ -1,0 +1,171 @@
+/* =========================================
+   SUPERADMIN LAYOUT - LOCKSENSE
+========================================= */
+
+.ls-superadmin-layout {
+  --ls-superadmin-sidebar-width: 250px;
+  min-height: 100vh;
+  width: 100%;
+  background: #f2f5f4;
+}
+
+.ls-superadmin-main {
+  min-height: 100vh;
+  min-width: 0;
+  width: 100%;
+  margin-left: 0;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* HEADER */
+
+.ls-superadmin-header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border-bottom: 1px solid #e2e9e6;
+}
+
+.ls-superadmin-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #173b30;
+}
+
+/* BOTÓN MENÚ (HAMBURGUESA / X) */
+
+.ls-superadmin-menu-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #0b6348;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: color 0.25s ease;
+}
+
+.ls-superadmin-menu-btn::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 0;
+  height: 0;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  background: #d5f5e9;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.ls-superadmin-menu-btn:hover::before {
+  width: 150%;
+  height: 150%;
+}
+
+/* CONTENIDO */
+
+.ls-superadmin-content {
+  padding: 24px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ESTADO (PILL VERDE) */
+
+.ls-superadmin-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #dce9e2;
+  border-radius: 20px;
+  color: #39745b;
+  background: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ls-superadmin-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #25a66a;
+}
+
+/* DESPLAZAMIENTO DEL CONTENIDO */
+
+@media (min-width: 768px) {
+  .ls-superadmin-layout.ls-superadmin-menu-abierto .ls-superadmin-main {
+    margin-left: var(--ls-superadmin-sidebar-width);
+    width: calc(100% - var(--ls-superadmin-sidebar-width));
+  }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 767.98px) {
+  .ls-superadmin-header {
+    padding: 0 14px;
+  }
+
+  .ls-superadmin-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ls-superadmin-header {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .ls-superadmin-menu-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ls-superadmin-header-title {
+    min-width: 0;
+    flex: 1;
+    font-size: 13px;
+  }
+
+  .ls-superadmin-status {
+    max-width: 100%;
+    padding: 6px 9px;
+    font-size: 10px;
+    white-space: normal;
+  }
+
+  .ls-superadmin-content {
+    padding: 12px;
+  }
+}
+
+/* ACCESIBILIDAD (REDUCED MOTION) */
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-superadmin-main,
+  .ls-superadmin-menu-btn,
+  .ls-superadmin-menu-btn::before {
+    transition: none;
+  }
+}
