@@ -1,27 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Activity,
   Search,
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react'
+import { obtenerMiActividad } from '../../api/usuario'
 import '../../styles/Usuarios/MiActividad.css'
-
-const actividades = [
-  { id: 1, usuario: 'Juan Perez', tipo: 'Abierto', fecha: '23/09/2026', hora: '12:00', riesgo: 'Seguro' },
-  { id: 2, usuario: 'Lupita Tellez', tipo: 'Ingreso de contraseña incorrecta', fecha: '14/09/2026', hora: '15:40', riesgo: 'Sospechoso' },
-  { id: 3, usuario: 'Ana Lucia', tipo: 'Cerrado', fecha: '30/09/2026', hora: '09:00', riesgo: 'Seguro' },
-  { id: 4, usuario: 'Gabriel Sanchez', tipo: 'La puerta a sido golpeada', fecha: '25/09/2026', hora: '16:50', riesgo: 'Sospechoso' },
-  { id: 5, usuario: 'Juan Perez', tipo: 'Acceso RFID/NFC', fecha: '24/09/2026', hora: '10:30', riesgo: 'Seguro' },
-  { id: 6, usuario: 'Ana Lucia', tipo: 'Acceso facial', fecha: '24/09/2026', hora: '11:15', riesgo: 'Seguro' },
-  { id: 7, usuario: 'Lupita Tellez', tipo: 'Intento de acceso fallido', fecha: '22/09/2026', hora: '14:20', riesgo: 'Sospechoso' },
-  { id: 8, usuario: 'Juan Perez', tipo: 'Cerrado', fecha: '21/09/2026', hora: '17:45', riesgo: 'Seguro' },
-  { id: 9, usuario: 'Gabriel Sanchez', tipo: 'Acceso RFID/NFC', fecha: '20/09/2026', hora: '08:40', riesgo: 'Seguro' },
-  { id: 10, usuario: 'Ana Lucia', tipo: 'Intento de acceso fallido', fecha: '19/09/2026', hora: '13:10', riesgo: 'Sospechoso' },
-  { id: 11, usuario: 'Juan Perez', tipo: 'Abierto', fecha: '18/09/2026', hora: '09:20', riesgo: 'Seguro' },
-  { id: 12, usuario: 'Lupita Tellez', tipo: 'Cerrado', fecha: '17/09/2026', hora: '18:00', riesgo: 'Seguro' },
-  { id: 13, usuario: 'Gabriel Sanchez', tipo: 'Acceso facial', fecha: '16/09/2026', hora: '08:15', riesgo: 'Seguro' },
-]
 
 const ITEMS_POR_PAGINA = 5
 
@@ -29,6 +14,29 @@ export default function MiActividad() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroRiesgo, setFiltroRiesgo] = useState('Todos')
   const [paginaActual, setPaginaActual] = useState(1)
+
+  const [actividades, setActividades] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let activo = true
+
+    obtenerMiActividad()
+      .then((respuesta) => {
+        if (activo) setActividades(respuesta.actividades ?? [])
+      })
+      .catch(() => {
+        if (activo) setError('No se pudo cargar tu actividad. Intenta de nuevo más tarde.')
+      })
+      .finally(() => {
+        if (activo) setCargando(false)
+      })
+
+    return () => {
+      activo = false
+    }
+  }, [])
 
   // Filtrado por búsqueda y por nivel de riesgo
   const resultados = actividades.filter((actividad) => {
@@ -66,6 +74,7 @@ export default function MiActividad() {
       <div className="ls-usuario-pagina-titulo">
         <h2>Mi actividad</h2>
         <p>Monitorea los movimientos y eventos de seguridad.</p>
+        {error && <p className="ls-dashboard-error">{error}</p>}
       </div>
 
       <section className="ls-actividad-panel">
@@ -127,7 +136,7 @@ export default function MiActividad() {
             </thead>
             <tbody>
               {resultadosPaginados.map((actividad) => (
-                <tr key={actividad.id}>
+                <tr key={actividad.clave}>
                   <td>{actividad.id}</td>
                   <td>{actividad.usuario}</td>
                   <td>{actividad.tipo}</td>
@@ -150,10 +159,20 @@ export default function MiActividad() {
                 </tr>
               ))}
 
-              {resultados.length === 0 && (
+              {cargando && (
                 <tr>
                   <td colSpan="5" className="ls-actividad-vacio">
-                    No se encontraron actividades.
+                    Cargando actividad…
+                  </td>
+                </tr>
+              )}
+
+              {!cargando && resultados.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="ls-actividad-vacio">
+                    {actividades.length === 0 && !error
+                      ? 'Todavía no hay actividad registrada.'
+                      : 'No se encontraron actividades.'}
                   </td>
                 </tr>
               )}

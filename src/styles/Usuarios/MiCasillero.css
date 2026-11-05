@@ -327,3 +327,18 @@
   .ls-usuario-seccion-header { padding: 13px; }
   .ls-usuario-seccion-header h3 { font-size: 14px; }
 }
+
+.ls-casillero-estado.abierto {
+  background: #d9f5e9;
+  color: #16875e;
+}
+
+.ls-casillero-estado.cerrado {
+  background: #e8eeea;
+  color: #3f5249;
+}
+
+.ls-casillero-estado.bloqueado {
+  background: #ffe0e0;
+  color: #c43f3f;
+}
