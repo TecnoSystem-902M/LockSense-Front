@@ -417,6 +417,8 @@
 }
 
 /* RESPONSIVE DEL PANEL */
+
+/* Tablet: tarjetas un poco más compactas */
 @media (max-width: 900px) {
   .ls-usuario-stats { gap: 12px; }
   .ls-usuario-stat-card { padding: 15px; gap: 10px; }
@@ -425,12 +427,66 @@
   .ls-usuario-stat-info strong { font-size: 20px; }
 }
 
+/* Celular: las 3 tarjetas siguen en una fila, con el ícono arriba del texto */
 @media (max-width: 600px) {
   .ls-dashboard-bienvenida h2 { font-size: 20px; }
-  .ls-usuario-stats { grid-template-columns: 1fr; gap: 12px; }
-  .ls-usuario-stat-card { min-height: 85px; padding: 15px 18px; }
+
+  .ls-usuario-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .ls-usuario-stat-card {
+    min-height: 0;
+    padding: 12px 6px;
+    flex-direction: column;     /* ícono arriba, texto abajo */
+    justify-content: center;
+    gap: 8px;
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .ls-usuario-stat-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .ls-usuario-stat-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .ls-usuario-stat-info {
+    align-items: center;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .ls-usuario-stat-info > span {
+    font-size: 10.5px;
+    line-height: 1.2;
+  }
+
+  .ls-usuario-stat-info strong {
+    font-size: 15px;
+    overflow-wrap: anywhere;   /* "Desocupado" o "En alerta" no se salen de la tarjeta */
+  }
+
+  .ls-usuario-check { margin-left: 3px; }
+
+  /* La gráfica se queda igual que antes */
   .ls-usuario-grafica-card { padding: 19px 14px; border-radius: 19px; }
   .ls-usuario-grafica-titulo h2 { font-size: 17px; }
   .ls-usuario-grafica-contenido { height: 245px; }
   .ls-usuario-btn-reporte { width: 100%; }
+}
+
+/* Celulares muy angostos */
+@media (max-width: 380px) {
+  .ls-usuario-stats { gap: 6px; }
+  .ls-usuario-stat-card { padding: 10px 4px; }
+  .ls-usuario-stat-info > span { font-size: 9.5px; }
+  .ls-usuario-stat-info strong { font-size: 13.5px; }
 }

@@ -144,11 +144,17 @@
   width: 100%;
   border: 1px solid #dce5df;
   border-radius: 14px;
-  overflow: hidden;
+  overflow-x: auto;                    /* scroll horizontal cuando no cabe */
+  -webkit-overflow-scrolling: touch;   /* scroll suave en iPhone */
 }
 
-.ls-actividad-tabla-scroll.sin-scroll {
-  max-height: none;
+.ls-actividad-tabla-scroll::-webkit-scrollbar {
+  height: 7px;
+}
+
+.ls-actividad-tabla-scroll::-webkit-scrollbar-thumb {
+  background: #a9c7b8;
+  border-radius: 10px;
 }
 
 .ls-actividad-tabla {
@@ -281,4 +287,57 @@
   .ls-actividad-busqueda { width: 100%; flex-direction: column; align-items: flex-start; }
   .ls-busqueda-input-wrapper { width: 100%; }
   .ls-actividad-filtro, .ls-actividad-filtro select { width: 100%; }
+}/* RESPONSIVE ACTIVIDAD */
+@media (max-width: 700px) {
+  .ls-actividad-panel { padding: 14px; }
+  .ls-actividad-header-top h3 { font-size: 17px; }
+
+  /* "Registros totales" arriba; filtro y búsqueda juntos abajo */
+  .ls-actividad-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ls-actividad-controles {
+    width: 100%;
+    gap: 8px;
+  }
+
+  /* Se ocultan "Riesgo:" y "Buscar:" para ganar espacio */
+  .ls-actividad-filtro label,
+  .ls-actividad-busqueda label {
+    display: none;
+  }
+
+  .ls-actividad-filtro { flex-shrink: 0; }
+
+  .ls-actividad-filtro select {
+    height: 40px;
+    padding: 0 30px 0 10px;
+    font-size: 13px;
+    background-position: right 10px center;
+  }
+
+  .ls-actividad-busqueda {
+    flex: 1;          /* la búsqueda ocupa el resto de la línea */
+    min-width: 0;
+  }
+
+  .ls-busqueda-input-wrapper {
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    gap: 7px;
+  }
+
+  .ls-busqueda-input-wrapper input { font-size: 13px; }
+
+  /* Paginación más compacta */
+  .ls-actividad-paginacion {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 14px;
+  }
 }

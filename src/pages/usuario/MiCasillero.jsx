@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   LockKeyhole,
   KeyRound,
@@ -5,57 +6,77 @@ import {
   ScanFace,
   Clock,
 } from 'lucide-react'
+import { obtenerMiCasillero } from '../../api/usuario'
 import '../../styles/Usuarios/MiCasillero.css'
 
 // IMPORTAMOS LA IMAGEN DEL CASILLERO DESDE TU CARPETA ASSETS
 import casilleroPersonalImg from '../../assets/casillero-personal.png'
 
-const metodos = [
-  'RFID/NFC',
-  'Rostro',
-  'RFID/NFC',
-  'Rostro',
-  'RFID/NFC',
-  'Rostro',
-  'RFID/NFC',
-  'Rostro',
-  'RFID/NFC',
-  'Rostro',
-]
+// Texto y clase de la etiqueta según el estado que manda el back.
+const ESTADOS_PUERTA = {
+  ABIERTO:   { texto: 'Abierto',   clase: 'abierto' },
+  CERRADO:   { texto: 'Cerrado',   clase: 'cerrado' },
+  BLOQUEADO: { texto: 'Bloqueado', clase: 'bloqueado' },
+}
 
-const estados = [
-  'Cerrado',
-  'Abierto',
-  'Cerrado',
-  'Cerrado',
-  'Abierto',
-  'Cerrado',
-  'Abierto',
-  'Cerrado',
-  'Cerrado',
-  'Abierto',
-]
+function IconoMetodo({ metodo }) {
+  return metodo === 'Rostro'
+    ? <ScanFace size={18} />
+    : <CreditCard size={18} />
+}
 
-const accesos = [
-  { dia: 'Hoy', hora: '10:32', metodo: 'RFID/NFC' },
-  { dia: 'Ayer', hora: '16:45', metodo: 'Rostro' },
-  { dia: 'Ayer', hora: '12:20', metodo: 'RFID/NFC' },
-  { dia: '30 Oct', hora: '09:15', metodo: 'Rostro' },
-  { dia: '29 Oct', hora: '18:30', metodo: 'RFID/NFC' },
-  { dia: '28 Oct', hora: '11:05', metodo: 'Rostro' },
-  { dia: '27 Oct', hora: '14:40', metodo: 'RFID/NFC' },
-  { dia: '26 Oct', hora: '08:50', metodo: 'Rostro' },
-  { dia: '25 Oct', hora: '17:10', metodo: 'RFID/NFC' },
-  { dia: '24 Oct', hora: '13:25', metodo: 'Rostro' },
-]
+function SinRegistros() {
+  return (
+    <div className="ls-info-registro">
+      <div className="ls-info-detalle">
+        <span>Sin registros todavía.</span>
+      </div>
+    </div>
+  )
+}
 
 export default function MiCasillero() {
+  const [datos, setDatos] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let activo = true
+
+    obtenerMiCasillero()
+      .then((respuesta) => {
+        if (activo) setDatos(respuesta)
+      })
+      .catch(() => {
+        if (activo) setError('No se pudo cargar la información de tu casillero.')
+      })
+      .finally(() => {
+        if (activo) setCargando(false)
+      })
+
+    return () => {
+      activo = false
+    }
+  }, [])
+
+  const accesos = datos?.accesos ?? []
+  const estados = datos?.estados ?? []
+  const estadoPuerta = ESTADOS_PUERTA[datos?.estado]
+
+  let textoEtiqueta = estadoPuerta?.texto ?? 'Sin casillero'
+  if (cargando) textoEtiqueta = 'Cargando…'
+  if (error) textoEtiqueta = '—'
+
   return (
     <div className="ls-mi-casillero">
 
       <div className="ls-usuario-pagina-titulo">
-        <h2>Mi casillero</h2>
+        <h2>
+          Mi casillero
+          {datos?.casillero ? ` ${datos.casillero}` : ''}
+        </h2>
         <p>Consulta el estado y los accesos de tu casillero.</p>
+        {error && <p className="ls-dashboard-error">{error}</p>}
       </div>
 
       <section className="ls-casillero-resumen">
@@ -67,68 +88,77 @@ export default function MiCasillero() {
               className="ls-casillero-imagen-render"
             />
           </div>
-          <span className="ls-casillero-estado">Cerrado</span>
+          <span className={`ls-casillero-estado ${estadoPuerta?.clase ?? ''}`}>
+            {textoEtiqueta}
+          </span>
         </div>
 
         <div className="ls-casillero-informacion">
+          {/* ÚLTIMOS MÉTODOS */}
           <article className="ls-casillero-info-card">
             <h3>
               <KeyRound size={19} />
               Últimos métodos
-              <span className="ls-info-contador">10</span>
+              <span className="ls-info-contador">{accesos.length}</span>
             </h3>
 
             <div className="ls-info-lista">
-              {metodos.map((metodo, index) => (
-                <div className="ls-info-registro" key={index}>
+              {!cargando && accesos.length === 0 && <SinRegistros />}
+
+              {accesos.map((acceso) => (
+                <div className="ls-info-registro" key={acceso.id}>
                   <div className="ls-info-icono">
-                    {metodo === 'Rostro'
-                      ? <ScanFace size={18} />
-                      : <CreditCard size={18} />}
+                    <IconoMetodo metodo={acceso.metodo} />
                   </div>
 
                   <div className="ls-info-detalle">
-                    <strong>{metodo}</strong>
-                    <span>Registro #{index + 1}</span>
+                    <strong>{acceso.metodo}</strong>
+                    <span>{acceso.fecha} · {acceso.hora}</span>
                   </div>
                 </div>
               ))}
             </div>
           </article>
 
+          {/* ÚLTIMOS ESTADOS */}
           <article className="ls-casillero-info-card">
             <h3>
               <LockKeyhole size={19} />
               Últimos estados
-              <span className="ls-info-contador">10</span>
+              <span className="ls-info-contador">{estados.length}</span>
             </h3>
 
             <div className="ls-info-lista">
-              {estados.map((estado, index) => (
-                <div className="ls-info-registro" key={index}>
-                  <div className={`ls-info-icono ${estado === 'Abierto' ? 'estado-abierto' : 'estado-cerrado'
-                    }`}>
-                    <LockKeyhole size={18} />
-                  </div>
+              {!cargando && estados.length === 0 && <SinRegistros />}
 
-                  <div className="ls-info-detalle">
-                    <strong>{estado}</strong>
-                    <span>Registro #{index + 1}</span>
-                  </div>
+              {estados.map((registro) => {
+                const abierto = registro.estado === 'ABIERTO'
 
-                  <span className={`ls-info-indicador ${estado === 'Abierto' ? 'abierto' : 'cerrado'
-                    }`} />
-                </div>
-              ))}
+                return (
+                  <div className="ls-info-registro" key={registro.id}>
+                    <div className={`ls-info-icono ${abierto ? 'estado-abierto' : 'estado-cerrado'}`}>
+                      <LockKeyhole size={18} />
+                    </div>
+
+                    <div className="ls-info-detalle">
+                      <strong>{abierto ? 'Abierto' : 'Cerrado'}</strong>
+                      <span>{registro.fecha} · {registro.hora}</span>
+                    </div>
+
+                    <span className={`ls-info-indicador ${abierto ? 'abierto' : 'cerrado'}`} />
+                  </div>
+                )
+              })}
             </div>
           </article>
         </div>
       </section>
 
+      {/* ÚLTIMOS ACCESOS */}
       <section className="ls-casillero-historial">
         <div className="ls-usuario-seccion-header">
           <h3><Clock size={20} /> Últimos accesos</h3>
-          <span>10 registros</span>
+          <span>{accesos.length} {accesos.length === 1 ? 'registro' : 'registros'}</span>
         </div>
 
         <div className="ls-casillero-tabla-scroll">
@@ -141,15 +171,19 @@ export default function MiCasillero() {
               </tr>
             </thead>
             <tbody>
-              {accesos.map((acceso, index) => (
-                <tr key={index}>
-                  <td>{acceso.dia}</td>
+              {!cargando && accesos.length === 0 && (
+                <tr>
+                  <td colSpan={3}>Sin accesos registrados todavía.</td>
+                </tr>
+              )}
+
+              {accesos.map((acceso) => (
+                <tr key={acceso.id}>
+                  <td>{acceso.fecha}</td>
                   <td>{acceso.hora}</td>
                   <td>
                     <span className="ls-metodo-acceso">
-                      {acceso.metodo === 'Rostro'
-                        ? <ScanFace size={18} />
-                        : <CreditCard size={18} />}
+                      <IconoMetodo metodo={acceso.metodo} />
                       {acceso.metodo}
                     </span>
                   </td>
