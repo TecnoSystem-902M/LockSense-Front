@@ -315,30 +315,168 @@
   background: #7d8982;
 }
 
-/* RESPONSIVE CASILLERO */
+/* =========================================
+   RESPONSIVE CASILLERO
+========================================= */
+
+/* TABLET: imagen en columna angosta, listas lado a lado */
+@media (max-width: 1000px) {
+  .ls-casillero-resumen {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .ls-casillero-ilustracion { min-height: 0; }
+
+  .ls-casillero-ilustracion-contenedor {
+    width: 180px;
+    height: 230px;
+  }
+
+  .ls-casillero-imagen-render { transform: translateX(-20px); }
+}
+
+/* CELULAR: franja horizontal con el casillero y listas en 2 columnas */
 @media (max-width: 700px) {
-  .ls-casillero-resumen { grid-template-columns: 1fr; padding: 17px; gap: 15px; }
-  .ls-casillero-ilustracion { min-height: 260px; }
-  .ls-casillero-ilustracion-contenedor { width: 210px; height: 260px; }
+  .ls-casillero-resumen {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+
+  /* Imagen a la izquierda, estado a la derecha */
+  .ls-casillero-ilustracion {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0 12px;
+    border-bottom: 1px solid #edf2ef;
+  }
+
+  .ls-casillero-ilustracion-contenedor {
+    width: 105px;
+    height: 135px;
+    flex-shrink: 0;
+  }
+
+  .ls-casillero-imagen-render { transform: translateX(-12px); }
+
+  .ls-casillero-estado {
+    margin: 0;
+    padding: 10px 22px;
+    font-size: 14px;
+  }
+
+  /* Últimos métodos y últimos estados, lado a lado */
+  .ls-casillero-informacion {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ls-casillero-info-card {
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  .ls-casillero-info-card h3 {
+    min-height: 0;
+    gap: 5px;
+    margin-bottom: 9px;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .ls-casillero-info-card h3 svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+
+  .ls-info-contador {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .ls-info-lista {
+    max-height: 230px;
+    gap: 6px;
+    padding-right: 3px;
+  }
+
+  .ls-info-registro {
+    gap: 7px;
+    padding: 7px;
+    border-radius: 10px;
+  }
+
+  .ls-info-registro:hover { transform: none; }
+
+  .ls-info-icono {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 8px;
+  }
+
+  .ls-info-icono svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .ls-info-detalle strong { font-size: 11px; }
+
+  .ls-info-detalle span {
+    font-size: 9.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ls-info-indicador {
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+  }
+
+  /* Tabla compacta: cabe sin scroll horizontal */
+  .ls-casillero-historial { border-radius: 16px; }
+
+  .ls-usuario-seccion-header { padding: 12px 14px; }
+
+  .ls-usuario-seccion-header h3 {
+    gap: 7px;
+    font-size: 14px;
+  }
+
+  .ls-usuario-seccion-header h3 svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .ls-usuario-seccion-header span { font-size: 11px; }
+
+  .ls-usuario-tabla-accesos { min-width: 0; }
+
+  .ls-usuario-tabla-accesos th,
+  .ls-usuario-tabla-accesos td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .ls-metodo-acceso { gap: 5px; }
+
+  .ls-metodo-acceso svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* CELULARES MUY ANGOSTOS: las listas sí se apilan para que se puedan leer */
+@media (max-width: 350px) {
   .ls-casillero-informacion { grid-template-columns: 1fr; }
-  .ls-casillero-info-card { padding: 13px; }
-  .ls-casillero-info-card h3 { font-size: 12px; }
-  .ls-casillero-info-card p { font-size: 11px; }
-  .ls-usuario-seccion-header { padding: 13px; }
-  .ls-usuario-seccion-header h3 { font-size: 14px; }
-}
-
-.ls-casillero-estado.abierto {
-  background: #d9f5e9;
-  color: #16875e;
-}
-
-.ls-casillero-estado.cerrado {
-  background: #e8eeea;
-  color: #3f5249;
-}
-
-.ls-casillero-estado.bloqueado {
-  background: #ffe0e0;
-  color: #c43f3f;
+  .ls-info-lista { max-height: 200px; }
 }
