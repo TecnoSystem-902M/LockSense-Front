@@ -5,7 +5,7 @@ import {
   ScanFace,
   Clock,
 } from 'lucide-react'
-import '../../styles/Usuarios/usuario1.css'
+import '../../styles/Usuarios/MiCasillero.css'
 
 // IMPORTAMOS LA IMAGEN DEL CASILLERO DESDE TU CARPETA ASSETS
 import casilleroPersonalImg from '../../assets/casillero-personal.png'

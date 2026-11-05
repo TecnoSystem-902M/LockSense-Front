@@ -17,7 +17,7 @@ import {
   Filler,
 } from 'chart.js'
 import { obtenerUsuario } from '../../utils/session'
-import '../../styles/Usuarios/usuario1.css'
+import '../../styles/Usuarios/PanelUsuario.css'
 
 ChartJS.register(
   CategoryScale,
@@ -194,7 +194,7 @@ export default function PanelUsuario() {
         <div className="ls-usuario-grafica-footer">
           <button
             type="button"
-            className="ls-usuario-descargar"
+            className="ls-usuario-btn-reporte"
             onClick={descargarReporte}
           >
             <Download size={16} />

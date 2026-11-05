@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react'
-import '../../styles/Usuarios/usuario1.css'
+import '../../styles/Usuarios/MiActividad.css'
 
 const actividades = [
   { id: 1, usuario: 'Juan Perez', tipo: 'Abierto', fecha: '23/09/2026', hora: '12:00', riesgo: 'Seguro' },
