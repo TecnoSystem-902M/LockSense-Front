@@ -21,6 +21,9 @@ import MiActividad from './pages/usuario/MiActividad'
 
 import SuperAdminLayout from './components/superadmin/SuperAdminLayout'
 import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard'
+import Organizaciones from './pages/superadmin/Organizaciones'
+import Administradores from './pages/superadmin/Administradores'
+import Dispositivos from './pages/superadmin/Dispositivos'
 
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
@@ -45,7 +48,9 @@ export default function App() {
         <Route element={<ProtectedRoute rolPermitido="SUPERADMIN" />}>
           <Route path="/superadmin" element={<SuperAdminLayout />}>
           <Route index element={<SuperAdminDashboard />} />
-
+          <Route path="organizaciones" element={<Organizaciones />} />
+          <Route path="administradores" element={<Administradores />} />
+          <Route path="dispositivos" element={<Dispositivos />} />
           </Route>
         </Route>
 

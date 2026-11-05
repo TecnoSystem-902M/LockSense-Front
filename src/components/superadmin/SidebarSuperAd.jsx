@@ -3,8 +3,8 @@ import {
     LayoutDashboard, 
     Building2, 
     ShieldCheck, 
-    Settings, 
-    LogOut 
+    LogOut,
+    Cpu 
 } from 'lucide-react'
 import logo from '../../assets/logo.jpeg'
 import '../../styles/admin/Sidebar.css'
@@ -21,17 +21,17 @@ const opcionesAdministracion = [
     {
         nombre: 'Organizaciones',
         ruta: '/superadmin/organizaciones',
-        Icono: Building2, // Ícono de edificio/empresa
+        Icono: Building2,
     },
     {
         nombre: 'Administradores',
-        ruta: '/superadmin/admins',
-        Icono: ShieldCheck, // Ícono de escudo/seguridad
+        ruta: '/superadmin/administradores',
+        Icono: ShieldCheck,
     },
     {
-        nombre: 'Configuración',
-        ruta: '/superadmin/configuracion',
-        Icono: Settings, // Ícono de engranaje
+        nombre: 'Dispositivos', 
+        ruta: '/superadmin/dispositivos',
+        Icono: Cpu,
     },
 ]
 

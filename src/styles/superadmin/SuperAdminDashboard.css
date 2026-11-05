@@ -248,27 +248,105 @@
 /* =========================================
    RESPONSIVE
    ========================================= */
+
+/* Tablet: las gráficas se apilan; las tarjetas siguen en una fila */
 @media (max-width: 1000px) {
   .ls-sa-charts {
     grid-template-columns: 1fr;
   }
+
   .ls-sa-stats {
-    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .ls-sa-card {
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .ls-sa-card-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .ls-sa-card-info strong {
+    font-size: 24px;
   }
 }
 
+/* Celular: tarjetas en una fila, con el ícono arriba del texto */
 @media (max-width: 600px) {
   .ls-sa-header {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .ls-sa-header-title h1 {
     font-size: 22px;
   }
+
+  .ls-sa-stats {
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .ls-sa-card {
+    flex-direction: column;     /* ícono arriba, texto abajo */
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 12px 6px;
+    border-radius: 12px;
+  }
+
+  .ls-sa-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .ls-sa-card-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .ls-sa-card-info {
+    align-items: center;
+    min-width: 0;
+  }
+
+  .ls-sa-card-info p {
+    margin-bottom: 3px;
+    font-size: 10.5px;
+    line-height: 1.2;
+  }
+
+  .ls-sa-card-info strong {
+    margin-bottom: 3px;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .ls-sa-card-info span {
+    font-size: 9.5px;
+    line-height: 1.2;
+  }
+
+  /* Las gráficas se quedan como estaban */
   .ls-sa-chart-panel {
     padding: 15px;
   }
+
   .ls-sa-chart-container {
     height: 250px;
   }
+}
+
+/* Celulares muy angostos: se oculta el texto chico de abajo */
+@media (max-width: 380px) {
+  .ls-sa-stats { gap: 6px; }
+  .ls-sa-card { padding: 10px 4px; }
+  .ls-sa-card-info p { font-size: 9.5px; }
+  .ls-sa-card-info strong { font-size: 16px; }
+  .ls-sa-card-info span { display: none; }
 }
