@@ -7,11 +7,13 @@
    - NUNCA guarda las llamadas a la API (Render / Azure): los datos
      siempre se piden en vivo y no quedan datos privados en el caché.
    - Sin internet, al abrir una página muestra /offline.html.
+   - Recibe las notificaciones push de anomalías y las muestra
+     (aunque la app esté cerrada).
 
    Para forzar que todos reciban la versión nueva del SW, cambia VERSION.
    ========================================================= */
 
-const VERSION = 'locksense-v1'
+const VERSION = 'locksense-v2'
 const CACHE = `${VERSION}-app`
 
 // Lo mínimo que se guarda al instalar.
@@ -104,3 +106,50 @@ async function cacheYActualiza(request) {
 
   return guardada || deRed
 }
+
+// =========================================================
+// Notificaciones push de anomalías
+// Laravel manda: { titulo, cuerpo, url, etiqueta }
+// =========================================================
+self.addEventListener('push', (event) => {
+  let datos = {}
+  try {
+    datos = event.data ? event.data.json() : {}
+  } catch {
+    datos = { cuerpo: event.data?.text() }
+  }
+
+  const titulo = datos.titulo || 'Alerta en tu casillero'
+
+  event.waitUntil(
+    self.registration.showNotification(titulo, {
+      body: datos.cuerpo || 'Se detectó una actividad sospechosa en tu casillero.',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: datos.etiqueta,            // la misma anomalía no se repite
+      renotify: true,                 // vuelve a sonar si llega otra
+      requireInteraction: true,       // en computadora se queda hasta que la cierren
+      vibrate: [200, 100, 200],
+      data: { url: datos.url || '/usuario/actividad' },
+    })
+  )
+})
+
+// Al tocar la notificación: abre LockSense en la pantalla indicada
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const destino = new URL(event.notification.data?.url || '/usuario', self.location.origin).href
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
+      // Si ya hay una ventana de LockSense abierta, se usa esa
+      for (const ventana of ventanas) {
+        if (ventana.url.startsWith(self.location.origin) && 'focus' in ventana) {
+          ventana.navigate(destino)
+          return ventana.focus()
+        }
+      }
+      return self.clients.openWindow(destino)
+    })
+  )
+})
