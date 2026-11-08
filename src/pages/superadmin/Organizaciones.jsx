@@ -14,7 +14,7 @@ import {
     crearOrganizacion,
     actualizarOrganizacion,
     cambiarEstadoOrganizacion,
-} from '../../api/superadmin'
+} from '../../api/Superadmin'
 import '../../styles/superadmin/Organizaciones.css'
 
 // Deben ser los mismos que acepta el back (OrganizacionController::TIPOS)
