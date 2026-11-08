@@ -6,6 +6,10 @@ import { register, verifyEmail, resendCode } from '../../api/auth'
 
 const STEP_LABELS = ['Datos', 'Seguridad']
 
+// Mismas reglas que el back (AuthController@register)
+const SOLO_LETRAS = /^[\p{L}\s'.-]+$/u
+const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function Registro() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
@@ -75,53 +79,66 @@ export default function Registro() {
     const newErrors = {}
 
     if (stepToValidate === 0) {
-      if (!form.nombreOrganizacion.trim()) {
-        newErrors.nombreOrganizacion = 'El nombre de la organización es obligatorio.'
-      }
-      if (!form.direccion.trim()) {
-        newErrors.direccion = 'La dirección es obligatoria.'
-      }
-      if (!form.tipoOrganizacion) {
-        newErrors.tipoOrganizacion = 'Selecciona un tipo de organización.'
-      }
-      if (!form.colonia.trim()) {
-        newErrors.colonia = 'La colonia es obligatoria.'
-      }
-      if (!form.ciudad) {
-        newErrors.ciudad = 'Selecciona una ciudad.'
-      }
-      if (!form.codigoPostal.trim()) {
-        newErrors.codigoPostal = 'El código postal es obligatorio.'
-      } else if (!/^\d{5}$/.test(form.codigoPostal.trim())) {
-        newErrors.codigoPostal = 'Debe ser un código postal válido (5 dígitos).'
-      }
+      const nombreOrg = form.nombreOrganizacion.trim()
+      const telefono = form.telefonoOrganizacion.replace(/\D/g, '')
+      const direccion = form.direccion.trim()
+      const colonia = form.colonia.trim()
+      const cp = form.codigoPostal.trim()
+
+      if (!nombreOrg) newErrors.nombreOrganizacion = 'El nombre de la organización es obligatorio.'
+      else if (nombreOrg.length < 3) newErrors.nombreOrganizacion = 'El nombre debe tener al menos 3 caracteres.'
+      else if (nombreOrg.length > 150) newErrors.nombreOrganizacion = 'El nombre no puede pasar de 150 caracteres.'
+
+      if (!telefono) newErrors.telefonoOrganizacion = 'El teléfono es obligatorio.'
+      else if (telefono.length !== 10) newErrors.telefonoOrganizacion = 'El teléfono debe tener 10 dígitos (lada + número).'
+
+      if (!direccion) newErrors.direccion = 'La dirección es obligatoria.'
+      else if (direccion.length > 225) newErrors.direccion = 'La dirección no puede pasar de 225 caracteres.'
+
+      if (!form.tipoOrganizacion) newErrors.tipoOrganizacion = 'Selecciona el tipo de organización.'
+
+      if (!colonia) newErrors.colonia = 'La colonia es obligatoria.'
+      else if (colonia.length > 100) newErrors.colonia = 'La colonia no puede pasar de 100 caracteres.'
+
+      if (!form.ciudad) newErrors.ciudad = 'La ciudad es obligatoria.'
+
+      if (!cp) newErrors.codigoPostal = 'El código postal es obligatorio.'
+      else if (!/^\d{5}$/.test(cp)) newErrors.codigoPostal = 'El código postal debe tener 5 dígitos.'
     }
 
     if (stepToValidate === 1) {
-      if (!form.nombre.trim()) {
-        newErrors.nombre = 'El nombre es obligatorio.'
+      const nombre = form.nombre.trim()
+      const apPa = form.apellidoPaterno.trim()
+      const apMa = form.apellidoMaterno.trim()
+      const email = form.email.trim()
+
+      if (!nombre) newErrors.nombre = 'El nombre es obligatorio.'
+      else if (nombre.length < 2) newErrors.nombre = 'El nombre debe tener al menos 2 letras.'
+      else if (nombre.length > 100) newErrors.nombre = 'El nombre no puede pasar de 100 caracteres.'
+      else if (!SOLO_LETRAS.test(nombre)) newErrors.nombre = 'El nombre solo puede tener letras.'
+
+      if (!apPa) newErrors.apellidoPaterno = 'El apellido paterno es obligatorio.'
+      else if (apPa.length < 2) newErrors.apellidoPaterno = 'El apellido paterno debe tener al menos 2 letras.'
+      else if (apPa.length > 100) newErrors.apellidoPaterno = 'El apellido paterno no puede pasar de 100 caracteres.'
+      else if (!SOLO_LETRAS.test(apPa)) newErrors.apellidoPaterno = 'El apellido paterno solo puede tener letras.'
+
+      if (apMa && apMa.length > 100) newErrors.apellidoMaterno = 'El apellido materno no puede pasar de 100 caracteres.'
+      else if (apMa && !SOLO_LETRAS.test(apMa)) newErrors.apellidoMaterno = 'El apellido materno solo puede tener letras.'
+
+      if (!email) newErrors.email = 'El correo es obligatorio.'
+      else if (!CORREO.test(email)) newErrors.email = 'Escribe un correo válido.'
+      else if (email.length > 150) newErrors.email = 'El correo no puede pasar de 150 caracteres.'
+
+      if (!form.password) newErrors.password = 'La contraseña es obligatoria.'
+      else if (form.password.length < 8) newErrors.password = 'La contraseña debe tener al menos 8 caracteres.'
+      else if (form.password.length > 72) newErrors.password = 'La contraseña no puede pasar de 72 caracteres.'
+      else if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) {
+        newErrors.password = 'La contraseña debe tener al menos una letra y un número.'
       }
-      if (!form.apellidoPaterno.trim()) {
-        newErrors.apellidoPaterno = 'El apellido paterno es obligatorio.'
-      }
-      if (!form.apellidoMaterno.trim()) {
-        newErrors.apellidoMaterno = 'El apellido materno es obligatorio.'
-      }
-      if (!form.email.trim()) {
-        newErrors.email = 'El correo electrónico es obligatorio.'
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-        newErrors.email = 'Ingresa un correo electrónico válido.'
-      }
-      if (!form.password) {
-        newErrors.password = 'La contraseña es obligatoria.'
-      } else if (form.password.length < 8) {
-        newErrors.password = 'La contraseña debe tener al menos 8 caracteres.'
-      }
-      if (!form.confirmPassword) {
-        newErrors.confirmPassword = 'Debes confirmar tu contraseña.'
-      } else if (form.password !== form.confirmPassword) {
-        newErrors.confirmPassword = 'Las contraseñas no coinciden.'
-      }
+
+      if (!form.confirmPassword) newErrors.confirmPassword = 'Debes confirmar tu contraseña.'
+      else if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Las contraseñas no coinciden.'
+
       if (!form.acceptedTerms) {
         newErrors.acceptedTerms = 'Debes aceptar los Términos y Políticas para continuar.'
       }
@@ -169,19 +186,19 @@ export default function Registro() {
 
     const payload = {
       // Organización
-      organizacion_nombre: form.nombreOrganizacion,
+      organizacion_nombre: form.nombreOrganizacion.trim(),
       organizacion_tipo: form.tipoOrganizacion,
-      organizacion_direccion: form.direccion,
-      organizacion_colonia: form.colonia,
+      organizacion_direccion: form.direccion.trim(),
+      organizacion_colonia: form.colonia.trim(),
       organizacion_ciudad: form.ciudad,
-      organizacion_codigo_postal: form.codigoPostal,
-      organizacion_telefono: form.telefonoOrganizacion,
+      organizacion_codigo_postal: form.codigoPostal.trim(),
+      organizacion_telefono: form.telefonoOrganizacion.replace(/\D/g, ''),
 
       // Usuario
-      nombre: form.nombre,
-      apellido_pa: form.apellidoPaterno,
-      apellido_ma: form.apellidoMaterno,
-      email: form.email,
+      nombre: form.nombre.trim(),
+      apellido_pa: form.apellidoPaterno.trim(),
+      apellido_ma: form.apellidoMaterno.trim() || null,
+      email: form.email.trim().toLowerCase(),
       password: form.password,
       password_confirmation: form.confirmPassword,
     }
@@ -225,7 +242,8 @@ export default function Registro() {
           laravelErrors.organizacion_direccion ||
           laravelErrors.organizacion_colonia ||
           laravelErrors.organizacion_ciudad ||
-          laravelErrors.organizacion_codigo_postal
+          laravelErrors.organizacion_codigo_postal ||
+          laravelErrors.organizacion_telefono
         ) {
           setCurrentStep(0)
         } else {
@@ -430,13 +448,15 @@ export default function Registro() {
                     {renderError('nombreOrganizacion')}
                   </div>
                   <div className="form-group">
-                    <label>Teléfono de la organización</label>
+                    <label>Teléfono con lada *</label>
                     <div className={getInputClass('telefonoOrganizacion')}>
                       <i className="fa-solid fa-phone"></i>
                       <input
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={14}
                         name="telefonoOrganizacion"
-                        placeholder="+52 33 8765 4321"
+                        placeholder="55 1234 5678 (10 dígitos)"
                         value={form.telefonoOrganizacion}
                         onChange={handleField}
                       />
@@ -525,6 +545,8 @@ export default function Registro() {
                       <i className="fa-solid fa-mail-bulk"></i>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        maxLength={5}
                         name="codigoPostal"
                         placeholder="44100"
                         value={form.codigoPostal}
@@ -575,7 +597,7 @@ export default function Registro() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Apellido Materno *</label>
+                    <label>Apellido Materno</label>
                     <div className={getInputClass('apellidoMaterno')}>
                       <i className="fa-solid fa-user"></i>
                       <input
@@ -664,7 +686,7 @@ export default function Registro() {
                 </div>
 
                 <span className="strength-label" style={{ display: 'block', marginTop: '4px', marginBottom: '12px' }}>
-                  Usa al menos 8 caracteres con números y símbolos
+                  Usa al menos 8 caracteres, con al menos una letra y un número
                 </span>
 
                 <div className="form-group">
