@@ -1,0 +1,236 @@
+/* =========================================================
+   LockSense - PWA (botón flotante de instalar, ayuda de iPhone y aviso
+   de actualización). Clases con prefijo "ls-pwa-".
+   ========================================================= */
+
+/* ---------- Bolita flotante "Descargar app" ----------
+   Fija en la esquina inferior derecha: sigue visible al bajar la página.
+   En computadora, al pasar el mouse se abre y muestra el texto. */
+.ls-pwa-flotante {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2000;
+  height: 58px;
+  min-width: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 17px;
+  overflow: hidden;
+  border: none;
+  border-radius: 999px;
+  background: #10b981;
+  color: #0f2922;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45);
+  animation: ls-pwa-latido 2.6s ease-in-out infinite;
+  transition: gap 0.3s ease, padding 0.3s ease, background 0.3s ease, transform 0.2s ease;
+}
+
+.ls-pwa-flotante-icono {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* El texto está escondido hasta pasar el mouse */
+.ls-pwa-flotante-texto {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.3s ease, opacity 0.2s ease;
+}
+
+.ls-pwa-flotante:hover,
+.ls-pwa-flotante:focus-visible {
+  gap: 10px;
+  padding: 0 22px 0 18px;
+  background: #0f2922;
+  color: #fff;
+  animation: none;
+}
+
+.ls-pwa-flotante:hover .ls-pwa-flotante-texto,
+.ls-pwa-flotante:focus-visible .ls-pwa-flotante-texto {
+  max-width: 140px;
+  opacity: 1;
+}
+
+.ls-pwa-flotante:active {
+  transform: scale(0.95);
+}
+
+/* Pulso suave para llamar la atención */
+@keyframes ls-pwa-latido {
+  0%, 100% { box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45), 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50%      { box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45), 0 0 0 12px rgba(16, 185, 129, 0); }
+}
+
+/* Celular: un poco más chica y solo el ícono */
+@media (max-width: 600px) {
+  .ls-pwa-flotante {
+    right: 16px;
+    bottom: 16px;
+    height: 52px;
+    min-width: 52px;
+    padding: 0 14px;
+  }
+
+  .ls-pwa-flotante:hover,
+  .ls-pwa-flotante:focus-visible {
+    gap: 0;
+    padding: 0 14px;
+    background: #10b981;
+    color: #0f2922;
+  }
+
+  .ls-pwa-flotante:hover .ls-pwa-flotante-texto,
+  .ls-pwa-flotante:focus-visible .ls-pwa-flotante-texto {
+    max-width: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-pwa-flotante {
+    animation: none;
+  }
+}
+
+/* ---------- Ayuda para iPhone ---------- */
+.ls-pwa-ios-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 23, 18, 0.55);
+}
+
+.ls-pwa-ios-ventana {
+  width: 100%;
+  max-width: 380px;
+  padding: 26px 22px 20px;
+  border-radius: 22px;
+  background: #fff;
+  color: #26352f;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 41, 34, 0.25);
+  animation: ls-pwa-subir 0.25s ease-out;
+}
+
+.ls-pwa-ios-logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+}
+
+.ls-pwa-ios-titulo {
+  margin: 0 0 12px;
+  color: #0f2922;
+  font-size: 19px;
+}
+
+.ls-pwa-ios-pasos {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.ls-pwa-ios-cerrar {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: #0f2922;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---------- Aviso de nueva versión ---------- */
+.ls-pwa-aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 3000;
+  width: calc(100% - 32px);
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 12px 18px;
+  border-radius: 16px;
+  background: #0f2922;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 14px 40px rgba(15, 41, 34, 0.3);
+  transform: translateX(-50%);
+  animation: ls-pwa-subir 0.25s ease-out;
+}
+
+.ls-pwa-aviso-acciones {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.ls-pwa-aviso-despues,
+.ls-pwa-aviso-actualizar {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ls-pwa-aviso-despues {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ls-pwa-aviso-actualizar {
+  background: #10b981;
+  color: #0f2922;
+}
+
+@keyframes ls-pwa-subir {
+  from { opacity: 0; transform: translate(var(--ls-pwa-x, 0), 16px); }
+  to   { opacity: 1; transform: translate(var(--ls-pwa-x, 0), 0); }
+}
+
+.ls-pwa-aviso {
+  --ls-pwa-x: -50%;
+}
+
+@media (max-width: 420px) {
+  .ls-pwa-aviso {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .ls-pwa-aviso-acciones {
+    justify-content: center;
+  }
+}

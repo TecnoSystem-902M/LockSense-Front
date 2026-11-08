@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f2922">
+  <title>Sin conexión · LockSense</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at 20% 20%, rgba(16,185,129,.10), transparent 40%), #f4f7f6;
+      color: #26352f;
+      font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+    .ls-offline-tarjeta {
+      width: 100%;
+      max-width: 380px;
+      padding: 36px 28px;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(15,41,34,.12);
+      text-align: center;
+    }
+    .ls-offline-logo {
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 18px;
+      border-radius: 20px;
+    }
+    .ls-offline-titulo { margin: 0 0 8px; font-size: 22px; color: #0f2922; }
+    .ls-offline-texto { margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #71817c; }
+    .ls-offline-boton {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 999px;
+      background: #0f2922;
+      color: #fff;
+      font: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ls-offline-boton:hover { background: #10b981; }
+  </style>
+</head>
+<body>
+  <main class="ls-offline-tarjeta">
+    <img class="ls-offline-logo" src="/icons/icon-192.png" alt="LockSense">
+    <h1 class="ls-offline-titulo">Sin conexión</h1>
+    <p class="ls-offline-texto">
+      No hay internet en este momento. LockSense necesita conexión para mostrar
+      el estado de tu casillero.
+    </p>
+    <button class="ls-offline-boton" onclick="location.reload()">Reintentar</button>
+  </main>
+  <script>
+    // Cuando vuelva el internet, recarga sola.
+    window.addEventListener('online', () => location.reload())
+  </script>
+</body>
+</html>
