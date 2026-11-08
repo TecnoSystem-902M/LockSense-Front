@@ -432,7 +432,7 @@ export default function Dashboard() {
           >
             <Download size={16} />
 
-            Descargar reporte
+            Descargar excel
           </button>
 
         </section>
