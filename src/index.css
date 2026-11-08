@@ -606,15 +606,19 @@
   @media (max-width:900px){
     .hero-inner{ grid-template-columns:1fr; padding-top:56px; }
     .locker-art{ order:-1; }
-    .card-grid{ grid-template-columns:1fr; }
+    .card-grid,
+    .func-grid{ grid-template-columns:repeat(3, 1fr); gap:16px; }
+    .feature-card,
+    .func-card{ padding:26px 18px; }
+    .feature-card p,
+    .func-card ul li{ font-size:13.5px; }
     .how-steps{ grid-template-columns:repeat(2, 1fr); }
-    .func-grid{ grid-template-columns:1fr; }
     .footer-grid{ grid-template-columns:1fr 1fr; }
   }
+
   @media (max-width:680px){
     nav.nav-links{ display:none; }
     .nav-toggle{ display:block; }
-    .how-steps{ grid-template-columns:1fr; }
     .footer-grid{ grid-template-columns:1fr; }
 
     nav.nav-links.mobile-open{
@@ -632,6 +636,50 @@
     }
     header.navbar{ position:relative; }
     nav.nav-links.mobile-open .ripple-link{ width:100%; }
+
+    .wrap{ padding:0 20px; }
+
+    .about,
+    .how,
+    .functionalities{ padding:64px 0; }
+
+    .section-head{ margin-bottom:30px; }
+
+    .hero-inner{ padding:36px 20px 60px; gap:28px; }
+    .banner-img{ max-height:230px; }
+    .hero-logo{ margin-bottom:18px; }
+    .hero p{ margin-bottom:24px; }
+
+    .card-grid,
+    .func-grid{
+      grid-template-columns:none;
+      grid-auto-flow:column;
+      grid-auto-columns:80%;
+      gap:14px;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      margin:0 -20px;
+      padding:10px 20px 20px;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    .card-grid::-webkit-scrollbar,
+    .func-grid::-webkit-scrollbar{ display:none; }
+
+    .feature-card,
+    .func-card{ scroll-snap-align:center; padding:26px 20px; }
+
+    .how-card{ padding:32px 20px; border-radius:20px; }
+    .how-head{ margin-bottom:30px; }
+    .how-steps{ grid-template-columns:repeat(2, 1fr); gap:26px 16px; }
+    .how-step .step-title{ font-size:13px; margin-bottom:10px; }
+    .how-step .step-icon{ margin-bottom:10px; }
+    .how-step .step-desc{ font-size:12px; }
+  }
+
+  @media (hover:none){
+    .feature-card:hover,
+    .func-card:hover{ transform:none; }
   }
 
   /* Tablets / Teléfonos Grandes */

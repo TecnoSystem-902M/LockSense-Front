@@ -756,3 +756,24 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* =========================================
+   AJUSTES RESPONSIVE: botones a la derecha
+========================================= */
+
+/* Paginación: los botones a la derecha (computadora) */
+.ls-usuarios-paginacion-botones {
+  margin-left: auto;
+}
+
+@media (max-width: 650px) {
+  /* Botón "Nuevo usuario" a la derecha */
+  .ls-usuario-nuevo {
+    align-self: flex-end;
+  }
+
+  /* Paginación en columna: el texto a la izquierda y los botones a la derecha */
+  .ls-usuarios-paginacion-botones {
+    align-self: flex-end;
+  }
+}
