@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import ToastNotification from '../../components/ToastNotification'
 import {
   ShieldCheck,
   ShieldAlert,
@@ -62,10 +64,20 @@ const datosAnomalias = {
 
 export default function PanelUsuario() {
   const usuarioSesion = obtenerUsuario()
+  const location = useLocation()
+  const [mostrarToast, setMostrarToast] = useState(false)
 
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+
+  // Mensaje de inicio de sesión (solo al llegar desde el login)
+  useEffect(() => {
+    if (location.state?.loginExitoso) {
+      setMostrarToast(true)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   useEffect(() => {
     let activo = true // evita actualizar el estado si el componente ya se desmontó
@@ -173,6 +185,13 @@ export default function PanelUsuario() {
 
   return (
     <div className="ls-dashboard-usuario">
+      {/* NOTIFICACIÓN FLOTANTE DE LOGIN */}
+      {mostrarToast && (
+        <ToastNotification
+          mensaje="Inicio de sesión exitoso"
+          onClose={() => setMostrarToast(false)}
+        />
+      )}
 
       <div className="ls-dashboard-bienvenida">
         <div>

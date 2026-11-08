@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import ToastNotification from '../../components/ToastNotification'
 import {
   Building2,
   Users,
@@ -46,12 +48,23 @@ function descargarCsv(filas, nombreArchivo) {
 }
 
 export default function SuperAdminDashboard() {
+  const location = useLocation()
+  const [mostrarToast, setMostrarToast] = useState(false)
+
   const dashboardRef = useRef(null)
   const [keyGrafica, setKeyGrafica] = useState(0) // fuerza a redibujar las gráficas
 
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+
+  // Mensaje de inicio de sesión (solo al llegar desde el login)
+  useEffect(() => {
+    if (location.state?.loginExitoso) {
+      setMostrarToast(true)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   // Cargar datos del back
   useEffect(() => {
@@ -190,6 +203,13 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="ls-sa-dashboard" ref={dashboardRef}>
+      {/* NOTIFICACIÓN FLOTANTE DE LOGIN */}
+      {mostrarToast && (
+        <ToastNotification
+          mensaje="Inicio de sesión exitoso"
+          onClose={() => setMostrarToast(false)}
+        />
+      )}
 
       {/* ENCABEZADO */}
       <header className="ls-sa-header">
