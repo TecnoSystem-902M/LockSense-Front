@@ -470,14 +470,14 @@ export default function Registro() {
                         onChange={handleField}
                       >
                         <option value="">Selecciona el tipo</option>
-                        <option value="Empresa">Empresa / Corporativo</option>
-                        <option value="Fabrica">Fábrica / Planta Industrial</option>
-                        <option value="Escuela Publica">Escuela Pública</option>
-                        <option value="Escuela Privada">Escuela Privada / Universidad</option>
-                        <option value="Gym">Gimnasio</option>
+                        <option value="Empresa / Corporativo">Empresa / Corporativo</option>
+                        <option value="Fábrica / Planta Industrial">Fábrica / Planta Industrial</option>
+                        <option value="Escuela Pública">Escuela Pública</option>
+                        <option value="Escuela Privada / Universidad">Escuela Privada / Universidad</option>
+                        <option value="Gimnasio">Gimnasio</option>
                         <option value="Centro Deportivo">Centro Deportivo</option>
-                        <option value="Hospital">Hospital / Clínica</option>
-                        <option value="Hotel">Hotel / Hospedaje</option>
+                        <option value="Hospital / Clínica">Hospital / Clínica</option>
+                        <option value="Hotel / Hospedaje">Hotel / Hospedaje</option>
                         <option value="Otro">Otro</option>
                       </select>
                     </div>
