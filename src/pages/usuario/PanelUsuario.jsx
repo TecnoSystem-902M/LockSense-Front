@@ -42,26 +42,6 @@ const ESTADOS = {
   DESOCUPADO: { texto: 'Desocupado', Icono: ShieldOff,   clase: 'accesos', check: false },
 }
 
-// PENDIENTE: la gráfica sigue con datos provisionales.
-const datosAnomalias = {
-  labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
-  datasets: [
-    {
-      label: 'Anomalías detectadas',
-      data: [0, 2, 10, 0, 0],
-      borderColor: '#18b982',
-      backgroundColor: 'rgba(24, 185, 130, 0.10)',
-      borderWidth: 3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBackgroundColor: '#18b982',
-      pointBorderWidth: 0,
-      tension: 0.4,
-      fill: true,
-    },
-  ],
-}
-
 export default function PanelUsuario() {
   const usuarioSesion = obtenerUsuario()
   const location = useLocation()
@@ -116,6 +96,28 @@ export default function PanelUsuario() {
   // Mientras carga (o si falló) se muestra un guion en lugar de un número.
   const mostrar = (valor) => (cargando || error ? '—' : valor)
 
+  // Anomalías por día (últimos 7 días) que manda el back
+  const grafica = datos?.grafica ?? []
+
+  const datosAnomalias = useMemo(() => ({
+    labels: grafica.map((d) => d.dia),
+    datasets: [
+      {
+        label: 'Anomalías detectadas',
+        data: grafica.map((d) => d.total),
+        borderColor: '#18b982',
+        backgroundColor: 'rgba(24, 185, 130, 0.10)',
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#18b982',
+        pointBorderWidth: 0,
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  }), [grafica])
+
   const opcionesGrafica = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -127,6 +129,13 @@ export default function PanelUsuario() {
         backgroundColor: '#102e25',
         padding: 12,
         displayColors: false,
+        callbacks: {
+          title: (items) => {
+            const d = grafica[items[0]?.dataIndex]
+            return d ? `${d.dia} ${d.fecha}` : ''
+          },
+          label: (context) => ` ${context.raw} ${context.raw === 1 ? 'anomalía' : 'anomalías'}`,
+        },
       },
     },
     scales: {
@@ -143,10 +152,9 @@ export default function PanelUsuario() {
       },
       y: {
         beginAtZero: true,
-        min: 0,
-        max: 10,
+        suggestedMax: 5,       // se ajusta solo si hay más anomalías
         ticks: {
-          stepSize: 2,
+          precision: 0,        // solo números enteros
           color: '#66736c',
         },
         grid: {
@@ -154,16 +162,12 @@ export default function PanelUsuario() {
         },
       },
     },
-  }), [])
+  }), [grafica])
 
   const descargarReporte = () => {
     const contenido = [
-      ['Día', 'Anomalías detectadas'],
-      ['Lunes', 0],
-      ['Martes', 2],
-      ['Miércoles', 10],
-      ['Jueves', 0],
-      ['Viernes', 0],
+      ['Fecha', 'Día', 'Anomalías detectadas'],
+      ...grafica.map((d) => [d.fecha, d.dia, d.total]),
     ]
 
     const csv = contenido.map(fila => fila.join(',')).join('\n')
@@ -245,7 +249,7 @@ export default function PanelUsuario() {
 
       </section>
 
-      {/* GRÁFICA DE ANOMALÍAS (PENDIENTE: datos provisionales) */}
+      {/* GRÁFICA DE ANOMALÍAS (últimos 7 días) */}
       <section className="ls-usuario-grafica-card">
 
         <div className="ls-usuario-grafica-header">
@@ -267,6 +271,7 @@ export default function PanelUsuario() {
             type="button"
             className="ls-usuario-btn-reporte"
             onClick={descargarReporte}
+            disabled={cargando || grafica.length === 0}
           >
             <Download size={16} />
             Descargar reporte

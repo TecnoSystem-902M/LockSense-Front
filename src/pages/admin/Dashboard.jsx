@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import ToastNotification from '../../components/ToastNotification'
 import { getMetrics } from '../../api/dashboard'
@@ -34,22 +34,7 @@ ChartJS.register(
   LineElement
 )
 
-const asignacionData = {
-  labels: ['Asignados', 'Sin asignar', 'Bloqueados'],
-  datasets: [
-    {
-      data: [65, 40, 15],
-      backgroundColor: [
-        '#259568',
-        '#e6a13e',
-        '#d65c5c',
-      ],
-      borderColor: '#ffffff',
-      borderWidth: 3,
-      hoverOffset: 7,
-    },
-  ],
-}
+const COLORES_DISTRIBUCION = ['#259568', '#e6a13e', '#d65c5c']
 
 const asignacionOptions = {
   responsive: true,
@@ -64,53 +49,13 @@ const asignacionOptions = {
     tooltip: {
       callbacks: {
         label: context => {
-          const total = context.dataset.data.reduce(
-            (a, b) => a + b,
-            0
-          )
-
-          const porcentaje = (
-            (context.raw / total) *
-            100
-          ).toFixed(1)
-
+          const total = context.dataset.data.reduce((a, b) => a + b, 0)
+          const porcentaje = total ? ((context.raw / total) * 100).toFixed(1) : '0.0'
           return ` ${context.label}: ${context.raw} (${porcentaje}%)`
         },
       },
     },
   },
-}
-
-const tendenciaData = {
-  labels: [
-    'Lun',
-    'Mar',
-    'Mié',
-    'Jue',
-    'Vie',
-    'Sáb',
-    'Dom',
-  ],
-
-  datasets: [
-    {
-      label: 'Abiertos',
-      data: [12, 18, 25, 20, 32, 15, 9],
-      borderColor: '#259568',
-      backgroundColor: '#259568',
-      tension: 0.35,
-      pointRadius: 4,
-    },
-
-    {
-      label: 'Cerrados',
-      data: [108, 102, 95, 100, 88, 105, 111],
-      borderColor: '#3975b8',
-      backgroundColor: '#3975b8',
-      tension: 0.35,
-      pointRadius: 4,
-    },
-  ],
 }
 
 const tendenciaOptions = {
@@ -131,6 +76,8 @@ const tendenciaOptions = {
   scales: {
     y: {
       beginAtZero: true,
+      suggestedMax: 5,
+      ticks: { precision: 0 }, // solo números enteros
 
       title: {
         display: true,
@@ -140,81 +87,33 @@ const tendenciaOptions = {
   },
 }
 
+// Porcentaje con un decimal (sin dividir entre 0)
+const porcentaje = (valor, total) => (total ? ((valor / total) * 100).toFixed(1) : '0.0')
+
 
 /* =========================================================
    DESCARGA DE REPORTES
    ========================================================= */
 
-const descargarCSV = (nombreArchivo, contenido) => {
-  const blob = new Blob(
-    [contenido],
-    {
-      type: 'text/csv;charset=utf-8;',
-    }
-  )
+const descargarCSV = (nombreArchivo, filas) => {
+  const contenido = filas.map((fila) => fila.join(',')).join('\n')
+
+  // \uFEFF: para que Excel respete los acentos
+  const blob = new Blob(['\uFEFF' + contenido], {
+    type: 'text/csv;charset=utf-8;',
+  })
 
   const url = URL.createObjectURL(blob)
-
   const enlace = document.createElement('a')
 
   enlace.href = url
   enlace.download = nombreArchivo
 
   document.body.appendChild(enlace)
-
   enlace.click()
-
   document.body.removeChild(enlace)
 
   URL.revokeObjectURL(url)
-}
-
-
-/* =========================================================
-   REPORTE DE DISTRIBUCIÓN
-   ========================================================= */
-
-const descargarReporteDistribucion = () => {
-  const contenido = [
-    'Reporte de distribución de casilleros',
-    '',
-    'Estado,Cantidad,Porcentaje',
-    'Asignados,65,54.2%',
-    'Sin asignar,40,33.3%',
-    'Bloqueados,15,12.5%',
-    '',
-    'Total,120,100%',
-  ].join('\n')
-
-  descargarCSV(
-    'reporte-distribucion-casilleros.csv',
-    contenido
-  )
-}
-
-
-/* =========================================================
-   REPORTE DE TENDENCIA
-   ========================================================= */
-
-const descargarReporteTendencia = () => {
-  const contenido = [
-    'Reporte de tendencia de uso',
-    '',
-    'Día,Abiertos,Cerrados',
-    'Lun,12,108',
-    'Mar,18,102',
-    'Mié,25,95',
-    'Jue,20,100',
-    'Vie,32,88',
-    'Sáb,15,105',
-    'Dom,9,111',
-  ].join('\n')
-
-  descargarCSV(
-    'reporte-tendencia-uso.csv',
-    contenido
-  )
 }
 
 
@@ -231,6 +130,13 @@ export default function Dashboard() {
     casilleros_totales: 0,
     casilleros_bloqueados: 0,
   })
+  const [distribucion, setDistribucion] = useState({
+    asignados: 0,
+    sin_asignar: 0,
+    bloqueados: 0,
+    total: 0,
+  })
+  const [tendencia, setTendencia] = useState([])
 
   const resumen = [
     {
@@ -276,6 +182,8 @@ export default function Dashboard() {
           casilleros_totales: data.casilleros_totales ?? 0,
           casilleros_bloqueados: data.casilleros_bloqueados ?? 0,
         })
+        if (data.distribucion) setDistribucion(data.distribucion)
+        setTendencia(data.tendencia ?? [])
       })
       .catch(() => {
         // Si la petición falla, se mantienen los valores por defecto (0)
@@ -285,6 +193,66 @@ export default function Dashboard() {
       activo = false
     }
   }, [])
+
+  /* ---------- DATOS DE LAS GRÁFICAS ---------- */
+
+  const asignacionData = useMemo(() => ({
+    labels: ['Asignados', 'Sin asignar', 'Bloqueados'],
+    datasets: [
+      {
+        data: [distribucion.asignados, distribucion.sin_asignar, distribucion.bloqueados],
+        backgroundColor: COLORES_DISTRIBUCION,
+        borderColor: '#ffffff',
+        borderWidth: 3,
+        hoverOffset: 7,
+      },
+    ],
+  }), [distribucion])
+
+  const tendenciaData = useMemo(() => ({
+    labels: tendencia.map((d) => d.dia),
+    datasets: [
+      {
+        label: 'Abiertos',
+        data: tendencia.map((d) => d.abiertos),
+        borderColor: '#259568',
+        backgroundColor: '#259568',
+        tension: 0.35,
+        pointRadius: 4,
+      },
+      {
+        label: 'Cerrados',
+        data: tendencia.map((d) => d.cerrados),
+        borderColor: '#3975b8',
+        backgroundColor: '#3975b8',
+        tension: 0.35,
+        pointRadius: 4,
+      },
+    ],
+  }), [tendencia])
+
+  const leyenda = [
+    { clase: 'asignados', texto: 'Asignados', valor: distribucion.asignados },
+    { clase: 'sin-asignar', texto: 'Sin asignar', valor: distribucion.sin_asignar },
+    { clase: 'bloqueados', texto: 'Bloqueados', valor: distribucion.bloqueados },
+  ]
+
+  /* ---------- REPORTES ---------- */
+
+  const descargarReporteDistribucion = () => {
+    descargarCSV('reporte-distribucion-casilleros.csv', [
+      ['Estado', 'Cantidad', 'Porcentaje'],
+      ...leyenda.map((l) => [l.texto, l.valor, `${porcentaje(l.valor, distribucion.total)}%`]),
+      ['Total', distribucion.total, '100%'],
+    ])
+  }
+
+  const descargarReporteTendencia = () => {
+    descargarCSV('reporte-tendencia-uso.csv', [
+      ['Fecha', 'Día', 'Abiertos', 'Cerrados'],
+      ...tendencia.map((d) => [d.fecha, d.dia, d.abiertos, d.cerrados]),
+    ])
+  }
 
   return (
     <div className="ls-dashboard">
@@ -382,7 +350,7 @@ export default function Dashboard() {
               />
 
               <div className="ls-doughnut-center">
-                <strong>120</strong>
+                <strong>{distribucion.total}</strong>
                 <span>Casilleros</span>
               </div>
 
@@ -392,37 +360,15 @@ export default function Dashboard() {
 
 
           <div className="ls-chart-legend">
-
-            <div>
-              <span className="ls-chart-dot asignados"></span>
-
-              <span>Asignados</span>
-
-              <strong>
-                65 (54.2%)
-              </strong>
-            </div>
-
-            <div>
-              <span className="ls-chart-dot sin-asignar"></span>
-
-              <span>Sin asignar</span>
-
-              <strong>
-                40 (33.3%)
-              </strong>
-            </div>
-
-            <div>
-              <span className="ls-chart-dot bloqueados"></span>
-
-              <span>Bloqueados</span>
-
-              <strong>
-                15 (12.5%)
-              </strong>
-            </div>
-
+            {leyenda.map((l) => (
+              <div key={l.clase}>
+                <span className={`ls-chart-dot ${l.clase}`}></span>
+                <span>{l.texto}</span>
+                <strong>
+                  {l.valor} ({porcentaje(l.valor, distribucion.total)}%)
+                </strong>
+              </div>
+            ))}
           </div>
 
 
@@ -473,7 +419,7 @@ export default function Dashboard() {
 
 
           <p className="ls-chart-note">
-            Datos ilustrativos de la actividad semanal.
+            Últimos 7 días. Un casillero cuenta como abierto si se abrió al menos una vez ese día.
           </p>
 
 
