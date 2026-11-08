@@ -1,12 +1,11 @@
-import { useMemo, useRef, useState, useEffect } from 'react' // <-- Agregamos useRef, useState, useEffect
+import { useMemo, useRef, useState, useEffect } from 'react'
 import {
   Building2,
   Users,
   UserCog,
   BarChart3,
   PieChart,
-  Menu,
-  Download
+  Download,
 } from 'lucide-react'
 import { Bar } from 'react-chartjs-2'
 import {
@@ -18,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import { obtenerDashboardSuperAdmin } from '../../api/Superadmin'
 import '../../styles/superadmin/SuperAdminDashboard.css'
 
 ChartJS.register(
@@ -29,46 +29,58 @@ ChartJS.register(
   Legend
 )
 
-// --- DATOS ---
-const datosOrganizacionesMes = {
-  labels: ['Ene', 'Feb', 'Mar'],
-  datasets: [
-    {
-      label: 'Registros',
-      data: [2000, 2400, 3000],
-      backgroundColor: '#10b981',
-      borderRadius: 6,
-      barThickness: 80,
-    },
-  ],
-}
+// Descarga un CSV a partir de filas [[encabezado...], [valor...], ...]
+function descargarCsv(filas, nombreArchivo) {
+  const csv = filas.map((fila) => fila.join(',')).join('\n')
+  const archivo = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(archivo)
+  const enlace = document.createElement('a')
 
-const datosOrganizacionesTipo = {
-  labels: ['Escuelas', 'Otras', 'Empresas'],
-  datasets: [
-    {
-      label: 'Cantidad',
-      data: [450, 150, 1000],
-      backgroundColor: '#10b981',
-      borderRadius: 6,
-      barThickness: 30,
-    },
-  ],
+  enlace.href = url
+  enlace.download = nombreArchivo
+  document.body.appendChild(enlace)
+  enlace.click()
+  enlace.remove()
+
+  URL.revokeObjectURL(url)
 }
 
 export default function SuperAdminDashboard() {
   const dashboardRef = useRef(null)
-  const [keyGrafica, setKeyGrafica] = useState(0) // Estado para forzar recarga de la gráfica
+  const [keyGrafica, setKeyGrafica] = useState(0) // fuerza a redibujar las gráficas
 
-  // EFECTO PARA REDIMENSIONAR LAS GRÁFICAS AL ABRIR/CERRAR EL MENÚ
+  const [datos, setDatos] = useState(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState('')
+
+  // Cargar datos del back
+  useEffect(() => {
+    let activo = true
+
+    obtenerDashboardSuperAdmin()
+      .then((respuesta) => {
+        if (activo) setDatos(respuesta)
+      })
+      .catch(() => {
+        if (activo) setError('No se pudo cargar la información. Intenta de nuevo más tarde.')
+      })
+      .finally(() => {
+        if (activo) setCargando(false)
+      })
+
+    return () => {
+      activo = false
+    }
+  }, [])
+
+  // Redimensionar las gráficas al abrir/cerrar el menú
   useEffect(() => {
     if (!dashboardRef.current) return
 
     const observer = new ResizeObserver(() => {
-      // Un pequeño timeout para esperar a que la transición del menú termine
       setTimeout(() => {
-        setKeyGrafica(prev => prev + 1) 
-      }, 350) // 350ms es la duración de la transición de tu menú + un pequeño margen
+        setKeyGrafica((prev) => prev + 1)
+      }, 350)
     })
 
     observer.observe(dashboardRef.current)
@@ -76,7 +88,40 @@ export default function SuperAdminDashboard() {
     return () => observer.disconnect()
   }, [])
 
-  // Opciones gráfica vertical
+  const porMes = datos?.por_mes ?? []
+  const porTipo = datos?.por_tipo ?? []
+
+  // Mientras carga (o si falló) se muestra un guion en lugar del número
+  const mostrar = (valor) => (cargando || error ? '—' : valor)
+
+  // --- DATOS DE LAS GRÁFICAS ---
+  const datosOrganizacionesMes = useMemo(() => ({
+    labels: porMes.map((m) => m.mes),
+    datasets: [
+      {
+        label: 'Registros',
+        data: porMes.map((m) => m.total),
+        backgroundColor: '#10b981',
+        borderRadius: 6,
+        maxBarThickness: 60,
+      },
+    ],
+  }), [porMes])
+
+  const datosOrganizacionesTipo = useMemo(() => ({
+    labels: porTipo.map((t) => t.tipo),
+    datasets: [
+      {
+        label: 'Cantidad',
+        data: porTipo.map((t) => t.total),
+        backgroundColor: '#10b981',
+        borderRadius: 6,
+        maxBarThickness: 30,
+      },
+    ],
+  }), [porTipo])
+
+  // Opciones gráfica vertical (sin máximo fijo: se ajusta a los datos)
   const opcionesVertical = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -84,20 +129,20 @@ export default function SuperAdminDashboard() {
       legend: {
         position: 'top',
         align: 'end',
-        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } },
       },
       tooltip: { backgroundColor: '#0f2922' },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#687b72' }
+        ticks: { color: '#687b72' },
       },
       y: {
         beginAtZero: true,
-        max: 3000,
-        ticks: { stepSize: 500, color: '#687b72' },
-        grid: { color: '#f0f4f2' }
+        suggestedMax: 5,
+        ticks: { precision: 0, color: '#687b72' }, // solo números enteros
+        grid: { color: '#f0f4f2' },
       },
     },
   }), [])
@@ -111,37 +156,50 @@ export default function SuperAdminDashboard() {
       legend: {
         position: 'top',
         align: 'end',
-        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+        labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } },
       },
       tooltip: { backgroundColor: '#0f2922' },
     },
     scales: {
       x: {
         beginAtZero: true,
-        max: 1000,
-        ticks: { color: '#687b72' },
-        grid: { color: '#f0f4f2' }
+        suggestedMax: 5,
+        ticks: { precision: 0, color: '#687b72' },
+        grid: { color: '#f0f4f2' },
       },
       y: {
         grid: { display: false },
-        ticks: { color: '#687b72' }
+        ticks: { color: '#687b72' },
       },
     },
   }), [])
 
+  const descargarReporteMes = () => {
+    descargarCsv(
+      [['Mes', 'Organizaciones registradas'], ...porMes.map((m) => [m.mes, m.total])],
+      'reporte-organizaciones-por-mes.csv'
+    )
+  }
+
+  const descargarReporteTipo = () => {
+    descargarCsv(
+      [['Tipo', 'Organizaciones'], ...porTipo.map((t) => [t.tipo, t.total])],
+      'reporte-organizaciones-por-tipo.csv'
+    )
+  }
+
   return (
-    <div className="ls-sa-dashboard" ref={dashboardRef}> {/* <-- Referencia añadida */}
-      
+    <div className="ls-sa-dashboard" ref={dashboardRef}>
+
       {/* ENCABEZADO */}
       <header className="ls-sa-header">
         <div className="ls-sa-header-title">
           <div>
             <h1>Panel de SuperAdministrador</h1>
             <p>Monitoreo de las organizaciones y usuarios</p>
+            {error && <p className="ls-sa-error">{error}</p>}
           </div>
         </div>
-
-
       </header>
 
       {/* TARJETAS */}
@@ -150,7 +208,7 @@ export default function SuperAdminDashboard() {
           <div className="ls-sa-card-icon morado"><Building2 size={26} /></div>
           <div className="ls-sa-card-info">
             <p>Organizaciones</p>
-            <strong>24</strong>
+            <strong>{mostrar(datos?.tarjetas?.organizaciones ?? 0)}</strong>
             <span>Registradas en el sistema</span>
           </div>
         </article>
@@ -159,7 +217,7 @@ export default function SuperAdminDashboard() {
           <div className="ls-sa-card-icon verde"><Users size={26} /></div>
           <div className="ls-sa-card-info">
             <p>Usuarios totales</p>
-            <strong>100</strong>
+            <strong>{mostrar(datos?.tarjetas?.usuarios ?? 0)}</strong>
             <span>Cuentas registradas</span>
           </div>
         </article>
@@ -168,25 +226,29 @@ export default function SuperAdminDashboard() {
           <div className="ls-sa-card-icon rojo"><UserCog size={26} /></div>
           <div className="ls-sa-card-info">
             <p>Administradores</p>
-            <strong>30</strong>
-            <span>Requieren atención</span>
+            <strong>{mostrar(datos?.tarjetas?.administradores ?? 0)}</strong>
+            <span>Gestionan organizaciones</span>
           </div>
         </article>
       </section>
 
       {/* GRÁFICAS */}
       <section className="ls-sa-charts">
-        
+
         <article className="ls-sa-chart-panel">
           <div className="ls-sa-panel-header">
             <BarChart3 size={22} className="ls-sa-panel-icon" />
             <h2>Organizaciones registradas</h2>
           </div>
           <div className="ls-sa-chart-container">
-            {/* key={keyGrafica} fuerza a la gráfica a redibujarse al cambiar el tamaño */}
             <Bar key={`bar1-${keyGrafica}`} data={datosOrganizacionesMes} options={opcionesVertical} />
           </div>
-          <button type="button" className="ls-sa-btn-reporte" onClick={() => console.log('Descargar 1')}>
+          <button
+            type="button"
+            className="ls-sa-btn-reporte"
+            onClick={descargarReporteMes}
+            disabled={cargando || porMes.length === 0}
+          >
             <Download size={18} /> Descargar reporte
           </button>
         </article>
@@ -199,7 +261,12 @@ export default function SuperAdminDashboard() {
           <div className="ls-sa-chart-container">
             <Bar key={`bar2-${keyGrafica}`} data={datosOrganizacionesTipo} options={opcionesHorizontal} />
           </div>
-          <button type="button" className="ls-sa-btn-reporte" onClick={() => console.log('Descargar 2')}>
+          <button
+            type="button"
+            className="ls-sa-btn-reporte"
+            onClick={descargarReporteTipo}
+            disabled={cargando || porTipo.length === 0}
+          >
             <Download size={18} /> Descargar reporte
           </button>
         </article>

@@ -650,3 +650,148 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================
+   AGREGAR AL FINAL DE Dispositivos.css
+========================================= */
+
+/* MAC y tipo en la tabla */
+.ls-disp-mac {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.3px;
+}
+
+.ls-disp-tipo {
+  display: block;
+  margin-top: 2px;
+  color: #89958e;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ls-disp-sin-dato {
+  color: #a0aba5;
+  font-style: italic;
+}
+
+.ls-disp-fila-inactiva td {
+  color: #9aa5a0;
+}
+
+/* Botones extra */
+.ls-accion-btn.token {
+  color: #b7791f;
+}
+
+.ls-accion-btn.reactivar {
+  color: #10b981;
+}
+
+/* Selección de casilleros */
+.ls-disp-casilleros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ls-disp-casillero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 6px;
+  border: 1px solid #dce5df;
+  border-radius: 9px;
+  background: #fff;
+  color: #26352f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ls-disp-casillero input {
+  margin: 0;
+  accent-color: #10b981;
+}
+
+.ls-disp-casillero.marcado {
+  border-color: #10b981;
+  background: #e4f5ed;
+}
+
+.ls-disp-casillero.ocupado {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Token mostrado una vez */
+.ls-disp-icono-token {
+  background: #fff4dc !important;
+  color: #b7791f !important;
+}
+
+.ls-disp-token-caja {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px dashed #b7c9bf;
+  border-radius: 10px;
+  background: #f4f8f6;
+}
+
+.ls-disp-token-caja code {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  word-break: break-all;
+  text-align: left;
+  color: #0f2922;
+}
+
+.ls-disp-token-caja button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #0f2922;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Ayudas y errores del formulario */
+.ls-form-ayuda {
+  display: block;
+  margin-top: 5px;
+  color: #89958e;
+  font-size: 11.5px;
+}
+
+.ls-form-error {
+  display: block;
+  margin-top: 5px;
+  color: #c04444;
+  font-size: 12px;
+}
+
+.ls-input-error {
+  border-color: #e05a5a !important;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.12) !important;
+}
+
+.ls-form-error-general {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ffeded;
+  color: #c04444;
+  font-size: 13px;
+}
