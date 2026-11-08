@@ -10,19 +10,25 @@ import {
   AlertTriangle,
   ChartNoAxesCombined,
   Download,
+  Fingerprint,
+  Clock,
+  CalendarDays,
+  Repeat,
+  CheckCircle2,
 } from 'lucide-react'
-import { Line } from 'react-chartjs-2'
+import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Tooltip,
   Filler,
 } from 'chart.js'
 import { obtenerUsuario } from '../../utils/session'
-import { obtenerDashboard } from '../../api/usuario'
+import { obtenerDashboard, obtenerComportamiento } from '../../api/usuario'
 import '../../styles/Usuarios/PanelUsuario.css'
 
 ChartJS.register(
@@ -30,6 +36,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Tooltip,
   Filler
 )
@@ -50,6 +57,13 @@ export default function PanelUsuario() {
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+
+  // Qué muestra la tarjeta: 'anomalias' o 'comportamiento'
+  const [vista, setVista] = useState('anomalias')
+
+  // Datos de "Mi comportamiento"
+  const [comportamiento, setComportamiento] = useState(null)
+  const [cargandoComportamiento, setCargandoComportamiento] = useState(true)
 
   // Mensaje de inicio de sesión (solo al llegar desde el login)
   useEffect(() => {
@@ -86,6 +100,26 @@ export default function PanelUsuario() {
     return () => {
       activo = false
       clearInterval(intervalo)
+    }
+  }, [])
+
+  // Comportamiento: se carga una vez (cambia poco)
+  useEffect(() => {
+    let activo = true
+
+    obtenerComportamiento()
+      .then((respuesta) => {
+        if (activo) setComportamiento(respuesta)
+      })
+      .catch(() => {
+        // Si falla, se muestra un mensaje dentro de la vista
+      })
+      .finally(() => {
+        if (activo) setCargandoComportamiento(false)
+      })
+
+    return () => {
+      activo = false
     }
   }, [])
 
@@ -163,6 +197,68 @@ export default function PanelUsuario() {
       },
     },
   }), [grafica])
+
+  // ---------- MI COMPORTAMIENTO ----------
+  const horas = comportamiento?.horas ?? []
+
+  const datosHoras = useMemo(() => ({
+    labels: horas.map((_, h) => `${h}`),
+    datasets: [
+      {
+        label: 'Accesos',
+        data: horas,
+        backgroundColor: '#18b982',
+        borderRadius: 4,
+        maxBarThickness: 18,
+      },
+    ],
+  }), [horas])
+
+  const opcionesHoras = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#102e25',
+        displayColors: false,
+        callbacks: {
+          title: (items) => {
+            const h = Number(items[0]?.label ?? 0)
+            return `${String(h).padStart(2, '0')}:00 a ${String(h).padStart(2, '0')}:59`
+          },
+          label: (context) => ` ${context.raw} ${context.raw === 1 ? 'acceso' : 'accesos'}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: '#66736c',
+          font: { size: 10 },
+          // En pantallas chicas solo se ven 0, 3, 6, 9...
+          callback: (valor, indice) => (indice % 3 === 0 ? indice : ''),
+          maxRotation: 0,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        suggestedMax: 3,
+        ticks: { precision: 0, color: '#66736c' },
+        grid: { color: '#e7ece9' },
+      },
+    },
+  }), [])
+
+  const analisis = comportamiento?.analisis
+  const progresoAnalisis = analisis
+    ? Math.min(100, Math.round((analisis.accesos / analisis.minimo) * 100))
+    : 0
+
+  const diasHabituales = (comportamiento?.dias ?? [])
+    .filter((d) => d.total > 0 && d.intensidad >= 0.5)
+    .map((d) => d.dia)
 
   const descargarReporte = () => {
     const contenido = [
@@ -249,34 +345,166 @@ export default function PanelUsuario() {
 
       </section>
 
-      {/* GRÁFICA DE ANOMALÍAS (últimos 7 días) */}
+      {/* TARJETA: ANOMALÍAS / MI COMPORTAMIENTO */}
       <section className="ls-usuario-grafica-card">
 
-        <div className="ls-usuario-grafica-header">
+        <div className="ls-usuario-grafica-header ls-grafica-header-con-vistas">
           <div className="ls-usuario-grafica-titulo">
-            <ChartNoAxesCombined size={24} />
-            <h2>Anomalías detectadas</h2>
+            {vista === 'anomalias'
+              ? <ChartNoAxesCombined size={24} />
+              : <Fingerprint size={24} />}
+            <h2>{vista === 'anomalias' ? 'Anomalías detectadas' : 'Mi comportamiento'}</h2>
+          </div>
+
+          {/* Selector de vista (esquina superior derecha) */}
+          <div className="ls-grafica-vistas" role="tablist" aria-label="Cambiar vista">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vista === 'anomalias'}
+              className={vista === 'anomalias' ? 'activa' : ''}
+              onClick={() => setVista('anomalias')}
+            >
+              <ChartNoAxesCombined size={15} />
+              <span>Anomalías</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vista === 'comportamiento'}
+              className={vista === 'comportamiento' ? 'activa' : ''}
+              onClick={() => setVista('comportamiento')}
+            >
+              <Fingerprint size={15} />
+              <span>Comportamiento</span>
+            </button>
           </div>
         </div>
 
-        <div className="ls-usuario-grafica-contenido">
-          <Line
-            data={datosAnomalias}
-            options={opcionesGrafica}
-          />
-        </div>
+        {/* ---------- VISTA: ANOMALÍAS ---------- */}
+        {vista === 'anomalias' && (
+          <>
+            <div className="ls-usuario-grafica-contenido">
+              <Line
+                data={datosAnomalias}
+                options={opcionesGrafica}
+              />
+            </div>
 
-        <div className="ls-usuario-grafica-footer">
-          <button
-            type="button"
-            className="ls-usuario-btn-reporte"
-            onClick={descargarReporte}
-            disabled={cargando || grafica.length === 0}
-          >
-            <Download size={16} />
-            Descargar reporte
-          </button>
-        </div>
+            <div className="ls-usuario-grafica-footer">
+              <button
+                type="button"
+                className="ls-usuario-btn-reporte"
+                onClick={descargarReporte}
+                disabled={cargando || grafica.length === 0}
+              >
+                <Download size={16} />
+                Descargar reporte
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ---------- VISTA: MI COMPORTAMIENTO ---------- */}
+        {vista === 'comportamiento' && (
+          <div className="ls-comportamiento">
+
+            {cargandoComportamiento && (
+              <p className="ls-comportamiento-mensaje">Cargando tu comportamiento...</p>
+            )}
+
+            {!cargandoComportamiento && !comportamiento && (
+              <p className="ls-comportamiento-mensaje">
+                No se pudo cargar tu comportamiento. Intenta de nuevo más tarde.
+              </p>
+            )}
+
+            {comportamiento && (
+              <>
+                <p className="ls-comportamiento-descripcion">
+                  Así usas normalmente tu casillero. Si un acceso se sale de este patrón,
+                  te avisaremos como "acceso inusual".
+                </p>
+
+                {/* 1. Estado del análisis */}
+                {analisis?.activo ? (
+                  <div className="ls-comportamiento-estado activo">
+                    <CheckCircle2 size={18} />
+                    <span>El sistema ya conoce tu forma de usar el casillero.</span>
+                  </div>
+                ) : (
+                  <div className="ls-comportamiento-estado aprendiendo">
+                    <span>
+                      El sistema está aprendiendo tu comportamiento:{' '}
+                      {analisis?.faltan === 1 ? 'falta 1 acceso' : `faltan ${analisis?.faltan} accesos`}.
+                    </span>
+                    <div className="ls-comportamiento-progreso">
+                      <div style={{ width: `${progresoAnalisis}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Datos de su patrón */}
+                <div className="ls-comportamiento-datos">
+                  <article>
+                    <Clock size={20} />
+                    <div>
+                      <span>Horario habitual</span>
+                      <strong>
+                        {comportamiento.horario
+                          ? `${comportamiento.horario.inicio} a ${comportamiento.horario.fin}`
+                          : 'Sin datos'}
+                      </strong>
+                    </div>
+                  </article>
+
+                  <article>
+                    <CalendarDays size={20} />
+                    <div>
+                      <span>Días que más lo usas</span>
+                      <strong>{diasHabituales.length > 0 ? diasHabituales.join(' · ') : 'Sin datos'}</strong>
+                    </div>
+                  </article>
+
+                  <article>
+                    <Repeat size={20} />
+                    <div>
+                      <span>Accesos por día</span>
+                      <strong>
+                        {comportamiento.por_dia
+                          ? `Normalmente ${comportamiento.por_dia.promedio} (máximo ${comportamiento.por_dia.maximo})`
+                          : 'Sin datos'}
+                      </strong>
+                    </div>
+                  </article>
+                </div>
+
+                {/* 3. Accesos por hora */}
+                <h3 className="ls-comportamiento-subtitulo">¿A qué hora usas tu casillero?</h3>
+                <div className="ls-comportamiento-grafica">
+                  <Bar data={datosHoras} options={opcionesHoras} />
+                </div>
+                <p className="ls-comportamiento-nota">Últimos 30 días.</p>
+
+                {/* 4. Días de la semana */}
+                <h3 className="ls-comportamiento-subtitulo">Días de la semana</h3>
+                <div className="ls-comportamiento-semana">
+                  {(comportamiento.dias ?? []).map((d) => (
+                    <div
+                      key={d.dia}
+                      className="ls-comportamiento-dia"
+                      title={`${d.total} ${d.total === 1 ? 'acceso' : 'accesos'}`}
+                      style={{ '--intensidad': d.intensidad }}
+                    >
+                      <span>{d.dia}</span>
+                      <strong>{d.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
       </section>
 

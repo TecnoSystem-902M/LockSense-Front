@@ -17,3 +17,9 @@ export const obtenerMiActividad = async () => {
   const { data } = await api.get('/usuario/actividad')
   return data
 }
+
+// Mi comportamiento: horario habitual, días, accesos por día y por hora.
+export const obtenerComportamiento = async () => {
+  const { data } = await api.get('/usuario/comportamiento')
+  return data
+}
