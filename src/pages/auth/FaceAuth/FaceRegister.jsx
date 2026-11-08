@@ -236,72 +236,58 @@ export default function FaceRegister() {
   }[estado]
 
   return (
-    <div className="fr-page">
-      {/* Encabezado simple: el usuario ya inició sesión, no va el navbar público */}
-      <header className="fr-topbar">
-        <div className="fr-brand">
-          <i className="fa-solid fa-lock"></i>
-          <span>LockSense</span>
-        </div>
-        <div className="fr-topbar-user">
-          {usuario?.nombre && <span className="fr-user-name">{usuario.nombre}</span>}
-          <button type="button" className="fr-logout" onClick={handleCerrarSesion}>
-            <i className="fa-solid fa-right-from-bracket"></i>
-            <span>Cerrar sesión</span>
-          </button>
-        </div>
-      </header>
+    <div className="ls-rostro-pagina">
 
-      <main className="auth-page fr-main">
-        <div className="auth-container">
-          <section className="auth-info">
-            <span className="fr-step">Paso opcional · Acceso facial</span>
-            <h1>
-              Registra tu <span>rostro</span>
+      <main className="ls-rostro-main">
+        <div className="ls-rostro-contenedor">
+          <section className="ls-rostro-info">
+            <span className="ls-rostro-paso">Paso opcional · Acceso facial</span>
+            <h1 className="ls-rostro-info-titulo">
+              Registra tu <span className="ls-rostro-resaltado">rostro</span>
             </h1>
-            <p>
+            <p className="ls-rostro-info-texto">
               Registra tu rostro para poder abrir tu casillero con reconocimiento facial, sin
               necesidad de tu tarjeta. Solo lo haces una vez.
             </p>
-            <div className="auth-benefits">
-              <div className="auth-benefit">
-                <div className="benefit-icon">
+            <div className="ls-rostro-consejos">
+              <div className="ls-rostro-consejo">
+                <div className="ls-rostro-consejo-icono">
                   <i className="fa-solid fa-face-smile"></i>
                 </div>
                 <div>
-                  <h3>Posición frontal</h3>
-                  <p>Mira de frente a la cámara y centra tu rostro en el óvalo.</p>
+                  <h3 className="ls-rostro-consejo-titulo">Posición frontal</h3>
+                  <p className="ls-rostro-consejo-texto">Mira de frente a la cámara y centra tu rostro en el óvalo.</p>
                 </div>
               </div>
-              <div className="auth-benefit">
-                <div className="benefit-icon">
+              <div className="ls-rostro-consejo">
+                <div className="ls-rostro-consejo-icono">
                   <i className="fa-solid fa-sun"></i>
                 </div>
                 <div>
-                  <h3>Buena iluminación</h3>
-                  <p>Evita tener una ventana o luz fuerte detrás de ti.</p>
+                  <h3 className="ls-rostro-consejo-titulo">Buena iluminación</h3>
+                  <p className="ls-rostro-consejo-texto">Evita tener una ventana o luz fuerte detrás de ti.</p>
                 </div>
               </div>
-              <div className="auth-benefit">
-                <div className="benefit-icon">
+              <div className="ls-rostro-consejo">
+                <div className="ls-rostro-consejo-icono">
                   <i className="fa-solid fa-glasses"></i>
                 </div>
                 <div>
-                  <h3>Rostro descubierto</h3>
-                  <p>Quítate gorra, cubrebocas o lentes oscuros.</p>
+                  <h3 className="ls-rostro-consejo-titulo">Rostro descubierto</h3>
+                  <p className="ls-rostro-consejo-texto">Quítate gorra, cubrebocas o lentes oscuros.</p>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="auth-card">
-            <div className="auth-card-header">
-              <div className="auth-title-icon">
+          <section className="ls-rostro-tarjeta">
+            <div className="ls-rostro-tarjeta-header">
+              <div className="ls-rostro-tarjeta-icono">
                 <i className={`fa-solid ${estado === 'exito' ? 'fa-circle-check' : 'fa-camera'}`}></i>
               </div>
               <div>
-                <h2>{estado === 'exito' ? 'Rostro registrado' : 'Captura de rostro'}</h2>
-                <p>
+                <h2 className="ls-rostro-tarjeta-titulo">{estado === 'exito' ? 'Rostro registrado' : 'Captura de rostro'}</h2>
+                <p className="ls-rostro-tarjeta-subtitulo">
                   {estado === 'exito'
                     ? 'Ya puedes usar el acceso facial en tu casillero'
                     : 'Alinea tu rostro con el óvalo guía'}
@@ -309,98 +295,100 @@ export default function FaceRegister() {
               </div>
             </div>
 
-            <div className="face-capture-wrapper">
-              <div className={`camera-viewport is-${estado}`}>
+            <div className="ls-rostro-captura">
+              <div className={`ls-rostro-visor ls-rostro-visor--${estado}`}>
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className={`camera-video ${camaraEncendida ? '' : 'hidden'}`}
+                  className={`ls-rostro-video ${camaraEncendida ? '' : 'ls-rostro-video--oculto'}`}
                 />
 
                 {/* Canvas oculto: se usa solo para capturar el fotograma. */}
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
 
                 {estado === 'iniciando' && !consentimiento && (
-                  <div className="camera-placeholder">
+                  <div className="ls-rostro-aviso">
                     <i className="fa-solid fa-shield-halved"></i>
                     <span>Marca la casilla de autorización para activar la cámara.</span>
                   </div>
                 )}
 
                 {estado === 'iniciando' && consentimiento && (
-                  <div className="camera-placeholder">
+                  <div className="ls-rostro-aviso">
                     <i className="fa-solid fa-spinner fa-spin"></i>
                     <span>Iniciando cámara...</span>
                   </div>
                 )}
 
                 {estado === 'error' && (
-                  <div className="camera-placeholder is-error" role="alert">
+                  <div className="ls-rostro-aviso ls-rostro-aviso--error" role="alert">
                     <i className="fa-solid fa-video-slash"></i>
                     <span>{errorMsg}</span>
                   </div>
                 )}
 
                 {estado === 'exito' && (
-                  <div className="camera-placeholder is-success">
+                  <div className="ls-rostro-aviso ls-rostro-aviso--exito">
                     <i className="fa-solid fa-circle-check"></i>
                     <span>¡Listo! Tu rostro quedó registrado.</span>
                   </div>
                 )}
 
                 {camaraEncendida && (
-                  <div className="scanner-oval">
-                    {estado === 'enviando' && <div className="scan-line"></div>}
+                  <div className="ls-rostro-ovalo">
+                    {estado === 'enviando' && <div className="ls-rostro-linea"></div>}
                   </div>
                 )}
 
-                <div className="camera-badge">
-                  <span className="badge-dot"></span>
+                <div className="ls-rostro-etiqueta">
+                  <span className="ls-rostro-punto"></span>
                   <span>{textoBadge}</span>
                 </div>
               </div>
 
               {/* Error al registrar (la cámara sigue encendida) */}
               {errorMsg && estado === 'lista' && (
-                <p className="ls-login-error-msg fr-error" role="alert">
+                <p className="ls-rostro-error" role="alert">
                   {errorMsg}
                 </p>
               )}
 
               {estado === 'exito' ? (
-                <button type="button" className="auth-button fr-button" onClick={irAlPanel}>
+                <button type="button" className="ls-rostro-boton" onClick={irAlPanel}>
                   Ir a mi panel
                   <i className="fa-solid fa-arrow-right"></i>
                 </button>
               ) : (
                 <>
-<label className={`remember fr-consent ${errorConsentimiento ? 'fr-consent-error' : ''}`}>
-  <input
-    type="checkbox"
-    checked={consentimiento}
-    onChange={(e) => {
-      setConsentimiento(e.target.checked)
-      if (e.target.checked) setErrorConsentimiento(false)   // quita el rojo al marcarla
-    }}
-    disabled={estado === 'enviando'}
-    aria-invalid={errorConsentimiento}
-  />
-  <span>
-    Acepto que LockSense procese mi rostro para el acceso a mi casillero.
-  </span>
-</label>
+                  <label
+                    className={`ls-rostro-consentimiento ${errorConsentimiento ? 'ls-rostro-consentimiento--error' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={consentimiento}
+                      onChange={(e) => {
+                        setConsentimiento(e.target.checked)
+                        if (e.target.checked) setErrorConsentimiento(false)   // quita el rojo al marcarla
+                      }}
+                      disabled={estado === 'enviando'}
+                      aria-invalid={errorConsentimiento}
+                    />
+                    <span>
+                      Acepto que LockSense procese mi rostro para el acceso a mi casillero.
+                    </span>
+                  </label>
 
-{errorConsentimiento && (
-  <p className="ls-login-error-msg fr-consent-msg" role="alert">
-    Debes aceptar la autorización para registrar tu rostro.
-  </p>
-)}
+                  {errorConsentimiento && (
+                    <p className="ls-rostro-error ls-rostro-error--consentimiento" role="alert">
+                      Debes aceptar la autorización para registrar tu rostro.
+                    </p>
+                  )}
 
                   <button
                     type="button"
-                    className="auth-button fr-button"
+                    className="ls-rostro-boton"
                     onClick={handleRegistrar}
                     disabled={estado === 'enviando' || (consentimiento && estado !== 'lista')}
                   >
@@ -417,15 +405,15 @@ export default function FaceRegister() {
                     )}
                   </button>
 
-                  <p className="fr-privacy">
+                  <p className="ls-rostro-privacidad">
                     <i className="fa-solid fa-shield-halved"></i>
                     No guardamos tu foto, solo una representación numérica de tu rostro.
                   </p>
 
-                  <div className="fr-actions">
+                  <div className="ls-rostro-acciones">
                     <button
                       type="button"
-                      className="fr-link"
+                      className="ls-rostro-enlace"
                       onClick={startCamera}
                       disabled={estado === 'enviando' || estado === 'iniciando'}
                     >
@@ -434,7 +422,7 @@ export default function FaceRegister() {
                     </button>
                     <button
                       type="button"
-                      className="fr-link fr-link-muted"
+                      className="ls-rostro-enlace ls-rostro-enlace--secundario"
                       onClick={irAlPanel}
                       disabled={estado === 'enviando'}
                     >

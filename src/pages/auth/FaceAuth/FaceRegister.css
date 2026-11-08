@@ -1,55 +1,77 @@
 /* =========================================================
    HU10 - Registro de rostro
-   Reutiliza auth-page / auth-card del login. Aquí solo va lo propio.
-   Las variables tienen valor de respaldo por si no están en el CSS global.
+   Todas las clases empiezan con "ls-rostro-": esta pantalla ya NO
+   depende de Auth.css (auth-page, auth-card, auth-button...), así
+   que nada de otro archivo la cambia ni la esconde.
    ========================================================= */
 
-.fr-page {
+.ls-rostro-pagina {
+  /* Colores propios de la pantalla */
+  --ls-rostro-primario: #0f2922;
+  --ls-rostro-verde: #10b981;
+  --ls-rostro-verde-suave: rgba(16, 185, 129, 0.12);
+  --ls-rostro-fondo: #f4f7f6;
+  --ls-rostro-linea: rgba(15, 41, 34, 0.08);
+  --ls-rostro-texto: #26352f;
+  --ls-rostro-gris: #71817c;
+  --ls-rostro-rojo: #dc2626;
+
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--ls-rostro-fondo);
+  color: var(--ls-rostro-texto);
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
 }
 
-/* ---------- Encabezado (usuario con sesión) ---------- */
-.fr-topbar {
+.ls-rostro-pagina *,
+.ls-rostro-pagina *::before,
+.ls-rostro-pagina *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+.ls-rostro-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 14px 24px;
-  background: var(--primary, #0f2922);
+  background: var(--ls-rostro-primario);
   color: #fff;
 }
 
-.fr-brand {
+.ls-rostro-marca {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
   font-size: 1.15rem;
+  font-weight: 700;
 }
 
-.fr-brand i {
-  color: var(--secondary, #10b981);
+.ls-rostro-marca i {
+  color: var(--ls-rostro-verde);
 }
 
-.fr-topbar-user {
+.ls-rostro-topbar-usuario {
   display: flex;
   align-items: center;
   gap: 14px;
   min-width: 0;
 }
 
-.fr-user-name {
+.ls-rostro-usuario-nombre {
+  max-width: 200px;
+  overflow: hidden;
   font-size: 0.9rem;
   opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  white-space: nowrap;
 }
 
-.fr-logout {
+.ls-rostro-salir {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -64,64 +86,221 @@
   transition: background 0.2s, border-color 0.2s;
 }
 
-.fr-logout:hover {
-  background: rgba(255, 255, 255, 0.08);
+.ls-rostro-salir:hover {
   border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.fr-main {
+/* =========================================================
+   CONTENEDOR (2 columnas en computadora)
+   ========================================================= */
+.ls-rostro-main {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.08), transparent 35%),
+    var(--ls-rostro-fondo);
 }
 
-.fr-step {
-  display: inline-block;
-  margin-bottom: 12px;
+.ls-rostro-contenedor {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border: 1px solid var(--ls-rostro-linea);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 25px 60px rgba(15, 41, 34, 0.12);
+}
+
+/* =========================================================
+   PANEL VERDE: INSTRUCCIONES
+   ========================================================= */
+.ls-rostro-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 44px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(16, 185, 129, 0.16), transparent 35%),
+    linear-gradient(145deg, #081712, var(--ls-rostro-primario));
+  color: #fff;
+}
+
+/* Círculo decorativo */
+.ls-rostro-info::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  bottom: -120px;
+  width: 250px;
+  height: 250px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ls-rostro-paso {
+  align-self: flex-start;
+  margin-bottom: 14px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--secondary, #10b981);
+  background: var(--ls-rostro-verde-suave);
+  color: var(--ls-rostro-verde);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
-/* ---------- Visor de cámara ---------- */
-.face-capture-wrapper {
+.ls-rostro-info-titulo {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 16px;
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.ls-rostro-resaltado {
+  color: var(--ls-rostro-verde);
+}
+
+.ls-rostro-info-texto {
+  position: relative;
+  z-index: 2;
+  max-width: 430px;
+  margin: 0 0 34px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ls-rostro-consejos {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ls-rostro-consejo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.ls-rostro-consejo-icono {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  background: var(--ls-rostro-verde-suave);
+  color: var(--ls-rostro-verde);
+}
+
+.ls-rostro-consejo-titulo {
+  margin: 0 0 2px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ls-rostro-consejo-texto {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   TARJETA BLANCA: CÁMARA
+   ========================================================= */
+.ls-rostro-tarjeta {
+  display: flex;
+  flex-direction: column;
+  padding: 44px 46px;
+  background: #fff;
+}
+
+.ls-rostro-tarjeta-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.ls-rostro-tarjeta-icono {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--ls-rostro-verde-suave);
+  color: var(--ls-rostro-verde);
+  font-size: 19px;
+}
+
+.ls-rostro-tarjeta-titulo {
+  margin: 0 0 4px;
+  color: var(--ls-rostro-primario);
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.ls-rostro-tarjeta-subtitulo {
+  margin: 0;
+  color: var(--ls-rostro-gris);
+  font-size: 13px;
+}
+
+.ls-rostro-captura {
   display: flex;
   flex-direction: column;
 }
 
-.camera-viewport {
+/* ---------- Visor ---------- */
+.ls-rostro-visor {
   position: relative;
   width: 100%;
   height: 300px;
-  border-radius: 14px;
   overflow: hidden;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 14px;
   background: #081712;
-  border: 1px solid var(--line, rgba(16, 185, 129, 0.25));
   transition: border-color 0.3s;
 }
 
-.camera-viewport.is-error {
+.ls-rostro-visor--error {
   border-color: rgba(239, 68, 68, 0.5);
 }
 
-.camera-viewport.is-exito {
-  border-color: var(--secondary, #10b981);
+.ls-rostro-visor--exito {
+  border-color: var(--ls-rostro-verde);
 }
 
-.camera-video {
+.ls-rostro-video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   transform: scaleX(-1); /* efecto espejo */
 }
 
-.camera-video.hidden {
+.ls-rostro-video--oculto {
   display: none;
 }
 
-.camera-placeholder {
+.ls-rostro-aviso {
   position: absolute;
   inset: 0;
   display: flex;
@@ -130,63 +309,63 @@
   justify-content: center;
   gap: 12px;
   padding: 0 28px;
-  text-align: center;
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.9rem;
   line-height: 1.4;
+  text-align: center;
 }
 
-.camera-placeholder i {
+.ls-rostro-aviso i {
+  color: var(--ls-rostro-verde);
   font-size: 2rem;
-  color: var(--secondary, #10b981);
 }
 
-.camera-placeholder.is-error i {
+.ls-rostro-aviso--error i {
   color: #f87171;
 }
 
-.camera-placeholder.is-success i {
+.ls-rostro-aviso--exito i {
   font-size: 3rem;
-  animation: fr-pop 0.4s ease-out;
+  animation: ls-rostro-aparecer 0.4s ease-out;
 }
 
-.camera-placeholder.is-success span {
+.ls-rostro-aviso--exito span {
   color: #fff;
   font-weight: 600;
 }
 
 /* Óvalo guía */
-.scanner-oval {
+.ls-rostro-ovalo {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 150px;
   height: 200px;
-  transform: translate(-50%, -50%);
-  border: 2px dashed var(--secondary, #10b981);
+  overflow: hidden;
+  border: 2px dashed var(--ls-rostro-verde);
   border-radius: 50%;
   box-shadow: 0 0 0 9999px rgba(8, 23, 18, 0.45); /* oscurece lo de fuera */
-  overflow: hidden;
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  animation: fr-pulse 2s ease-in-out infinite;
+  animation: ls-rostro-pulso 2s ease-in-out infinite;
 }
 
-.is-enviando .scanner-oval {
+.ls-rostro-visor--enviando .ls-rostro-ovalo {
   border-style: solid;
 }
 
-.scan-line {
+.ls-rostro-linea {
   position: absolute;
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--secondary, #10b981);
-  box-shadow: 0 0 12px var(--secondary, #10b981);
-  animation: fr-scan 1.6s ease-in-out infinite;
+  background: var(--ls-rostro-verde);
+  box-shadow: 0 0 12px var(--ls-rostro-verde);
+  animation: ls-rostro-escaneo 1.6s ease-in-out infinite;
 }
 
 /* Etiqueta de estado */
-.camera-badge {
+.ls-rostro-etiqueta {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -201,194 +380,391 @@
   font-weight: 500;
 }
 
-.badge-dot {
+.ls-rostro-punto {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #9ca3af; /* gris: apagada / iniciando */
 }
 
-.is-lista .badge-dot,
-.is-exito .badge-dot {
-  background: var(--secondary, #10b981);
-  animation: fr-blink 1.4s ease-in-out infinite;
+.ls-rostro-visor--lista .ls-rostro-punto,
+.ls-rostro-visor--exito .ls-rostro-punto {
+  background: var(--ls-rostro-verde);
+  animation: ls-rostro-parpadeo 1.4s ease-in-out infinite;
 }
 
-.is-enviando .badge-dot {
+.ls-rostro-visor--enviando .ls-rostro-punto {
   background: #fbbf24;
-  animation: fr-blink 0.7s ease-in-out infinite;
+  animation: ls-rostro-parpadeo 0.7s ease-in-out infinite;
 }
 
-.is-error .badge-dot {
+.ls-rostro-visor--error .ls-rostro-punto {
   background: #ef4444;
 }
 
-.is-exito .badge-dot {
+.ls-rostro-visor--exito .ls-rostro-punto {
   animation: none;
 }
 
-/* ---------- Controles ---------- */
-.fr-error {
+/* ---------- Mensajes de error ---------- */
+.ls-rostro-error {
+  display: block;
+  margin: 12px 0 0;
+  color: var(--ls-rostro-rojo);
+  font-size: 0.8rem;
+  font-weight: 500;
   text-align: center;
-  margin-top: 12px;
 }
 
-.fr-consent {
-  margin-top: 18px;
+.ls-rostro-error--consentimiento {
+  margin-top: 6px;
+  text-align: left;
+}
+
+/* ---------- Consentimiento ---------- */
+.ls-rostro-consentimiento {
+  display: flex;
   align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  color: #4f5f58;
   font-size: 0.85rem;
   line-height: 1.4;
+  cursor: pointer;
 }
 
-.fr-consent input {
-  margin-top: 2px;
+.ls-rostro-consentimiento input {
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--ls-rostro-verde);
+  cursor: pointer;
 }
 
-.fr-button {
+.ls-rostro-consentimiento--error input {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.ls-rostro-consentimiento--error span {
+  color: #ef4444;
+}
+
+/* ---------- Botón principal ---------- */
+.ls-rostro-boton {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 48px;
   margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  border: none;
+  border-radius: 999px;
+  background: var(--ls-rostro-primario);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.fr-privacy {
+.ls-rostro-boton::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ls-rostro-verde);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ls-rostro-boton:hover:not(:disabled)::before {
+  transform: translate(-50%, -50%) scale(30);
+}
+
+.ls-rostro-boton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.25);
+}
+
+.ls-rostro-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Privacidad y enlaces ---------- */
+.ls-rostro-privacidad {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   margin: 12px 0 0;
+  color: var(--ls-rostro-gris);
   font-size: 0.78rem;
-  opacity: 0.7;
   text-align: center;
 }
 
-.fr-privacy i {
-  color: var(--secondary, #10b981);
+.ls-rostro-privacidad i {
+  color: var(--ls-rostro-verde);
 }
 
-.fr-actions {
+.ls-rostro-acciones {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px solid var(--line, rgba(16, 185, 129, 0.2));
+  border-top: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-.fr-link {
+.ls-rostro-enlace {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 0;
   border: none;
   background: none;
-  color: var(--secondary, #10b981);
+  color: var(--ls-rostro-verde);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.fr-link:hover:not(:disabled) {
+.ls-rostro-enlace:hover:not(:disabled) {
   text-decoration: underline;
 }
 
-.fr-link:disabled {
+.ls-rostro-enlace:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.fr-link-muted {
-  color: inherit;
-  opacity: 0.7;
+.ls-rostro-enlace--secundario {
+  color: var(--ls-rostro-texto);
   font-weight: 500;
+  opacity: 0.7;
 }
 
-/* ---------- Animaciones ---------- */
-@keyframes fr-pulse {
-  0%, 100% { border-color: var(--secondary, #10b981); }
+/* =========================================================
+   ANIMACIONES
+   ========================================================= */
+@keyframes ls-rostro-pulso {
+  0%, 100% { border-color: #10b981; }
   50% { border-color: rgba(16, 185, 129, 0.4); }
 }
 
-@keyframes fr-scan {
+@keyframes ls-rostro-escaneo {
   0% { top: 0; }
   50% { top: calc(100% - 2px); }
   100% { top: 0; }
 }
 
-@keyframes fr-blink {
+@keyframes ls-rostro-parpadeo {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
 
-@keyframes fr-pop {
+@keyframes ls-rostro-aparecer {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scanner-oval,
-  .scan-line,
-  .badge-dot,
-  .camera-placeholder.is-success i {
+  .ls-rostro-ovalo,
+  .ls-rostro-linea,
+  .ls-rostro-punto,
+  .ls-rostro-aviso--exito i {
     animation: none !important;
   }
 }
 
-/* ---------- Tablet / móvil: una sola columna ----------
-   El contenedor global (.auth-container) pasa a 1 columna en <=900px.
-   En la página de registro facial queremos la CÁMARA primero y las
-   instrucciones debajo, así que invertimos el orden visual de las dos
-   secciones. El diseño de escritorio (2 columnas) no se altera. */
-@media (max-width: 900px) {
-  .fr-main .auth-container {
-    display: flex;
-    flex-direction: column;
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+/* Tablet: sigue en 2 columnas, más compacto */
+@media (max-width: 1024px) {
+  .ls-rostro-info { padding: 38px 30px; }
+  .ls-rostro-info-titulo { font-size: 28px; }
+  .ls-rostro-info-texto { margin-bottom: 26px; font-size: 14px; }
+  .ls-rostro-consejos { gap: 16px; }
+  .ls-rostro-consejo-icono { width: 40px; height: 40px; }
+  .ls-rostro-consejo-titulo { font-size: 14px; }
+  .ls-rostro-consejo-texto { font-size: 12.5px; }
+  .ls-rostro-tarjeta { padding: 36px 32px; }
+}
+
+/* Tablet chica y celular: una columna.
+   La cámara va ARRIBA y las instrucciones ABAJO, en formato compacto. */
+@media (max-width: 820px) {
+  .ls-rostro-main {
+    align-items: flex-start;
+    padding: 24px 16px;
   }
 
-  .fr-main .auth-card {
+  .ls-rostro-contenedor {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    border-radius: 20px;
+  }
+
+  .ls-rostro-tarjeta {
     order: 1; /* cámara arriba */
   }
 
-  .fr-main .auth-info {
-    order: 2; /* instrucciones debajo */
-  }
-}
-
-/* ---------- Celular ---------- */
-@media (max-width: 575.98px) {
-  .fr-topbar {
-    padding: 12px 16px;
+  .ls-rostro-info {
+    order: 2; /* instrucciones abajo */
+    padding: 22px 20px 20px;
   }
 
-  .fr-user-name {
+  .ls-rostro-info::after {
     display: none;
   }
 
-  .fr-logout span {
-    display: none; /* solo el ícono */
+  .ls-rostro-paso {
+    margin-bottom: 8px;
+    font-size: 0.75rem;
   }
 
-  .camera-viewport {
-    height: 340px; /* más alto: el celular es vertical */
+  .ls-rostro-info-titulo {
+    margin-bottom: 6px;
+    font-size: 22px;
   }
 
-  .fr-actions {
+  .ls-rostro-info-texto {
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  /* Las 3 instrucciones en una fila de tarjetas */
+  .ls-rostro-consejos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ls-rostro-consejo {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    text-align: center;
+  }
+
+  .ls-rostro-consejo-icono {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .ls-rostro-consejo-titulo {
+    font-size: 12.5px;
+    line-height: 1.25;
+  }
+
+  .ls-rostro-consejo-texto {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .ls-rostro-tarjeta {
+    padding: 24px 20px;
+  }
+}
+
+/* Celular */
+@media (max-width: 575.98px) {
+  .ls-rostro-topbar {
+    padding: 12px 16px;
+  }
+
+  .ls-rostro-usuario-nombre,
+  .ls-rostro-salir-texto {
+    display: none; /* solo el ícono de salir */
+  }
+
+  .ls-rostro-main {
+    padding: 14px 10px;
+  }
+
+  .ls-rostro-contenedor {
+    border-radius: 18px;
+  }
+
+  /* El párrafo largo se esconde: las 3 instrucciones bastan */
+  .ls-rostro-info-texto {
+    display: none;
+  }
+
+  .ls-rostro-info-titulo {
+    margin-bottom: 14px;
+  }
+
+  .ls-rostro-tarjeta {
+    padding: 20px 16px;
+  }
+
+  .ls-rostro-tarjeta-header {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ls-rostro-tarjeta-icono {
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+  }
+
+  .ls-rostro-tarjeta-titulo {
+    font-size: 20px;
+  }
+
+  .ls-rostro-visor {
+    height: 320px; /* más alto: el celular es vertical */
+  }
+
+  .ls-rostro-acciones {
     flex-direction: column;
     align-items: center;
   }
 }
 
-/* Casilla de consentimiento sin marcar */
-.fr-consent-error input {
-  outline: 2px solid #ef4444;
-  outline-offset: 2px;
-  border-radius: 3px;
-}
+/* Celulares angostos: instrucciones en lista, una debajo de otra */
+@media (max-width: 420px) {
+  .ls-rostro-consejos {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 
-.fr-consent-error span {
-  color: #ef4444;
-}
+  .ls-rostro-consejo {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    text-align: left;
+  }
 
-.fr-consent-msg {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
+  .ls-rostro-consejo-icono {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ls-rostro-visor {
+    height: 280px;
+  }
 }
