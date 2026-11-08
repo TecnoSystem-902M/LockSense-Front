@@ -28,7 +28,7 @@ import {
   Filler,
 } from 'chart.js'
 import { obtenerUsuario } from '../../utils/session'
-import { obtenerDashboard, obtenerComportamiento } from '../../api/usuario'
+import { obtenerDashboard, obtenerComportamiento, obtenerReporte } from '../../api/usuario'
 import '../../styles/Usuarios/PanelUsuario.css'
 
 ChartJS.register(
@@ -49,6 +49,16 @@ const ESTADOS = {
   DESOCUPADO: { texto: 'Desocupado', Icono: ShieldOff,   clase: 'accesos', check: false },
 }
 
+// 2.7 -> "2 a 3 veces al día"   |   3 -> "3 veces al día"
+const textoPorDia = ({ promedio }) => {
+  const bajo = Math.floor(promedio)
+  const alto = Math.ceil(promedio)
+  const veces = (n) => `${n} ${n === 1 ? 'vez' : 'veces'}`
+
+  if (bajo === alto || bajo === 0) return `${veces(alto)} al día`
+  return `${bajo} a ${veces(alto)} al día`
+}
+
 export default function PanelUsuario() {
   const usuarioSesion = obtenerUsuario()
   const location = useLocation()
@@ -64,6 +74,10 @@ export default function PanelUsuario() {
   // Datos de "Mi comportamiento"
   const [comportamiento, setComportamiento] = useState(null)
   const [cargandoComportamiento, setCargandoComportamiento] = useState(true)
+
+  // Reporte PDF
+  const [generandoReporte, setGenerandoReporte] = useState(false)
+  const [errorReporte, setErrorReporte] = useState('')
 
   // Mensaje de inicio de sesión (solo al llegar desde el login)
   useEffect(() => {
@@ -238,7 +252,7 @@ export default function PanelUsuario() {
           color: '#66736c',
           font: { size: 10 },
           // En pantallas chicas solo se ven 0, 3, 6, 9...
-          callback: (valor, indice) => (indice % 3 === 0 ? indice : ''),
+          callback: (valor, indice) => (indice % 3 === 0 ? `${indice} h` : ''),
           maxRotation: 0,
         },
       },
@@ -260,27 +274,32 @@ export default function PanelUsuario() {
     .filter((d) => d.total > 0 && d.intensidad >= 0.5)
     .map((d) => d.dia)
 
-  const descargarReporte = () => {
-    const contenido = [
-      ['Fecha', 'Día', 'Anomalías detectadas'],
-      ...grafica.map((d) => [d.fecha, d.dia, d.total]),
-    ]
+  // Descarga el reporte PDF (resumen, anomalías y comportamiento).
+  const descargarReporte = async () => {
+    setGenerandoReporte(true)
+    setErrorReporte('')
 
-    const csv = contenido.map(fila => fila.join(',')).join('\n')
-    const archivo = new Blob(['﻿' + csv], {
-      type: 'text/csv;charset=utf-8;',
-    })
+    try {
+      // Se piden los datos al momento para que el reporte esté al día.
+      const [dashboard, comportamientoActual, reporte] = await Promise.all([
+        obtenerDashboard(),
+        obtenerComportamiento(),
+        obtenerReporte(),
+      ])
 
-    const url = URL.createObjectURL(archivo)
-    const enlace = document.createElement('a')
+      // jsPDF solo se carga cuando se presiona el botón.
+      const { generarReporteUsuario } = await import('../../reportes/reporteUsuario')
 
-    enlace.href = url
-    enlace.download = 'reporte-anomalias-locksense.csv'
-    document.body.appendChild(enlace)
-    enlace.click()
-    enlace.remove()
-
-    URL.revokeObjectURL(url)
+      await generarReporteUsuario({
+        dashboard,
+        comportamiento: comportamientoActual,
+        reporte,
+      })
+    } catch {
+      setErrorReporte('No se pudo generar el reporte. Intenta de nuevo.')
+    } finally {
+      setGenerandoReporte(false)
+    }
   }
 
   return (
@@ -392,14 +411,15 @@ export default function PanelUsuario() {
             </div>
 
             <div className="ls-usuario-grafica-footer">
+              {errorReporte && <p className="ls-usuario-reporte-error">{errorReporte}</p>}
               <button
                 type="button"
                 className="ls-usuario-btn-reporte"
                 onClick={descargarReporte}
-                disabled={cargando || grafica.length === 0}
+                disabled={cargando || generandoReporte}
               >
                 <Download size={16} />
-                Descargar reporte
+                {generandoReporte ? 'Generando reporte...' : 'Descargar reporte'}
               </button>
             </div>
           </>
@@ -430,7 +450,13 @@ export default function PanelUsuario() {
                 {analisis?.activo ? (
                   <div className="ls-comportamiento-estado activo">
                     <CheckCircle2 size={18} />
-                    <span>El sistema ya conoce tu forma de usar el casillero.</span>
+                    <div>
+                      <span>El sistema ya conoce tu forma de usar el casillero.</span>
+                      <small>
+                        Aprendió tu patrón con tus últimos {analisis.accesos} accesos y lo usa
+                        para detectar accesos que no se parecen a los tuyos.
+                      </small>
+                    </div>
                   </div>
                 ) : (
                   <div className="ls-comportamiento-estado aprendiendo">
@@ -441,6 +467,10 @@ export default function PanelUsuario() {
                     <div className="ls-comportamiento-progreso">
                       <div style={{ width: `${progresoAnalisis}%` }} />
                     </div>
+                    <small>
+                      Se necesitan al menos {analisis?.minimo} accesos para conocer tu patrón.
+                      Llevas {analisis?.accesos}. Mientras tanto no se revisan accesos inusuales.
+                    </small>
                   </div>
                 )}
 
@@ -471,9 +501,7 @@ export default function PanelUsuario() {
                     <div>
                       <span>Accesos por día</span>
                       <strong>
-                        {comportamiento.por_dia
-                          ? `Normalmente ${comportamiento.por_dia.promedio} (máximo ${comportamiento.por_dia.maximo})`
-                          : 'Sin datos'}
+                        {comportamiento.por_dia ? textoPorDia(comportamiento.por_dia) : 'Sin datos'}
                       </strong>
                     </div>
                   </article>
@@ -481,13 +509,22 @@ export default function PanelUsuario() {
 
                 {/* 3. Accesos por hora */}
                 <h3 className="ls-comportamiento-subtitulo">¿A qué hora usas tu casillero?</h3>
+                <p className="ls-comportamiento-ayuda">
+                  Cada barra es una hora del día (de 0 h, medianoche, a 23 h) y su altura indica
+                  cuántas veces abriste tu casillero a esa hora en los últimos 30 días.
+                  Las horas sin barra son en las que no sueles usarlo.
+                </p>
                 <div className="ls-comportamiento-grafica">
                   <Bar data={datosHoras} options={opcionesHoras} />
                 </div>
-                <p className="ls-comportamiento-nota">Últimos 30 días.</p>
+                <p className="ls-comportamiento-nota">Hora del día · Últimos 30 días</p>
 
                 {/* 4. Días de la semana */}
                 <h3 className="ls-comportamiento-subtitulo">Días de la semana</h3>
+                <p className="ls-comportamiento-ayuda">
+                  Número de accesos que has hecho cada día de la semana.
+                  Entre más verde el recuadro, más usas tu casillero ese día.
+                </p>
                 <div className="ls-comportamiento-semana">
                   {(comportamiento.dias ?? []).map((d) => (
                     <div

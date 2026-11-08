@@ -23,3 +23,9 @@ export const obtenerComportamiento = async () => {
   const { data } = await api.get('/usuario/comportamiento')
   return data
 }
+
+// Datos extra para el reporte PDF: organización, periodo y detalle de anomalías.
+export const obtenerReporte = async () => {
+  const { data } = await api.get('/usuario/reporte')
+  return data
+}

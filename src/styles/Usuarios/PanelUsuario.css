@@ -365,8 +365,23 @@
 
 .ls-usuario-grafica-footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 20px;
+}
+
+.ls-usuario-reporte-error {
+  margin: 0;
+  color: #d64545;
+  font-size: 12px;
+}
+
+.ls-usuario-btn-reporte:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
 }
 
 /* BOTÓN DESCARGAR REPORTE (PANEL) */
@@ -590,6 +605,37 @@
   transition: width 0.4s ease;
 }
 
+/* Textos de ayuda */
+.ls-comportamiento-estado small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  opacity: 0.85;
+}
+
+.ls-comportamiento-estado.activo > svg {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 1px;
+}
+
+.ls-comportamiento-datos small {
+  display: block;
+  margin-top: 4px;
+  color: #91a098;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.ls-comportamiento-ayuda {
+  margin: -4px 0 12px;
+  color: #89958e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* Tres datos */
 .ls-comportamiento-datos {
   display: grid;
@@ -600,7 +646,7 @@
 
 .ls-comportamiento-datos article {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   min-width: 0;
   padding: 14px;
