@@ -269,7 +269,7 @@ export default function SuperAdminDashboard() {
             onClick={descargarReporteMes}
             disabled={cargando || porMes.length === 0}
           >
-            <Download size={18} /> Descargar reporte
+            <Download size={18} /> Descargar Excel
           </button>
         </article>
 
@@ -287,7 +287,7 @@ export default function SuperAdminDashboard() {
             onClick={descargarReporteTipo}
             disabled={cargando || porTipo.length === 0}
           >
-            <Download size={18} /> Descargar reporte
+            <Download size={18} /> Descargar Excel
           </button>
         </article>
 

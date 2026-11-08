@@ -10,19 +10,25 @@ import {
   AlertTriangle,
   ChartNoAxesCombined,
   Download,
+  Fingerprint,
+  Clock,
+  CalendarDays,
+  Repeat,
+  CheckCircle2,
 } from 'lucide-react'
-import { Line } from 'react-chartjs-2'
+import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Tooltip,
   Filler,
 } from 'chart.js'
 import { obtenerUsuario } from '../../utils/session'
-import { obtenerDashboard } from '../../api/usuario'
+import { obtenerDashboard, obtenerComportamiento, obtenerReporte } from '../../api/usuario'
 import '../../styles/Usuarios/PanelUsuario.css'
 
 ChartJS.register(
@@ -30,6 +36,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Tooltip,
   Filler
 )
@@ -42,24 +49,14 @@ const ESTADOS = {
   DESOCUPADO: { texto: 'Desocupado', Icono: ShieldOff,   clase: 'accesos', check: false },
 }
 
-// PENDIENTE: la gráfica sigue con datos provisionales.
-const datosAnomalias = {
-  labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
-  datasets: [
-    {
-      label: 'Anomalías detectadas',
-      data: [0, 2, 10, 0, 0],
-      borderColor: '#18b982',
-      backgroundColor: 'rgba(24, 185, 130, 0.10)',
-      borderWidth: 3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      pointBackgroundColor: '#18b982',
-      pointBorderWidth: 0,
-      tension: 0.4,
-      fill: true,
-    },
-  ],
+// 2.7 -> "2 a 3 veces al día"   |   3 -> "3 veces al día"
+const textoPorDia = ({ promedio }) => {
+  const bajo = Math.floor(promedio)
+  const alto = Math.ceil(promedio)
+  const veces = (n) => `${n} ${n === 1 ? 'vez' : 'veces'}`
+
+  if (bajo === alto || bajo === 0) return `${veces(alto)} al día`
+  return `${bajo} a ${veces(alto)} al día`
 }
 
 export default function PanelUsuario() {
@@ -70,6 +67,17 @@ export default function PanelUsuario() {
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+
+  // Qué muestra la tarjeta: 'anomalias' o 'comportamiento'
+  const [vista, setVista] = useState('anomalias')
+
+  // Datos de "Mi comportamiento"
+  const [comportamiento, setComportamiento] = useState(null)
+  const [cargandoComportamiento, setCargandoComportamiento] = useState(true)
+
+  // Reporte PDF
+  const [generandoReporte, setGenerandoReporte] = useState(false)
+  const [errorReporte, setErrorReporte] = useState('')
 
   // Mensaje de inicio de sesión (solo al llegar desde el login)
   useEffect(() => {
@@ -109,12 +117,54 @@ export default function PanelUsuario() {
     }
   }, [])
 
+  // Comportamiento: se carga una vez (cambia poco)
+  useEffect(() => {
+    let activo = true
+
+    obtenerComportamiento()
+      .then((respuesta) => {
+        if (activo) setComportamiento(respuesta)
+      })
+      .catch(() => {
+        // Si falla, se muestra un mensaje dentro de la vista
+      })
+      .finally(() => {
+        if (activo) setCargandoComportamiento(false)
+      })
+
+    return () => {
+      activo = false
+    }
+  }, [])
+
   const nombre = datos?.nombre || usuarioSesion?.nombre || 'usuario'
   const estado = ESTADOS[datos?.estado] || ESTADOS.SEGURO
   const IconoEstado = estado.Icono
 
   // Mientras carga (o si falló) se muestra un guion en lugar de un número.
   const mostrar = (valor) => (cargando || error ? '—' : valor)
+
+  // Anomalías por día (últimos 7 días) que manda el back
+  const grafica = datos?.grafica ?? []
+
+  const datosAnomalias = useMemo(() => ({
+    labels: grafica.map((d) => d.dia),
+    datasets: [
+      {
+        label: 'Anomalías detectadas',
+        data: grafica.map((d) => d.total),
+        borderColor: '#18b982',
+        backgroundColor: 'rgba(24, 185, 130, 0.10)',
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#18b982',
+        pointBorderWidth: 0,
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  }), [grafica])
 
   const opcionesGrafica = useMemo(() => ({
     responsive: true,
@@ -127,6 +177,13 @@ export default function PanelUsuario() {
         backgroundColor: '#102e25',
         padding: 12,
         displayColors: false,
+        callbacks: {
+          title: (items) => {
+            const d = grafica[items[0]?.dataIndex]
+            return d ? `${d.dia} ${d.fecha}` : ''
+          },
+          label: (context) => ` ${context.raw} ${context.raw === 1 ? 'anomalía' : 'anomalías'}`,
+        },
       },
     },
     scales: {
@@ -143,10 +200,9 @@ export default function PanelUsuario() {
       },
       y: {
         beginAtZero: true,
-        min: 0,
-        max: 10,
+        suggestedMax: 5,       // se ajusta solo si hay más anomalías
         ticks: {
-          stepSize: 2,
+          precision: 0,        // solo números enteros
           color: '#66736c',
         },
         grid: {
@@ -154,33 +210,96 @@ export default function PanelUsuario() {
         },
       },
     },
+  }), [grafica])
+
+  // ---------- MI COMPORTAMIENTO ----------
+  const horas = comportamiento?.horas ?? []
+
+  const datosHoras = useMemo(() => ({
+    labels: horas.map((_, h) => `${h}`),
+    datasets: [
+      {
+        label: 'Accesos',
+        data: horas,
+        backgroundColor: '#18b982',
+        borderRadius: 4,
+        maxBarThickness: 18,
+      },
+    ],
+  }), [horas])
+
+  const opcionesHoras = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#102e25',
+        displayColors: false,
+        callbacks: {
+          title: (items) => {
+            const h = Number(items[0]?.label ?? 0)
+            return `${String(h).padStart(2, '0')}:00 a ${String(h).padStart(2, '0')}:59`
+          },
+          label: (context) => ` ${context.raw} ${context.raw === 1 ? 'acceso' : 'accesos'}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: '#66736c',
+          font: { size: 10 },
+          // En pantallas chicas solo se ven 0, 3, 6, 9...
+          callback: (valor, indice) => (indice % 3 === 0 ? `${indice} h` : ''),
+          maxRotation: 0,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        suggestedMax: 3,
+        ticks: { precision: 0, color: '#66736c' },
+        grid: { color: '#e7ece9' },
+      },
+    },
   }), [])
 
-  const descargarReporte = () => {
-    const contenido = [
-      ['Día', 'Anomalías detectadas'],
-      ['Lunes', 0],
-      ['Martes', 2],
-      ['Miércoles', 10],
-      ['Jueves', 0],
-      ['Viernes', 0],
-    ]
+  const analisis = comportamiento?.analisis
+  const progresoAnalisis = analisis
+    ? Math.min(100, Math.round((analisis.accesos / analisis.minimo) * 100))
+    : 0
 
-    const csv = contenido.map(fila => fila.join(',')).join('\n')
-    const archivo = new Blob(['﻿' + csv], {
-      type: 'text/csv;charset=utf-8;',
-    })
+  const diasHabituales = (comportamiento?.dias ?? [])
+    .filter((d) => d.total > 0 && d.intensidad >= 0.5)
+    .map((d) => d.dia)
 
-    const url = URL.createObjectURL(archivo)
-    const enlace = document.createElement('a')
+  // Descarga el reporte PDF (resumen, anomalías y comportamiento).
+  const descargarReporte = async () => {
+    setGenerandoReporte(true)
+    setErrorReporte('')
 
-    enlace.href = url
-    enlace.download = 'reporte-anomalias-locksense.csv'
-    document.body.appendChild(enlace)
-    enlace.click()
-    enlace.remove()
+    try {
+      // Se piden los datos al momento para que el reporte esté al día.
+      const [dashboard, comportamientoActual, reporte] = await Promise.all([
+        obtenerDashboard(),
+        obtenerComportamiento(),
+        obtenerReporte(),
+      ])
 
-    URL.revokeObjectURL(url)
+      // jsPDF solo se carga cuando se presiona el botón.
+      const { generarReporteUsuario } = await import('../../reportes/reporteUsuario')
+
+      await generarReporteUsuario({
+        dashboard,
+        comportamiento: comportamientoActual,
+        reporte,
+      })
+    } catch {
+      setErrorReporte('No se pudo generar el reporte. Intenta de nuevo.')
+    } finally {
+      setGenerandoReporte(false)
+    }
   }
 
   return (
@@ -245,33 +364,184 @@ export default function PanelUsuario() {
 
       </section>
 
-      {/* GRÁFICA DE ANOMALÍAS (PENDIENTE: datos provisionales) */}
+      {/* TARJETA: ANOMALÍAS / MI COMPORTAMIENTO */}
       <section className="ls-usuario-grafica-card">
 
-        <div className="ls-usuario-grafica-header">
+        <div className="ls-usuario-grafica-header ls-grafica-header-con-vistas">
           <div className="ls-usuario-grafica-titulo">
-            <ChartNoAxesCombined size={24} />
-            <h2>Anomalías detectadas</h2>
+            {vista === 'anomalias'
+              ? <ChartNoAxesCombined size={24} />
+              : <Fingerprint size={24} />}
+            <h2>{vista === 'anomalias' ? 'Anomalías detectadas' : 'Mi comportamiento'}</h2>
+          </div>
+
+          {/* Selector de vista (esquina superior derecha) */}
+          <div className="ls-grafica-vistas" role="tablist" aria-label="Cambiar vista">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vista === 'anomalias'}
+              className={vista === 'anomalias' ? 'activa' : ''}
+              onClick={() => setVista('anomalias')}
+            >
+              <ChartNoAxesCombined size={15} />
+              <span>Anomalías</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={vista === 'comportamiento'}
+              className={vista === 'comportamiento' ? 'activa' : ''}
+              onClick={() => setVista('comportamiento')}
+            >
+              <Fingerprint size={15} />
+              <span>Comportamiento</span>
+            </button>
           </div>
         </div>
 
-        <div className="ls-usuario-grafica-contenido">
-          <Line
-            data={datosAnomalias}
-            options={opcionesGrafica}
-          />
-        </div>
+        {/* ---------- VISTA: ANOMALÍAS ---------- */}
+        {vista === 'anomalias' && (
+          <>
+            <div className="ls-usuario-grafica-contenido">
+              <Line
+                data={datosAnomalias}
+                options={opcionesGrafica}
+              />
+            </div>
 
-        <div className="ls-usuario-grafica-footer">
-          <button
-            type="button"
-            className="ls-usuario-btn-reporte"
-            onClick={descargarReporte}
-          >
-            <Download size={16} />
-            Descargar reporte
-          </button>
-        </div>
+            <div className="ls-usuario-grafica-footer">
+              {errorReporte && <p className="ls-usuario-reporte-error">{errorReporte}</p>}
+              <button
+                type="button"
+                className="ls-usuario-btn-reporte"
+                onClick={descargarReporte}
+                disabled={cargando || generandoReporte}
+              >
+                <Download size={16} />
+                {generandoReporte ? 'Generando reporte...' : 'Descargar reporte'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ---------- VISTA: MI COMPORTAMIENTO ---------- */}
+        {vista === 'comportamiento' && (
+          <div className="ls-comportamiento">
+
+            {cargandoComportamiento && (
+              <p className="ls-comportamiento-mensaje">Cargando tu comportamiento...</p>
+            )}
+
+            {!cargandoComportamiento && !comportamiento && (
+              <p className="ls-comportamiento-mensaje">
+                No se pudo cargar tu comportamiento. Intenta de nuevo más tarde.
+              </p>
+            )}
+
+            {comportamiento && (
+              <>
+                <p className="ls-comportamiento-descripcion">
+                  Así usas normalmente tu casillero. Si un acceso se sale de este patrón,
+                  te avisaremos como "acceso inusual".
+                </p>
+
+                {/* 1. Estado del análisis */}
+                {analisis?.activo ? (
+                  <div className="ls-comportamiento-estado activo">
+                    <CheckCircle2 size={18} />
+                    <div>
+                      <span>El sistema ya conoce tu forma de usar el casillero.</span>
+                      <small>
+                        Aprendió tu patrón con tus últimos {analisis.accesos} accesos y lo usa
+                        para detectar accesos que no se parecen a los tuyos.
+                      </small>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="ls-comportamiento-estado aprendiendo">
+                    <span>
+                      El sistema está aprendiendo tu comportamiento:{' '}
+                      {analisis?.faltan === 1 ? 'falta 1 acceso' : `faltan ${analisis?.faltan} accesos`}.
+                    </span>
+                    <div className="ls-comportamiento-progreso">
+                      <div style={{ width: `${progresoAnalisis}%` }} />
+                    </div>
+                    <small>
+                      Se necesitan al menos {analisis?.minimo} accesos para conocer tu patrón.
+                      Llevas {analisis?.accesos}. Mientras tanto no se revisan accesos inusuales.
+                    </small>
+                  </div>
+                )}
+
+                {/* 2. Datos de su patrón */}
+                <div className="ls-comportamiento-datos">
+                  <article>
+                    <Clock size={20} />
+                    <div>
+                      <span>Horario habitual</span>
+                      <strong>
+                        {comportamiento.horario
+                          ? `${comportamiento.horario.inicio} a ${comportamiento.horario.fin}`
+                          : 'Sin datos'}
+                      </strong>
+                    </div>
+                  </article>
+
+                  <article>
+                    <CalendarDays size={20} />
+                    <div>
+                      <span>Días que más lo usas</span>
+                      <strong>{diasHabituales.length > 0 ? diasHabituales.join(' · ') : 'Sin datos'}</strong>
+                    </div>
+                  </article>
+
+                  <article>
+                    <Repeat size={20} />
+                    <div>
+                      <span>Accesos por día</span>
+                      <strong>
+                        {comportamiento.por_dia ? textoPorDia(comportamiento.por_dia) : 'Sin datos'}
+                      </strong>
+                    </div>
+                  </article>
+                </div>
+
+                {/* 3. Accesos por hora */}
+                <h3 className="ls-comportamiento-subtitulo">¿A qué hora usas tu casillero?</h3>
+                <p className="ls-comportamiento-ayuda">
+                  Cada barra es una hora del día (de 0 h, medianoche, a 23 h) y su altura indica
+                  cuántas veces abriste tu casillero a esa hora en los últimos 30 días.
+                  Las horas sin barra son en las que no sueles usarlo.
+                </p>
+                <div className="ls-comportamiento-grafica">
+                  <Bar data={datosHoras} options={opcionesHoras} />
+                </div>
+                <p className="ls-comportamiento-nota">Hora del día · Últimos 30 días</p>
+
+                {/* 4. Días de la semana */}
+                <h3 className="ls-comportamiento-subtitulo">Días de la semana</h3>
+                <p className="ls-comportamiento-ayuda">
+                  Número de accesos que has hecho cada día de la semana.
+                  Entre más verde el recuadro, más usas tu casillero ese día.
+                </p>
+                <div className="ls-comportamiento-semana">
+                  {(comportamiento.dias ?? []).map((d) => (
+                    <div
+                      key={d.dia}
+                      className="ls-comportamiento-dia"
+                      title={`${d.total} ${d.total === 1 ? 'acceso' : 'accesos'}`}
+                      style={{ '--intensidad': d.intensidad }}
+                    >
+                      <span>{d.dia}</span>
+                      <strong>{d.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
       </section>
 

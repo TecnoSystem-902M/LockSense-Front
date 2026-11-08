@@ -17,3 +17,15 @@ export const obtenerMiActividad = async () => {
   const { data } = await api.get('/usuario/actividad')
   return data
 }
+
+// Mi comportamiento: horario habitual, días, accesos por día y por hora.
+export const obtenerComportamiento = async () => {
+  const { data } = await api.get('/usuario/comportamiento')
+  return data
+}
+
+// Datos extra para el reporte PDF: organización, periodo y detalle de anomalías.
+export const obtenerReporte = async () => {
+  const { data } = await api.get('/usuario/reporte')
+  return data
+}
