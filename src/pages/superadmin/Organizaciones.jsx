@@ -14,7 +14,7 @@ import {
     crearOrganizacion,
     actualizarOrganizacion,
     cambiarEstadoOrganizacion,
-} from '../../api/Superadmin'
+} from '../../api/superadmin'
 import '../../styles/superadmin/Organizaciones.css'
 
 // Deben ser los mismos que acepta el back (OrganizacionController::TIPOS)
@@ -55,17 +55,19 @@ function validarFormulario(form) {
     else if (!TIPOS.includes(form.tipo)) errores.tipo = 'El tipo seleccionado no es válido.'
 
     if (!telefono) errores.telefono = 'El teléfono es obligatorio.'
-    else if (telefono.length !== 10) errores.telefono = 'El teléfono debe tener 10 dígitos.'
+    else if (telefono.length !== 10) errores.telefono = 'El teléfono debe tener 10 dígitos (lada + número).'
 
     if (!form.direccion.trim()) errores.direccion = 'La dirección es obligatoria.'
     else if (form.direccion.trim().length > 225) errores.direccion = 'La dirección no puede pasar de 225 caracteres.'
 
-    if (form.colonia.trim().length > 100) errores.colonia = 'La colonia no puede pasar de 100 caracteres.'
+    if (!form.colonia.trim()) errores.colonia = 'La colonia es obligatoria.'
+    else if (form.colonia.trim().length > 100) errores.colonia = 'La colonia no puede pasar de 100 caracteres.'
 
     if (!form.ciudad.trim()) errores.ciudad = 'La ciudad es obligatoria.'
     else if (form.ciudad.trim().length > 100) errores.ciudad = 'La ciudad no puede pasar de 100 caracteres.'
 
-    if (cp && !/^\d{5}$/.test(cp)) errores.codigo_postal = 'El código postal debe tener 5 dígitos.'
+    if (!cp) errores.codigo_postal = 'El código postal es obligatorio.'
+    else if (!/^\d{5}$/.test(cp)) errores.codigo_postal = 'El código postal debe tener 5 dígitos.'
 
     return errores
 }
@@ -437,13 +439,13 @@ export default function Organizaciones() {
                                         {errores.tipo && <span className="ls-form-error">{errores.tipo}</span>}
                                     </div>
                                     <div className="ls-form-group">
-                                        <label>Teléfono *</label>
+                                        <label>Teléfono con lada *</label>
                                         <input
                                             name="telefono"
                                             type="tel"
                                             inputMode="numeric"
                                             maxLength={14}
-                                            placeholder="Ej: 55 1234 5678"
+                                            placeholder="Ej: 55 1234 5678 (10 dígitos)"
                                             value={form.telefono}
                                             onChange={handleCampo}
                                             className={claseInput('telefono')}
@@ -467,7 +469,7 @@ export default function Organizaciones() {
                                 </div>
 
                                 <div className="ls-form-group">
-                                    <label>Colonia</label>
+                                    <label>Colonia *</label>
                                     <input
                                         name="colonia"
                                         type="text"
@@ -495,7 +497,7 @@ export default function Organizaciones() {
                                         {errores.ciudad && <span className="ls-form-error">{errores.ciudad}</span>}
                                     </div>
                                     <div className="ls-form-group">
-                                        <label>Código postal</label>
+                                        <label>Código postal *</label>
                                         <input
                                             name="codigo_postal"
                                             type="text"
