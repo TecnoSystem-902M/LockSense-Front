@@ -1,0 +1,128 @@
+/* =========================================================
+   Modal "Activa las alertas de tu casillero"
+   Clases con prefijo "ls-alertas-".
+   ========================================================= */
+
+.ls-alertas-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 23, 18, 0.55);
+  animation: ls-alertas-aparecer 0.2s ease-out;
+}
+
+.ls-alertas-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 28px 24px 22px;
+  border-radius: 24px;
+  background: #fff;
+  color: #26352f;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(15, 41, 34, 0.25);
+  animation: ls-alertas-subir 0.25s ease-out;
+}
+
+.ls-alertas-icono {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d1f5e9;
+  color: #159b70;
+}
+
+.ls-alertas-titulo {
+  margin: 0 0 8px;
+  color: #17392c;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ls-alertas-texto {
+  margin: 0 0 20px;
+  color: #64736b;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ls-alertas-error {
+  margin: -8px 0 16px;
+  color: #d64545;
+  font-size: 12.5px;
+}
+
+.ls-alertas-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.ls-alertas-boton,
+.ls-alertas-boton-secundario {
+  flex: 1;
+  height: 46px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ls-alertas-boton {
+  border: none;
+  background: #0f2922;
+  color: #fff;
+}
+
+.ls-alertas-boton:hover:not(:disabled) {
+  background: #10b981;
+  transform: translateY(-2px);
+}
+
+.ls-alertas-boton-secundario {
+  border: 1.5px solid #dfe8e3;
+  background: #fff;
+  color: #4f5f58;
+}
+
+.ls-alertas-boton-secundario:hover:not(:disabled) {
+  background: #f4f7f6;
+}
+
+.ls-alertas-boton:disabled,
+.ls-alertas-boton-secundario:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@keyframes ls-alertas-aparecer {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ls-alertas-subir {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Celular: botones uno debajo del otro, "Activar" arriba */
+@media (max-width: 420px) {
+  .ls-alertas-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .ls-alertas-boton,
+  .ls-alertas-boton-secundario {
+    flex: none;
+    width: 100%;
+  }
+}

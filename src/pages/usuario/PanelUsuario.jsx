@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import ToastNotification from '../../components/ToastNotification'
+import ModalAlertas from '../../pwa/ModalAlertas'
 import {
   ShieldCheck,
   ShieldAlert,
@@ -311,6 +312,9 @@ export default function PanelUsuario() {
           onClose={() => setMostrarToast(false)}
         />
       )}
+
+      {/* Pregunta si quiere recibir alertas de anomalías en este dispositivo */}
+      <ModalAlertas />
 
       <div className="ls-dashboard-bienvenida">
         <div>
