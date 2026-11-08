@@ -795,3 +795,24 @@
   color: #c04444;
   font-size: 13px;
 }
+
+/* =========================================
+   AJUSTES RESPONSIVE: botones a la derecha
+========================================= */
+
+/* Paginación: los botones siempre a la derecha */
+.ls-disp-paginacion-botones {
+  margin-left: auto;
+}
+
+/* La columna de acciones ahora tiene 3 botones (modificar, token, baja) */
+.ls-dispositivos .ls-col-acciones {
+  width: 140px;
+}
+
+@media (max-width: 650px) {
+  /* Botón "Nuevo dispositivo" a la derecha */
+  .ls-disp-btn-nuevo {
+    align-self: flex-end;
+  }
+}

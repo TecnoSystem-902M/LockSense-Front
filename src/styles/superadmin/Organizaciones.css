@@ -601,9 +601,7 @@
   }
 }
 
-/* =========================================
-   AGREGAR AL FINAL DE Organizaciones.css
-========================================= */
+
 
 /* Código corto de la organización (debajo del nombre) */
 .ls-org-codigo {
@@ -665,4 +663,21 @@
   background: #ffeded;
   color: #c04444;
   font-size: 13px;
+}
+
+/* =========================================
+   AJUSTES RESPONSIVE: botones a la derecha
+========================================= */
+
+/* Paginación: los botones siempre a la derecha,
+   aunque bajen a otra línea */
+.ls-org-paginacion-botones {
+  margin-left: auto;
+}
+
+@media (max-width: 650px) {
+  /* Botón "Nueva organización" a la derecha */
+  .ls-org-btn-nuevo {
+    align-self: flex-end;
+  }
 }
