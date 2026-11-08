@@ -605,3 +605,85 @@
     width: 100%;
   }
 }
+
+/* =========================================
+   AGREGAR AL FINAL DE Administradores.css
+========================================= */
+
+/* Estado */
+.ls-admin-estado {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ls-admin-estado.activo {
+  background: #e4f5ed;
+  color: #0f8a5f;
+}
+
+.ls-admin-estado.inactivo {
+  background: #ffeded;
+  color: #c04444;
+}
+
+.ls-admin-fila-inactiva td {
+  color: #9aa5a0;
+}
+
+.ls-accion-btn.reactivar {
+  color: #10b981;
+}
+
+/* Errores del formulario */
+.ls-form-error {
+  display: block;
+  margin-top: 5px;
+  color: #c04444;
+  font-size: 12px;
+}
+
+.ls-input-error {
+  border-color: #e05a5a !important;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.12) !important;
+}
+
+.ls-form-error-general {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ffeded;
+  color: #c04444;
+  font-size: 13px;
+}
+
+/* =========================================
+   AJUSTES RESPONSIVE: botones a la derecha
+========================================= */
+
+/* Paginación: los botones siempre a la derecha */
+.ls-admins-paginacion-botones {
+  margin-left: auto;
+}
+
+/* Filas de dos campos en el formulario (apellidos y contraseñas) */
+.ls-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 650px) {
+  /* Botón "Nuevo administrador" a la derecha */
+  .ls-admins-btn-nuevo {
+    align-self: flex-end;
+  }
+
+  /* En celular, los campos van uno debajo de otro */
+  .ls-form-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -559,20 +559,47 @@
 
 /* Responsividad */
 @media(max-width: 900px) {
-  .auth-container { grid-template-columns: 1fr; }
-  .auth-info { padding: 40px 32px; }
-  .auth-card { padding: 36px 28px; }
-  .form-row { grid-template-columns: 1fr; }
-  .auth-benefits { grid-template-columns: repeat(3, 1fr); display: grid; }
-  .auth-benefit { flex-direction: column; text-align: center; }
+  .auth-page { padding: 32px 16px; }
+  .auth-container { grid-template-columns: .85fr 1.15fr; }
+  .auth-info { padding: 36px 26px; }
+  .auth-logo { width: 54px; height: 54px; margin-bottom: 22px; }
+  .auth-info h1 { font-size: 26px; }
+  .auth-info > p { font-size: 13.5px; margin-bottom: 26px; }
+  .auth-benefits { gap: 16px; }
+  .benefit-icon { width: 40px; height: 40px; }
+  .auth-benefit h3 { font-size: 14px; }
   .auth-benefit p { display: none; }
+  .auth-card { padding: 34px 28px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+@media(max-width: 700px) {
+  .auth-container { grid-template-columns: 1fr; }
+  .auth-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 20px;
+  }
+  .auth-info::after { display: none; }
+  .auth-logo { width: 46px; height: 46px; margin-bottom: 0; flex-shrink: 0; }
+  .auth-info h1 { font-size: 21px; margin-bottom: 0; }
+  .auth-info > p,
+  .auth-benefits { display: none; }
+  .auth-card { padding: 28px 22px; }
 }
 
 @media(max-width: 600px) {
-  .auth-page { padding: 20px 12px; }
-  .auth-benefits { grid-template-columns: 1fr; }
-  .auth-benefit { flex-direction: row; text-align: left; }
-  .auth-benefit p { display: block; }
+  .auth-page { padding: 16px 10px; align-items: flex-start; }
+  .auth-container { border-radius: 18px; }
+  .auth-card { padding: 24px 18px; }
+  .auth-card-header h2 { font-size: 21px; }
+  .signup-steps { flex-wrap: wrap; }
+  .pin-inputs { gap: 6px; }
+  .pin-inputs input { width: 42px; height: 50px; font-size: 20px; }
+  .otp-input { width: 42px; height: 50px; }
+  .rfid-input-group { flex-direction: column; }
+  .rfid-input-group .btn-outline { height: 44px; }
 }
 
 /* =========================================================

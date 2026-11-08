@@ -2,61 +2,126 @@ import { useState, useEffect, useCallback } from 'react'
 import {
     Building2,
     Pencil,
-    Trash2,
+    Ban,
+    RotateCcw,
     X,
     AlertTriangle,
     Plus
 } from 'lucide-react'
 import ToastNotification from '../../components/ToastNotification'
+import {
+    listarOrganizaciones,
+    crearOrganizacion,
+    actualizarOrganizacion,
+    cambiarEstadoOrganizacion,
+} from '../../api/Superadmin'
 import '../../styles/superadmin/Organizaciones.css'
 
-// --- DATOS DE PRUEBA (Luego conectas tu API aquí) ---
-const organizacionesEjemplo = [
-    { id: 1, nombre: 'Universidad Tecnológica', tipo: 'Escuelas', direccion: 'Av. Central 123', telefono: '+52 555 123 4567' },
-    { id: 2, nombre: 'TechCorp Solutions', tipo: 'Empresas', direccion: 'Calle Falsa 456', telefono: '+52 555 987 6543' },
-    { id: 3, nombre: 'Gobierno del Estado', tipo: 'Otras', direccion: 'Palacio de Gobierno', telefono: '+52 555 111 2222' },
-    { id: 4, nombre: 'Colegio San José', tipo: 'Escuelas', direccion: 'Av. de los Maestros 89', telefono: '+52 555 333 4444' },
+// Deben ser los mismos que acepta el back (OrganizacionController::TIPOS)
+const TIPOS = [
+    'Empresa / Corporativo',
+    'Fábrica / Planta Industrial',
+    'Escuela Pública',
+    'Escuela Privada / Universidad',
+    'Gimnasio',
+    'Centro Deportivo',
+    'Hospital / Clínica',
+    'Hotel / Hospedaje',
+    'Otro',
 ]
 
 const formVacio = {
     nombre: '',
-    tipo: 'Escuelas',
-    direccion: '',
+    tipo: '',
     telefono: '',
+    direccion: '',
+    colonia: '',
+    ciudad: '',
+    codigo_postal: '',
+}
+
+// ---------- VALIDACIÓN (la misma que hace el back) ----------
+function validarFormulario(form) {
+    const errores = {}
+    const nombre = form.nombre.trim()
+    const telefono = form.telefono.replace(/\D/g, '')
+    const cp = form.codigo_postal.trim()
+
+    if (!nombre) errores.nombre = 'El nombre es obligatorio.'
+    else if (nombre.length < 3) errores.nombre = 'El nombre debe tener al menos 3 caracteres.'
+    else if (nombre.length > 150) errores.nombre = 'El nombre no puede pasar de 150 caracteres.'
+
+    if (!form.tipo) errores.tipo = 'Selecciona el tipo de organización.'
+    else if (!TIPOS.includes(form.tipo)) errores.tipo = 'El tipo seleccionado no es válido.'
+
+    if (!telefono) errores.telefono = 'El teléfono es obligatorio.'
+    else if (telefono.length !== 10) errores.telefono = 'El teléfono debe tener 10 dígitos.'
+
+    if (!form.direccion.trim()) errores.direccion = 'La dirección es obligatoria.'
+    else if (form.direccion.trim().length > 225) errores.direccion = 'La dirección no puede pasar de 225 caracteres.'
+
+    if (form.colonia.trim().length > 100) errores.colonia = 'La colonia no puede pasar de 100 caracteres.'
+
+    if (!form.ciudad.trim()) errores.ciudad = 'La ciudad es obligatoria.'
+    else if (form.ciudad.trim().length > 100) errores.ciudad = 'La ciudad no puede pasar de 100 caracteres.'
+
+    if (cp && !/^\d{5}$/.test(cp)) errores.codigo_postal = 'El código postal debe tener 5 dígitos.'
+
+    return errores
+}
+
+// Convierte los errores 422 de Laravel ({campo: ['msg']}) a {campo: 'msg'}
+function erroresDelBack(err) {
+    const errors = err?.response?.data?.errors
+    if (!errors) return null
+    return Object.fromEntries(Object.entries(errors).map(([campo, msgs]) => [campo, msgs[0]]))
+}
+
+function direccionCompleta(org) {
+    return [org.direccion, org.colonia, org.ciudad, org.codigo_postal && `C.P. ${org.codigo_postal}`]
+        .filter(Boolean)
+        .join(', ')
+}
+
+function formatearTelefono(tel) {
+    if (!tel || tel.length !== 10) return tel || '—'
+    return `${tel.slice(0, 2)} ${tel.slice(2, 6)} ${tel.slice(6)}`
 }
 
 export default function Organizaciones() {
     const [organizaciones, setOrganizaciones] = useState([])
     const [cargando, setCargando] = useState(false)
+    const [errorCarga, setErrorCarga] = useState('')
 
-    // Modales
+    // Modal crear / editar
     const [modalAbierto, setModalAbierto] = useState(false)
     const [organizacionEditando, setOrganizacionEditando] = useState(null)
     const [form, setForm] = useState(formVacio)
+    const [errores, setErrores] = useState({})
+    const [errorGeneral, setErrorGeneral] = useState('')
     const [guardando, setGuardando] = useState(false)
 
-    const [confirmarBaja, setConfirmarBaja] = useState(null)
-    const [eliminando, setEliminando] = useState(false)
+    // Modal baja / reactivar
+    const [confirmarEstado, setConfirmarEstado] = useState(null)
+    const [cambiandoEstado, setCambiandoEstado] = useState(false)
 
-    // Notificaciones
     const [toast, setToast] = useState('')
 
-    // Paginación y Búsqueda
+    // Búsqueda y paginación
     const [busqueda, setBusqueda] = useState('')
     const registrosPorPagina = 5
     const [paginaActual, setPaginaActual] = useState(1)
 
-    // Simulación de carga de datos
     const cargarOrganizaciones = useCallback(async () => {
         setCargando(true)
+        setErrorCarga('')
         try {
-            // Aquí iría tu API: const data = await listarOrganizaciones()
-            setTimeout(() => {
-                setOrganizaciones(organizacionesEjemplo)
-                setCargando(false)
-            }, 500)
+            const data = await listarOrganizaciones()
+            setOrganizaciones(data.organizaciones ?? [])
         } catch {
             setOrganizaciones([])
+            setErrorCarga('No se pudieron cargar las organizaciones.')
+        } finally {
             setCargando(false)
         }
     }, [])
@@ -69,14 +134,12 @@ export default function Organizaciones() {
     const organizacionesFiltradas = organizaciones.filter((org) => {
         const termino = busqueda.trim().toLowerCase()
         if (!termino) return true
-        return (
-            org.nombre.toLowerCase().includes(termino) ||
-            org.tipo.toLowerCase().includes(termino) ||
-            org.direccion.toLowerCase().includes(termino)
-        )
+        return [org.nombre, org.codigo, org.tipo, org.ciudad, org.direccion]
+            .filter(Boolean)
+            .some((valor) => valor.toLowerCase().includes(termino))
     })
 
-    // Lógica de paginación
+    // Paginación
     const totalPaginas = Math.max(1, Math.ceil(organizacionesFiltradas.length / registrosPorPagina))
     const paginaSegura = Math.min(paginaActual, totalPaginas)
     const indiceInicial = (paginaSegura - 1) * registrosPorPagina
@@ -87,21 +150,28 @@ export default function Organizaciones() {
         setPaginaActual(1)
     }
 
-    // Handlers Modales
+    // ---------- MODAL CREAR / EDITAR ----------
     const abrirNuevo = () => {
         setOrganizacionEditando(null)
         setForm(formVacio)
+        setErrores({})
+        setErrorGeneral('')
         setModalAbierto(true)
     }
 
     const abrirModificar = (org) => {
         setOrganizacionEditando(org)
         setForm({
-            nombre: org.nombre,
-            tipo: org.tipo,
-            direccion: org.direccion,
-            telefono: org.telefono,
+            nombre: org.nombre ?? '',
+            tipo: org.tipo ?? '',
+            telefono: org.telefono ?? '',
+            direccion: org.direccion ?? '',
+            colonia: org.colonia ?? '',
+            ciudad: org.ciudad ?? '',
+            codigo_postal: org.codigo_postal ?? '',
         })
+        setErrores({})
+        setErrorGeneral('')
         setModalAbierto(true)
     }
 
@@ -114,40 +184,74 @@ export default function Organizaciones() {
     const handleCampo = (e) => {
         const { name, value } = e.target
         setForm((prev) => ({ ...prev, [name]: value }))
+        // Quita el error del campo en cuanto el usuario lo corrige
+        if (errores[name]) setErrores((prev) => ({ ...prev, [name]: undefined }))
     }
 
     const guardar = async (e) => {
         e.preventDefault()
+        setErrorGeneral('')
+
+        const erroresForm = validarFormulario(form)
+        if (Object.keys(erroresForm).length > 0) {
+            setErrores(erroresForm)
+            return
+        }
+
+        const payload = {
+            ...form,
+            nombre: form.nombre.trim(),
+            telefono: form.telefono.replace(/\D/g, ''),
+        }
+
         setGuardando(true)
         try {
-            // Simulación de guardado en API
-            setTimeout(() => {
-                if (organizacionEditando) {
-                    setOrganizaciones(prev => prev.map(o => o.id === organizacionEditando.id ? { ...o, ...form } : o))
-                    setToast('Organización actualizada correctamente')
-                } else {
-                    const nueva = { id: Date.now(), ...form }
-                    setOrganizaciones(prev => [...prev, nueva])
-                    setToast('Organización registrada correctamente')
-                }
-                setModalAbierto(false)
-                setGuardando(false)
-            }, 500)
-        } catch {
+            if (organizacionEditando) {
+                await actualizarOrganizacion(organizacionEditando.id, payload)
+                setToast('Organización actualizada correctamente')
+            } else {
+                await crearOrganizacion(payload)
+                setToast('Organización registrada correctamente')
+            }
+            setModalAbierto(false)
+            setOrganizacionEditando(null)
+            await cargarOrganizaciones()
+        } catch (err) {
+            const delBack = erroresDelBack(err)
+            if (delBack) {
+                setErrores(delBack)
+            } else {
+                setErrorGeneral(err?.response?.data?.message || 'No se pudo guardar. Intenta de nuevo.')
+            }
+        } finally {
             setGuardando(false)
         }
     }
 
-    const confirmarEliminar = () => {
-        if (!confirmarBaja) return
-        setEliminando(true)
-        setTimeout(() => {
-            setOrganizaciones(prev => prev.filter(o => o.id !== confirmarBaja.id))
-            setToast(`Organización ${confirmarBaja.nombre} eliminada`)
-            setConfirmarBaja(null)
-            setEliminando(false)
-        }, 500)
+    // ---------- BAJA / REACTIVAR ----------
+    const aplicarCambioEstado = async () => {
+        if (!confirmarEstado) return
+        const nuevoEstado = confirmarEstado.estado === 'A' ? 'I' : 'A'
+
+        setCambiandoEstado(true)
+        try {
+            await cambiarEstadoOrganizacion(confirmarEstado.id, nuevoEstado)
+            setToast(nuevoEstado === 'I'
+                ? `${confirmarEstado.nombre} fue dada de baja`
+                : `${confirmarEstado.nombre} fue reactivada`)
+            setConfirmarEstado(null)
+            await cargarOrganizaciones()
+        } catch (err) {
+            setToast(err?.response?.data?.message || 'No se pudo cambiar el estado.')
+        } finally {
+            setCambiandoEstado(false)
+        }
     }
+
+    const darDeBaja = confirmarEstado?.estado === 'A'
+
+    // Clase del input según tenga error
+    const claseInput = (campo) => (errores[campo] ? 'ls-input-error' : '')
 
     return (
         <div className="ls-organizaciones">
@@ -168,7 +272,6 @@ export default function Organizaciones() {
             {/* PANEL DE TABLA */}
             <section className="ls-org-panel">
 
-                {/* TÍTULO DEL LISTADO */}
                 <div className="ls-org-panel-heading">
                     <h2>Listado de organizaciones</h2>
                 </div>
@@ -181,7 +284,7 @@ export default function Organizaciones() {
                         <span>Buscar:</span>
                         <input
                             type="search"
-                            placeholder="Buscar por nombre o tipo..."
+                            placeholder="Buscar por nombre, código o tipo..."
                             value={busqueda}
                             onChange={(e) => cambiarBusqueda(e.target.value)}
                         />
@@ -197,48 +300,72 @@ export default function Organizaciones() {
                                 <th>Tipo</th>
                                 <th>Dirección</th>
                                 <th>Teléfono</th>
+                                <th>Estado</th>
                                 <th className="ls-col-acciones">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {organizacionesVisibles.map((org) => (
-                                <tr key={org.id}>
+                                <tr key={org.id} className={org.estado !== 'A' ? 'ls-org-fila-inactiva' : ''}>
                                     <td>{org.id}</td>
                                     <td>
                                         <div className="ls-org-nombre">
                                             <div className="ls-org-avatar">
                                                 <Building2 size={18} />
                                             </div>
-                                            <strong>{org.nombre}</strong>
+                                            <div>
+                                                <strong>{org.nombre}</strong>
+                                                {org.codigo && <small className="ls-org-codigo">{org.codigo}</small>}
+                                            </div>
                                         </div>
                                     </td>
                                     <td>{org.tipo}</td>
-                                    <td>{org.direccion}</td>
-                                    <td>{org.telefono}</td>
+                                    <td>{direccionCompleta(org) || '—'}</td>
+                                    <td>{formatearTelefono(org.telefono)}</td>
+                                    <td>
+                                        <span className={`ls-org-estado ${org.estado === 'A' ? 'activa' : 'inactiva'}`}>
+                                            {org.estado === 'A' ? 'Activa' : 'Dada de baja'}
+                                        </span>
+                                    </td>
                                     <td className="ls-col-acciones">
                                         <div className="ls-org-acciones">
                                             <button
                                                 type="button"
                                                 className="ls-accion-btn modificar"
                                                 onClick={() => abrirModificar(org)}
+                                                title="Modificar"
                                             >
                                                 <Pencil size={17} />
                                             </button>
-                                            <button
-                                                type="button"
-                                                className="ls-accion-btn eliminar"
-                                                onClick={() => setConfirmarBaja(org)}
-                                            >
-                                                <Trash2 size={17} />
-                                            </button>
+                                            {org.estado === 'A' ? (
+                                                <button
+                                                    type="button"
+                                                    className="ls-accion-btn eliminar"
+                                                    onClick={() => setConfirmarEstado(org)}
+                                                    title="Dar de baja"
+                                                >
+                                                    <Ban size={17} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="ls-accion-btn reactivar"
+                                                    onClick={() => setConfirmarEstado(org)}
+                                                    title="Reactivar"
+                                                >
+                                                    <RotateCcw size={17} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
                             ))}
                             {organizacionesVisibles.length === 0 && (
                                 <tr>
-                                    <td colSpan="6" className="ls-org-vacio">
-                                        {cargando ? 'Cargando organizaciones...' : 'No se encontraron organizaciones.'}
+                                    <td colSpan="7" className="ls-org-vacio">
+                                        {cargando
+                                            ? 'Cargando organizaciones...'
+                                            : errorCarga || 'No se encontraron organizaciones.'}
                                     </td>
                                 </tr>
                             )}
@@ -266,64 +393,121 @@ export default function Organizaciones() {
                         <div className="ls-modal-header">
                             <div>
                                 <h2>{organizacionEditando ? 'Modificar organización' : 'Nueva organización'}</h2>
-                                <p>Ingresa los datos de la organización.</p>
+                                <p>
+                                    {organizacionEditando
+                                        ? `Código: ${organizacionEditando.codigo || '—'}`
+                                        : 'Se crearán su código y sus 6 casilleros automáticamente.'}
+                                </p>
                             </div>
                             <button type="button" className="ls-modal-cerrar" onClick={cerrarModal}><X size={20} /></button>
                         </div>
 
-                        <form onSubmit={guardar}>
+                        <form onSubmit={guardar} noValidate>
                             <div className="ls-modal-body">
+                                {errorGeneral && <p className="ls-form-error-general">{errorGeneral}</p>}
+
                                 <div className="ls-form-group">
-                                    <label>Nombre de la organización</label>
+                                    <label>Nombre de la organización *</label>
                                     <input
                                         name="nombre"
                                         type="text"
-                                        placeholder="Ej: Universidad Tecnológica, TechCorp..."
+                                        maxLength={150}
+                                        placeholder="Ej: Universidad Tecnológica de Nezahualcóyotl"
                                         value={form.nombre}
                                         onChange={handleCampo}
-                                        required
+                                        className={claseInput('nombre')}
                                     />
+                                    {errores.nombre && <span className="ls-form-error">{errores.nombre}</span>}
                                 </div>
 
                                 <div className="ls-form-row">
                                     <div className="ls-form-group">
-                                        <label>Tipo</label>
-                                        <select name="tipo" value={form.tipo} onChange={handleCampo}>
+                                        <label>Tipo *</label>
+                                        <select
+                                            name="tipo"
+                                            value={form.tipo}
+                                            onChange={handleCampo}
+                                            className={claseInput('tipo')}
+                                        >
                                             <option value="" disabled>Selecciona el tipo</option>
-                                            <option value="Empresa / Corporativo">Empresa / Corporativo</option>
-                                            <option value="Fábrica / Planta Industrial">Fábrica / Planta Industrial</option>
-                                            <option value="Escuela Pública">Escuela Pública</option>
-                                            <option value="Escuela Privada / Universidad">Escuela Privada / Universidad</option>
-                                            <option value="Gimnasio">Gimnasio</option>
-                                            <option value="Centro Deportivo">Centro Deportivo</option>
-                                            <option value="Hospital / Clínica">Hospital / Clínica</option>
-                                            <option value="Hotel / Hospedaje">Hotel / Hospedaje</option>
-                                            <option value="Otro">Otro</option>
+                                            {TIPOS.map((tipo) => (
+                                                <option key={tipo} value={tipo}>{tipo}</option>
+                                            ))}
                                         </select>
+                                        {errores.tipo && <span className="ls-form-error">{errores.tipo}</span>}
                                     </div>
                                     <div className="ls-form-group">
-                                        <label>Teléfono</label>
+                                        <label>Teléfono *</label>
                                         <input
                                             name="telefono"
-                                            type="text"
-                                            placeholder="Ej: +52 555 123 4567"
+                                            type="tel"
+                                            inputMode="numeric"
+                                            maxLength={14}
+                                            placeholder="Ej: 55 1234 5678"
                                             value={form.telefono}
                                             onChange={handleCampo}
-                                            required
+                                            className={claseInput('telefono')}
                                         />
+                                        {errores.telefono && <span className="ls-form-error">{errores.telefono}</span>}
                                     </div>
                                 </div>
 
                                 <div className="ls-form-group">
-                                    <label>Dirección</label>
+                                    <label>Dirección *</label>
                                     <input
                                         name="direccion"
                                         type="text"
-                                        placeholder="Ej: Av. Central 123, Col. Centro"
+                                        maxLength={225}
+                                        placeholder="Ej: Av. Bordo de Xochiaca s/n"
                                         value={form.direccion}
                                         onChange={handleCampo}
-                                        required
+                                        className={claseInput('direccion')}
                                     />
+                                    {errores.direccion && <span className="ls-form-error">{errores.direccion}</span>}
+                                </div>
+
+                                <div className="ls-form-group">
+                                    <label>Colonia</label>
+                                    <input
+                                        name="colonia"
+                                        type="text"
+                                        maxLength={100}
+                                        placeholder="Ej: Benito Juárez"
+                                        value={form.colonia}
+                                        onChange={handleCampo}
+                                        className={claseInput('colonia')}
+                                    />
+                                    {errores.colonia && <span className="ls-form-error">{errores.colonia}</span>}
+                                </div>
+
+                                <div className="ls-form-row">
+                                    <div className="ls-form-group">
+                                        <label>Ciudad *</label>
+                                        <input
+                                            name="ciudad"
+                                            type="text"
+                                            maxLength={100}
+                                            placeholder="Ej: Nezahualcóyotl"
+                                            value={form.ciudad}
+                                            onChange={handleCampo}
+                                            className={claseInput('ciudad')}
+                                        />
+                                        {errores.ciudad && <span className="ls-form-error">{errores.ciudad}</span>}
+                                    </div>
+                                    <div className="ls-form-group">
+                                        <label>Código postal</label>
+                                        <input
+                                            name="codigo_postal"
+                                            type="text"
+                                            inputMode="numeric"
+                                            maxLength={5}
+                                            placeholder="Ej: 57000"
+                                            value={form.codigo_postal}
+                                            onChange={handleCampo}
+                                            className={claseInput('codigo_postal')}
+                                        />
+                                        {errores.codigo_postal && <span className="ls-form-error">{errores.codigo_postal}</span>}
+                                    </div>
                                 </div>
                             </div>
 
@@ -338,29 +522,36 @@ export default function Organizaciones() {
                 </div>
             )}
 
-            {/* MODAL CONFIRMAR BAJA */}
-            {confirmarBaja && (
-                <div className="ls-modal-fondo" onMouseDown={(e) => { if (e.target === e.currentTarget && !eliminando) setConfirmarBaja(null) }}>
+            {/* MODAL CONFIRMAR BAJA / REACTIVAR */}
+            {confirmarEstado && (
+                <div className="ls-modal-fondo" onMouseDown={(e) => { if (e.target === e.currentTarget && !cambiandoEstado) setConfirmarEstado(null) }}>
                     <section className="ls-modal ls-modal-confirmacion">
-                        <button type="button" className="ls-modal-cerrar-esquina" onClick={() => !eliminando && setConfirmarBaja(null)}>
+                        <button type="button" className="ls-modal-cerrar-esquina" onClick={() => !cambiandoEstado && setConfirmarEstado(null)}>
                             <X size={16} />
                         </button>
                         <div className="ls-modal-icono-badge">
-                            <AlertTriangle size={26} />
+                            {darDeBaja ? <AlertTriangle size={26} /> : <RotateCcw size={26} />}
                         </div>
-                        <h2 className="ls-modal-titulo-centro">¿Eliminar organización?</h2>
+                        <h2 className="ls-modal-titulo-centro">
+                            {darDeBaja ? '¿Dar de baja la organización?' : '¿Reactivar la organización?'}
+                        </h2>
                         <div className="ls-modal-cuerpo-centro">
                             <p className="ls-modal-texto-principal">
-                                ¿Estás seguro de eliminar a <strong>{confirmarBaja.nombre}</strong>?
+                                {darDeBaja ? 'Vas a dar de baja a ' : 'Vas a reactivar a '}
+                                <strong>{confirmarEstado.nombre}</strong>.
                             </p>
                             <p className="ls-modal-texto-secundario">
-                                Esta acción no se puede deshacer.
+                                {darDeBaja
+                                    ? 'Sus usuarios ya no podrán iniciar sesión. Su historial se conserva y puedes reactivarla después.'
+                                    : 'Sus usuarios podrán volver a iniciar sesión.'}
                             </p>
                         </div>
                         <div className="ls-modal-footer-botones">
-                            <button type="button" className="ls-btn-secundario" onClick={() => setConfirmarBaja(null)} disabled={eliminando}>Cancelar</button>
-                            <button type="button" className="ls-btn-primario" onClick={confirmarEliminar} disabled={eliminando}>
-                                {eliminando ? 'Eliminando...' : 'Sí, eliminar'}
+                            <button type="button" className="ls-btn-secundario" onClick={() => setConfirmarEstado(null)} disabled={cambiandoEstado}>Cancelar</button>
+                            <button type="button" className="ls-btn-primario" onClick={aplicarCambioEstado} disabled={cambiandoEstado}>
+                                {cambiandoEstado
+                                    ? 'Guardando...'
+                                    : darDeBaja ? 'Sí, dar de baja' : 'Sí, reactivar'}
                             </button>
                         </div>
                     </section>
