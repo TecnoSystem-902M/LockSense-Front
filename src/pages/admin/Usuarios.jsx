@@ -168,10 +168,6 @@ export default function Usuarios() {
       nuevos.identificador = 'Usa solo letras, números, guiones, puntos o guion bajo.'
     }
 
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      nuevos.email = 'Ingresa un correo válido.'
-    }
-
     if (!usuarioEditando) {
       if (!form.password) {
         nuevos.password = 'La contraseña es obligatoria.'
