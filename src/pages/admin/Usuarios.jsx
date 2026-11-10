@@ -15,6 +15,19 @@ import {
 } from '../../api/usuarios'
 import '../../styles/admin/Usuarios.css'
 
+// Mismas reglas que el registro público y el backend.
+const REGEX_NOMBRE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const REGEX_MATRICULA = /^[A-Za-z0-9_.\- ]+$/
+
+// El teléfono se captura como 10 dígitos; el "+52" va fijo en pantalla.
+// Si pegan "52XXXXXXXXXX" (12 dígitos) se quita el 52.
+const telefonoNacional = (valor) => {
+  let digitos = (valor || '').replace(/\D/g, '')
+  if (digitos.length === 12 && digitos.startsWith('52')) digitos = digitos.slice(2)
+  return digitos.slice(0, 10)
+}
+
 const formVacio = {
   nombre: '',
   apellido_pa: '',
@@ -111,7 +124,7 @@ export default function Usuarios() {
       identificador: usuario.matricula ?? usuario.identificador ?? '',
       email: usuario.email || '',
       password: '',
-      telefono: usuario.telefono || '',
+      telefono: telefonoNacional(usuario.telefono),
       estado: usuario.estado ?? 'A',
     })
     setErrores({})
@@ -129,9 +142,12 @@ export default function Usuarios() {
 
   const handleCampo = (e) => {
     const { name, value, type, checked } = e.target
+    let valor = type === 'checkbox' ? checked : value
+    if (name === 'telefono') valor = telefonoNacional(valor)   // solo números, máximo 10
+
     setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: valor,
     }))
     if (errores[name]) {
       setErrores((prev) => ({ ...prev, [name]: null }))
@@ -142,50 +158,63 @@ export default function Usuarios() {
   const validarForm = () => {
     const nuevos = {}
 
-    if (!form.nombre.trim()) {
-      nuevos.nombre = 'El nombre es obligatorio.'
-    } else if (form.nombre.trim().length > 100) {
-      nuevos.nombre = 'Máximo 100 caracteres.'
-    }
+    // Nombre y apellidos: obligatorios, solo letras, de 2 a 100 caracteres
+    const camposNombre = [
+      ['nombre', 'El nombre'],
+      ['apellido_pa', 'El apellido paterno'],
+      ['apellido_ma', 'El apellido materno'],
+    ]
+    camposNombre.forEach(([campo, etiqueta]) => {
+      const valor = form[campo].trim()
+      if (!valor) {
+        nuevos[campo] = `${etiqueta} es obligatorio.`
+      } else if (valor.length < 2) {
+        nuevos[campo] = 'Mínimo 2 caracteres.'
+      } else if (valor.length > 100) {
+        nuevos[campo] = 'Máximo 100 caracteres.'
+      } else if (!REGEX_NOMBRE.test(valor)) {
+        nuevos[campo] = 'Solo letras y espacios.'
+      }
+    })
 
-    if (!form.apellido_pa.trim()) {
-      nuevos.apellido_pa = 'El apellido paterno es obligatorio.'
-    } else if (form.apellido_pa.trim().length > 100) {
-      nuevos.apellido_pa = 'Máximo 100 caracteres.'
-    }
-
-    if (!form.apellido_ma.trim()) {
-      nuevos.apellido_ma = 'El apellido materno es obligatorio.'
-    } else if (form.apellido_ma.trim().length > 100) {
-      nuevos.apellido_ma = 'Máximo 100 caracteres.'
-    }
-
-    if (!form.identificador.trim()) {
+    // Matrícula
+    const matricula = form.identificador.trim()
+    if (!matricula) {
       nuevos.identificador = 'La matrícula es obligatoria.'
-    } else if (form.identificador.trim().length > 90) {
+    } else if (matricula.length < 3) {
+      nuevos.identificador = 'Mínimo 3 caracteres.'
+    } else if (matricula.length > 90) {
       nuevos.identificador = 'Máximo 90 caracteres.'
-    } else if (!/^[A-Za-z0-9_.\- ]+$/.test(form.identificador.trim())) {
+    } else if (!REGEX_MATRICULA.test(matricula)) {
       nuevos.identificador = 'Usa solo letras, números, guiones, puntos o guion bajo.'
     }
 
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      nuevos.email = 'Ingresa un correo válido.'
+    // Correo (opcional, pero si se escribe debe ser válido)
+    const email = form.email.trim()
+    if (email && !REGEX_EMAIL.test(email)) {
+      nuevos.email = 'El correo no es válido.'
+    } else if (email.length > 150) {
+      nuevos.email = 'Máximo 150 caracteres.'
     }
 
-    if (!usuarioEditando) {
+    // Contraseña: obligatoria al crear; al editar solo si se escribe
+    if (!usuarioEditando || form.password) {
       if (!form.password) {
         nuevos.password = 'La contraseña es obligatoria.'
       } else if (form.password.length < 8) {
         nuevos.password = 'Mínimo 8 caracteres.'
+      } else if (form.password.length > 72) {
+        nuevos.password = 'Máximo 72 caracteres.'
+      } else if (!/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/.test(form.password) || !/\d/.test(form.password)) {
+        nuevos.password = 'Debe tener al menos una letra y un número.'
       }
-    } else if (form.password && form.password.length < 8) {
-      nuevos.password = 'Mínimo 8 caracteres.'
     }
 
-    if (!form.telefono.trim()) {
-      nuevos.telefono = 'El número es obligatorio.'
-    } else if (form.telefono.trim().length > 20) {
-      nuevos.telefono = 'Máximo 20 caracteres.'
+    // Teléfono: 10 dígitos (el +52 va fijo)
+    if (!form.telefono) {
+      nuevos.telefono = 'El teléfono es obligatorio.'
+    } else if (form.telefono.length !== 10) {
+      nuevos.telefono = 'Debe tener 10 dígitos.'
     }
 
     setErrores(nuevos)
@@ -198,7 +227,7 @@ export default function Usuarios() {
       apellido_pa: form.apellido_pa.trim(),
       apellido_ma: form.apellido_ma.trim(),
       identificador: form.identificador.trim(),
-      telefono: form.telefono.trim(),
+      telefono: `+52${form.telefono}`,
       estado: form.estado,
     }
     if (form.email.trim()) {
@@ -550,16 +579,20 @@ export default function Usuarios() {
                   </div>
 
                   <div className="ls-form-group">
-                    <label htmlFor="u-telefono">Número</label>
-                    <input
-                      id="u-telefono"
-                      name="telefono"
-                      type="text"
-                      placeholder="+52 ..."
-                      value={form.telefono}
-                      onChange={handleCampo}
-                      maxLength={20}
-                    />
+                    <label htmlFor="u-telefono">Teléfono</label>
+                    <div className="ls-usuario-lada">
+                      <span className="ls-usuario-lada-prefijo">+52</span>
+                      <input
+                        id="u-telefono"
+                        name="telefono"
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="10 dígitos"
+                        value={form.telefono}
+                        onChange={handleCampo}
+                        maxLength={10}
+                      />
+                    </div>
                     {errores.telefono && (
                       <small style={{ color: '#a83232' }}>{errores.telefono}</small>
                     )}
@@ -600,8 +633,30 @@ export default function Usuarios() {
                       onChange={handleCampo}
                       autoComplete="new-password"
                     />
+                    <small style={{ color: '#7b8982' }}>
+                      Mínimo 8 caracteres, con al menos una letra y un número.
+                    </small>
                     {errores.password && (
                       <small style={{ color: '#a83232' }}>{errores.password}</small>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fila 4: Correo (opcional) */}
+                <div className="ls-form-row">
+                  <div className="ls-form-group">
+                    <label htmlFor="u-email">Correo (opcional)</label>
+                    <input
+                      id="u-email"
+                      name="email"
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={form.email}
+                      onChange={handleCampo}
+                      maxLength={150}
+                    />
+                    {errores.email && (
+                      <small style={{ color: '#a83232' }}>{errores.email}</small>
                     )}
                   </div>
                 </div>

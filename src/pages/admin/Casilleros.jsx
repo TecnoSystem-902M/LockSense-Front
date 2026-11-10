@@ -50,6 +50,12 @@ const textoMotivo = (motivo) => {
 const nombreUsuario = (u) =>
   [u.nombre, u.apellido_pa, u.apellido_ma].filter(Boolean).join(' ')
 
+// UID de la tarjeta: se quitan espacios, ":" y "-" (ej. "D9 94 15 E6" -> "D99415E6").
+const limpiarUid = (uid) => uid.replace(/[\s:-]/g, '').toUpperCase()
+
+// Las tarjetas MIFARE tienen UID de 4, 7 o 10 bytes = 8, 14 o 20 caracteres hexadecimales.
+const UID_VALIDO = /^([0-9A-F]{8}|[0-9A-F]{14}|[0-9A-F]{20})$/
+
 export default function Casilleros() {
   const [casilleros, setCasilleros] = useState([])
   const [cargando, setCargando] = useState(false)
@@ -145,12 +151,24 @@ export default function Casilleros() {
       return
     }
 
+    const uid = limpiarUid(uidRfid)
+
+    if (!uid) {
+      setErrorAsignacion('Ingresa el UID de la tarjeta RFID.')
+      return
+    }
+
+    if (!UID_VALIDO.test(uid)) {
+      setErrorAsignacion('El UID debe tener 8, 14 o 20 caracteres hexadecimales (0-9 y A-F).')
+      return
+    }
+
     setGuardandoAsignacion(true)
     try {
       await asignarCasillero(
         casilleroSeleccionado.id,
         Number(usuarioSeleccionado),
-        uidRfid.trim() || null
+        uid
       )
       const numero = casilleroSeleccionado.numero
       setCasilleroSeleccionado(null)
@@ -569,6 +587,7 @@ export default function Casilleros() {
                     value={usuarioSeleccionado}
                     onChange={e => setUsuarioSeleccionado(e.target.value)}
                     disabled={usuariosCargando}
+                    required
                   >
                     <option value="">
                       {usuariosCargando
@@ -592,21 +611,21 @@ export default function Casilleros() {
                   )}
                 </div>
 
-                {/* UID RFID: campo editable. El admin escribe el código de la
-                    tarjeta física que tiene en la mano. Opcional: si se deja
-                    vacío, el usuario queda sin tarjeta asignada. */}
+                {/* UID RFID (obligatorio): el admin escribe el código de la
+                    tarjeta física que tiene en la mano. */}
                 <div className="ls-casillero-form-group">
                   <label htmlFor="uid-rfid">UID de la tarjeta RFID</label>
                   <input
                     id="uid-rfid"
                     type="text"
                     value={uidRfid}
-                    onChange={e => setUidRfid(e.target.value)}
-                    placeholder="Ej. 04A2B3C4D5E680"
-                    maxLength={50}
+                    onChange={e => setUidRfid(e.target.value.toUpperCase())}
+                    placeholder="Ej. D9 94 15 E6"
+                    maxLength={30}
+                    required
                   />
                   <p className="ls-casillero-form-nota">
-                    Ingresa el UID que aparece impreso en la tarjeta. Si lo dejas vacío, el usuario quedará sin tarjeta RFID asignada.
+                    Ingresa el UID de la tarjeta (8, 14 o 20 caracteres, 0-9 y A-F). Puedes escribirlo con o sin espacios.
                   </p>
                 </div>
 

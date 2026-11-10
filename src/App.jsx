@@ -28,6 +28,8 @@ import Dispositivos from './pages/superadmin/Dispositivos'
 import ProtectedRoute from './components/ProtectedRoute'
 import SoloInvitados from './components/SoloInvitados'
 
+import PruebaSensor from './pages/PruebaSensor'
+
 export default function App() {
   return (
     <LockSenseProvider>
@@ -77,6 +79,8 @@ export default function App() {
             element={<FaceRegister />}
           />
         </Route>
+
+        <Route path="/prueba-sensor/:clave" element={<PruebaSensor />} />
 
       </Routes>
     </LockSenseProvider>
