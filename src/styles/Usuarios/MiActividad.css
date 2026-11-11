@@ -341,3 +341,176 @@
     padding-top: 14px;
   }
 }
+
+/* =========================================
+   FOTO DE LA CÁMARA (agregar al final de MiActividad.css)
+   Clases con prefijo "ls-actividad-foto-"
+========================================= */
+
+.ls-actividad-col-foto {
+  width: 70px;
+  text-align: center !important;
+}
+
+.ls-actividad-foto-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: #e4f5ed;
+  color: #0f7a55;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ls-actividad-foto-btn:hover {
+  background: #10b981;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.ls-actividad-sin-foto {
+  color: #b5c0ba;
+}
+
+/* Modal */
+.ls-actividad-foto-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 23, 18, 0.6);
+}
+
+.ls-actividad-foto-modal {
+  width: 100%;
+  max-width: 620px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 25px 60px rgba(15, 41, 34, 0.3);
+}
+
+.ls-actividad-foto-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #e7ece9;
+}
+
+.ls-actividad-foto-header h3 {
+  margin: 0;
+  color: #17392c;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ls-actividad-foto-header p {
+  margin: 4px 0 0;
+  color: #89958e;
+  font-size: 13px;
+}
+
+.ls-actividad-foto-cerrar {
+  display: flex;
+  flex-shrink: 0;
+  padding: 6px;
+  border: none;
+  border-radius: 10px;
+  background: #f1f5f3;
+  color: #4f5f58;
+  cursor: pointer;
+}
+
+.ls-actividad-foto-cerrar:hover {
+  background: #e3ebe7;
+}
+
+.ls-actividad-foto-cuerpo {
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+}
+
+.ls-actividad-foto-imagen {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  background: #081712;
+}
+
+.ls-actividad-foto-riesgo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fff1d6;
+  color: #8a6400;
+}
+
+.ls-actividad-foto-riesgo.riesgo-alto {
+  background: #ffe0e0;
+  color: #c03434;
+}
+
+.ls-actividad-foto-riesgo.riesgo-crítico,
+.ls-actividad-foto-riesgo.riesgo-critico {
+  background: #ffcdcd;
+  color: #961414;
+}
+
+.ls-actividad-foto-descripcion {
+  margin: 10px 0 0;
+  color: #3d4c45;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ls-actividad-foto-nota {
+  margin: 12px 0 0;
+  color: #9aa6a0;
+  font-size: 11.5px;
+}
+
+.ls-actividad-foto-mensaje {
+  margin: 30px 0;
+  color: #64736b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ls-actividad-foto-mensaje.error {
+  color: #c03434;
+}
+
+@media (max-width: 600px) {
+  .ls-actividad-foto-modal {
+    border-radius: 18px;
+  }
+
+  .ls-actividad-foto-header {
+    padding: 14px 16px 10px;
+  }
+
+  .ls-actividad-foto-cuerpo {
+    padding: 12px 16px 16px;
+  }
+
+  .ls-actividad-col-foto {
+    width: 52px;
+  }
+}

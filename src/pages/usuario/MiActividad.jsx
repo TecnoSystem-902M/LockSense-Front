@@ -4,8 +4,10 @@ import {
   Search,
   ShieldCheck,
   AlertTriangle,
+  Camera,
+  X,
 } from 'lucide-react'
-import { obtenerMiActividad } from '../../api/usuario'
+import { obtenerMiActividad, obtenerEvidencia } from '../../api/usuario'
 import '../../styles/Usuarios/MiActividad.css'
 
 const ITEMS_POR_PAGINA = 5
@@ -18,6 +20,41 @@ export default function MiActividad() {
   const [actividades, setActividades] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
+
+  // Foto de la cámara (modal)
+  const [foto, setFoto] = useState(null)            // datos de la anomalía + imagen
+  const [fotoAbierta, setFotoAbierta] = useState(false)
+  const [fotoCargando, setFotoCargando] = useState(false)
+  const [fotoError, setFotoError] = useState('')
+
+  const verFoto = async (anomaliaId) => {
+    setFotoAbierta(true)
+    setFoto(null)
+    setFotoError('')
+    setFotoCargando(true)
+
+    try {
+      setFoto(await obtenerEvidencia(anomaliaId))
+    } catch (err) {
+      setFotoError(err?.response?.data?.message || 'No se pudo cargar la foto.')
+    } finally {
+      setFotoCargando(false)
+    }
+  }
+
+  const cerrarFoto = () => {
+    setFotoAbierta(false)
+    setFoto(null)
+    setFotoError('')
+  }
+
+  // Cerrar el modal con la tecla Esc
+  useEffect(() => {
+    if (!fotoAbierta) return undefined
+    const alPresionar = (e) => { if (e.key === 'Escape') cerrarFoto() }
+    window.addEventListener('keydown', alPresionar)
+    return () => window.removeEventListener('keydown', alPresionar)
+  }, [fotoAbierta])
 
   useEffect(() => {
     let activo = true
@@ -132,6 +169,7 @@ export default function MiActividad() {
                 <th>Tipo de actividad</th>
                 <th>Fecha y Hora</th>
                 <th>Riesgo</th>
+                <th className="ls-actividad-col-foto">Foto</th>
               </tr>
             </thead>
             <tbody>
@@ -156,12 +194,27 @@ export default function MiActividad() {
                       {actividad.riesgo}
                     </span>
                   </td>
+                  <td className="ls-actividad-col-foto">
+                    {actividad.anomalia_id ? (
+                      <button
+                        type="button"
+                        className="ls-actividad-foto-btn"
+                        onClick={() => verFoto(actividad.anomalia_id)}
+                        title="Ver foto de la cámara"
+                        aria-label="Ver foto de la cámara"
+                      >
+                        <Camera size={17} />
+                      </button>
+                    ) : (
+                      <span className="ls-actividad-sin-foto">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
 
               {cargando && (
                 <tr>
-                  <td colSpan="5" className="ls-actividad-vacio">
+                  <td colSpan="6" className="ls-actividad-vacio">
                     Cargando actividad…
                   </td>
                 </tr>
@@ -169,7 +222,7 @@ export default function MiActividad() {
 
               {!cargando && resultados.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="ls-actividad-vacio">
+                  <td colSpan="6" className="ls-actividad-vacio">
                     {actividades.length === 0 && !error
                       ? 'Todavía no hay actividad registrada.'
                       : 'No se encontraron actividades.'}
@@ -213,6 +266,54 @@ export default function MiActividad() {
         )}
 
       </section>
+
+      {/* MODAL: FOTO DE LA CÁMARA */}
+      {fotoAbierta && (
+        <div className="ls-actividad-foto-fondo" onMouseDown={(e) => { if (e.target === e.currentTarget) cerrarFoto() }}>
+          <section className="ls-actividad-foto-modal" role="dialog" aria-modal="true" aria-labelledby="ls-foto-titulo">
+
+            <div className="ls-actividad-foto-header">
+              <div>
+                <h3 id="ls-foto-titulo">{foto?.tipo || 'Foto de la cámara'}</h3>
+                {foto && <p>{foto.fecha} · {foto.hora} hrs</p>}
+              </div>
+              <button type="button" className="ls-actividad-foto-cerrar" onClick={cerrarFoto} aria-label="Cerrar">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="ls-actividad-foto-cuerpo">
+              {fotoCargando && <p className="ls-actividad-foto-mensaje">Cargando foto…</p>}
+
+              {fotoError && <p className="ls-actividad-foto-mensaje error">{fotoError}</p>}
+
+              {foto && (
+                <>
+                  <img
+                    className="ls-actividad-foto-imagen"
+                    src={foto.imagen}
+                    alt={`Foto de la cámara: ${foto.tipo}`}
+                  />
+
+                  <span className={`ls-actividad-foto-riesgo riesgo-${(foto.riesgo || '').toLowerCase()}`}>
+                    <AlertTriangle size={14} />
+                    Riesgo {foto.riesgo}
+                  </span>
+
+                  {foto.descripcion && (
+                    <p className="ls-actividad-foto-descripcion">{foto.descripcion}</p>
+                  )}
+
+                  <p className="ls-actividad-foto-nota">
+                    Las fotos se borran automáticamente después de 30 días.
+                  </p>
+                </>
+              )}
+            </div>
+
+          </section>
+        </div>
+      )}
     </div>
   )
 }

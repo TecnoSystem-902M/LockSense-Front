@@ -29,3 +29,9 @@ export const obtenerReporte = async () => {
   const { data } = await api.get('/usuario/reporte')
   return data
 }
+
+// Foto de la cámara de una anomalía de mi casillero.
+export const obtenerEvidencia = async (anomaliaId) => {
+  const { data } = await api.get(`/usuario/anomalias/${anomaliaId}/evidencia`)
+  return data
+}
